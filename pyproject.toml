@@ -1,0 +1,33 @@
+[project]
+name = "aiarchitect-blog-mcp"
+version = "0.1.0"
+description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 49 articles — as searchable tools for AI agents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "AI아키텍트" }]
+keywords = ["mcp", "model-context-protocol", "blog", "ai-architecture", "rag", "ai-agent"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = ["fastmcp>=2.8"]
+
+[project.scripts]
+aiarchitect-blog-mcp = "aiarchitect_blog_mcp:main"
+
+[project.urls]
+Homepage = "https://aiarchitect.tistory.com/"
+# Source: 공개 저장소 승인·생성 후 필명/조직 계정 URL로 추가 예정(개인 실명 핸들 노출 금지)
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aiarchitect_blog_mcp"]
+# data/(articles_index.json + articles/*.md)는 패키지 하위라 기본 포함됨.
+
+[dependency-groups]
+dev = ["pytest>=8"]
