@@ -19,7 +19,8 @@ aiarchitect-blog-mcp = "aiarchitect_blog_mcp:main"
 
 [project.urls]
 Homepage = "https://aiarchitect.tistory.com/"
-# Source: 공개 저장소 승인·생성 후 필명/조직 계정 URL로 추가 예정(개인 실명 핸들 노출 금지)
+Source = "https://github.com/aiarchitecturedev/aiarchitect-blog-mcp"
+Issues = "https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/issues"
 
 [build-system]
 requires = ["hatchling"]

@@ -25,7 +25,7 @@ DEFAULT_SRC = _ROOT.parent / "github-portfolio-public" / "aiarchitect" / "blogs"
 OUT_DIR = _ROOT / "src" / "aiarchitect_blog_mcp" / "data"
 
 
-def main(src: Path) -> int:
+def main(src: Path, include_unpublished: bool = False) -> int:
     if not src.exists():
         print(f"❌ 소스 디렉터리 없음: {src}", file=sys.stderr)
         return 1
@@ -35,15 +35,21 @@ def main(src: Path) -> int:
         print(f"❌ 마크다운 글을 찾지 못함: {src}", file=sys.stderr)
         return 1
 
+    all_records = [build_record(f) for f in files]
+
+    # fail-closed: 정식 게시 URL이 없는(홈 폴백) 글은 공개 배포 번들에서 기본 제외한다.
+    excluded = [r for r in all_records if not r["published"]]
+    records = all_records if include_unpublished else [r for r in all_records if r["published"]]
+
     articles_dir = OUT_DIR / "articles"
     articles_dir.mkdir(parents=True, exist_ok=True)
     for old in articles_dir.glob("*.md"):
         old.unlink()
 
-    records = []
+    kept_files = {r["file"] for r in records}
     for f in files:
-        records.append(build_record(f))
-        shutil.copyfile(f, articles_dir / f.name)
+        if f.name in kept_files:
+            shutil.copyfile(f, articles_dir / f.name)
 
     index = {"source": "aiarchitect/blogs", "count": len(records), "articles": records}
     (OUT_DIR / "articles_index.json").write_text(
@@ -53,12 +59,19 @@ def main(src: Path) -> int:
     cats = sorted({r["category"] for r in records})
     print(f"✅ {len(records)}편 인덱싱 완료 → {OUT_DIR / 'articles_index.json'}")
     print(f"   분류 {len(cats)}종: {', '.join(cats)}")
-    missing_url = [r["id"] for r in records if not r["url"].startswith("https://aiarchitect.tistory.com/") or r["url"].rstrip("/") == "https://aiarchitect.tistory.com"]
-    if missing_url:
-        print(f"   ⚠️ 정식 게시 URL 미발급(홈 폴백): {', '.join(missing_url)}")
+    if excluded:
+        ids = ", ".join(r["id"] for r in excluded)
+        if include_unpublished:
+            print(f"   ⚠️ 정식 게시 URL 없음(홈 폴백) {len(excluded)}편 포함됨(--include-unpublished): {ids}")
+            print("      → 공개 배포용 번들에는 이 글들을 넣지 마세요(홈 폴백 = 오도성 출처 링크).")
+        else:
+            print(f"   🔒 fail-closed 제외 {len(excluded)}편(정식 게시 URL 없음): {ids}")
     return 0
 
 
 if __name__ == "__main__":
-    source = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else DEFAULT_SRC
-    raise SystemExit(main(source))
+    args = [a for a in sys.argv[1:]]
+    include_unpublished = "--include-unpublished" in args
+    args = [a for a in args if not a.startswith("--")]
+    source = Path(args[0]).resolve() if args else DEFAULT_SRC
+    raise SystemExit(main(source, include_unpublished=include_unpublished))

@@ -6,9 +6,12 @@
 
 from aiarchitect_blog_mcp.corpus import (
     BLOG_HOME,
+    MAX_LIST_LIMIT,
+    MAX_SEARCH_LIMIT,
     Corpus,
     build_record,
     extract_body,
+    is_published,
     parse_metadata,
 )
 
@@ -42,6 +45,23 @@ def test_unpublished_url_falls_back_home():
     text = "# t\n- 문서 ID: `BLOG-45`\n- 분류: `엔터프라이즈 아키텍처`\n- 권장 제목: `x`\n- 공개 URL: `미발급`\n\n본문"
     rec = build_record_from_text(text, "45-z.md")
     assert rec["url"] == BLOG_HOME
+    assert rec["published"] is False  # fail-closed: 홈 폴백은 미게시로 표시
+
+
+def test_published_url_marks_published():
+    text = "# t\n- 문서 ID: `BLOG-09`\n- 분류: `보안`\n- 권장 제목: `x`\n- 공개 URL: `https://aiarchitect.tistory.com/11`\n\n본문"
+    rec = build_record_from_text(text, "09-x.md")
+    assert rec["url"] == "https://aiarchitect.tistory.com/11"
+    assert rec["published"] is True
+
+
+def test_is_published_rules():
+    assert is_published("https://aiarchitect.tistory.com/2")
+    assert is_published("https://aiarchitect.tistory.com/52/")
+    assert not is_published("https://aiarchitect.tistory.com")   # 홈
+    assert not is_published("https://aiarchitect.tistory.com/")  # 홈(슬래시)
+    assert not is_published("")
+    assert not is_published("https://evil.example.com/2")        # 다른 호스트
 
 
 # --- 코퍼스(빌드 산출물) 골든 테스트 ---
@@ -61,6 +81,30 @@ def test_every_record_has_title_category_url():
         assert r["title"], r
         assert r["category"], r
         assert r["url"].startswith("http"), r
+
+
+def test_fail_closed_no_home_fallback_served():
+    """서빙되는 모든 글은 정식 게시 URL을 가진다(홈 폴백 미노출)."""
+    c = Corpus()
+    for r in c.records:
+        assert is_published(r["url"]), f"홈 폴백이 노출됨: {r['id']} -> {r['url']}"
+    assert c.excluded_ids == [], f"제외 대상이 남아 있음: {c.excluded_ids}"
+
+
+def test_list_articles_clamps_negative_and_oversized():
+    c = Corpus()
+    assert c.list_articles(limit=-5) == []          # 음수 → 0으로 클램프
+    assert c.list_articles(offset=-10, limit=1) == c.list_articles(offset=0, limit=1)
+    assert len(c.list_articles(limit=10_000)) <= MAX_LIST_LIMIT
+    assert c.list_articles(limit="oops") != []      # 잘못된 타입 → 기본값
+
+
+def test_search_clamps_limit_and_bad_query():
+    c = Corpus()
+    assert len(c.search("MCP", limit=9999)) <= MAX_SEARCH_LIMIT
+    assert c.search("MCP", limit=-1) == []
+    assert c.search("") == []
+    assert c.search("   ") == []
 
 
 def test_search_finds_relevant_article():

@@ -14,6 +14,31 @@ from pathlib import Path
 BLOG_HOME = "https://aiarchitect.tistory.com/"
 DATA_DIR = Path(__file__).parent / "data"
 
+# 개별 게시글 URL 패턴(홈 폴백과 구분). 공개 배포 fail-closed 판정 기준.
+_ARTICLE_URL = re.compile(r"^https://aiarchitect\.tistory\.com/\d+/?$")
+
+# 입력 검증 상한(방어적 클램프)
+MAX_LIST_LIMIT = 200
+MAX_SEARCH_LIMIT = 50
+
+
+def is_published(url: str) -> bool:
+    """URL이 정식 게시글(홈 폴백이 아닌 개별 글)인지 판정한다.
+
+    공개 배포 빌드·서빙에서 정식 게시 URL이 없는 글을 노출하지 않기 위한
+    fail-closed 기준. 홈 URL·빈 값·비정상 값은 모두 False.
+    """
+    return bool(_ARTICLE_URL.match((url or "").strip()))
+
+
+def _clamp_int(value, default: int, lo: int, hi: int) -> int:
+    """정수로 강제 변환 후 [lo, hi]로 클램프한다. 변환 실패 시 default를 반환한다."""
+    try:
+        n = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(lo, min(n, hi))
+
 # 헤더 블록에 등장하는 알려진 필드명(본문 bullet과 구분하기 위한 화이트리스트)
 _META_KEYS = {
     "문서 ID", "상태", "Tistory 상태", "분류", "공개일", "공개 URL",
@@ -82,6 +107,7 @@ def build_record(path: Path) -> dict:
         "description": description,
         "tags": tags,
         "url": url,
+        "published": is_published(url),
         "file": path.name,
     }
 
@@ -97,11 +123,21 @@ class Corpus:
                 f"인덱스가 없습니다: {index_path}. 먼저 `python scripts/build_index.py`를 실행하세요."
             )
         index = json.loads(index_path.read_text(encoding="utf-8"))
-        self.records: list[dict] = index["articles"]
+        raw: list[dict] = index["articles"]
+        # fail-closed: 정식 게시 URL이 없는(홈 폴백) 글은 목록·검색·본문 어디에도 노출하지 않는다.
+        self.records: list[dict] = [r for r in raw if self._is_published_rec(r)]
+        self.excluded_ids: list[str] = [r.get("id") for r in raw if not self._is_published_rec(r)]
         self._by_id = {r["id"]: r for r in self.records}
         self._body_cache: dict[str, str] = {}
 
     # --- 내부 헬퍼 ---
+    @staticmethod
+    def _is_published_rec(rec: dict) -> bool:
+        """레코드가 정식 게시글인지 판정한다. published 플래그 우선, 없으면 URL로 판정."""
+        if "published" in rec:
+            return bool(rec["published"])
+        return is_published(rec.get("url", ""))
+
     def _norm_id(self, article_id) -> str:
         s = str(article_id).upper().replace("BLOG-", "").strip()
         return s.zfill(2) if s.isdigit() else s
@@ -139,14 +175,17 @@ class Corpus:
         return [{"category": k, "count": v} for k, v in sorted(c.items(), key=lambda x: (-x[1], x[0]))]
 
     def list_articles(self, category: str | None = None, limit: int = 50, offset: int = 0) -> list[dict]:
+        limit = _clamp_int(limit, 50, 0, MAX_LIST_LIMIT)
+        offset = _clamp_int(offset, 0, 0, 10_000_000)
         recs = self.records
         if category:
             recs = [r for r in recs if r["category"] == category or category in r["category"]]
         return [self._summary(r) for r in recs[offset:offset + limit]]
 
     def search(self, query: str, category: str | None = None, limit: int = 10) -> list[dict]:
-        terms = [t for t in re.split(r"\s+", query.lower().strip()) if t]
-        if not terms:
+        limit = _clamp_int(limit, 10, 0, MAX_SEARCH_LIMIT)
+        terms = [t for t in re.split(r"\s+", str(query).lower().strip()) if t]
+        if not terms or limit == 0:
             return []
         scored: list[tuple[int, dict]] = []
         for r in self.records:

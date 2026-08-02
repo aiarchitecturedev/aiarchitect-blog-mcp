@@ -17,7 +17,8 @@
         "엔터프라이즈아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/1",
-      "file": "01-ai-architecture-technical-blog-introduction.md"
+      "file": "01-ai-architecture-technical-blog-introduction.md",
+      "published": true
     },
     {
       "id": "02",
@@ -34,8 +35,9 @@
         "시스템 통합",
         "LLM"
       ],
-      "url": "https://aiarchitect.tistory.com/",
-      "file": "02-mcp-ai-agent-enterprise-standard.md"
+      "url": "https://aiarchitect.tistory.com/2",
+      "file": "02-mcp-ai-agent-enterprise-standard.md",
+      "published": true
     },
     {
       "id": "03",
@@ -53,7 +55,8 @@
         "엔터프라이즈 AI"
       ],
       "url": "https://aiarchitect.tistory.com/3",
-      "file": "03-mcp-tool-design-principles.md"
+      "file": "03-mcp-tool-design-principles.md",
+      "published": true
     },
     {
       "id": "04",
@@ -71,7 +74,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/4",
-      "file": "04-meeting-audio-to-rag-pipeline.md"
+      "file": "04-meeting-audio-to-rag-pipeline.md",
+      "published": true
     },
     {
       "id": "05",
@@ -89,7 +93,8 @@
         "Security Gateway"
       ],
       "url": "https://aiarchitect.tistory.com/5",
-      "file": "05-java-security-gateway-python-ai-orchestrator.md"
+      "file": "05-java-security-gateway-python-ai-orchestrator.md",
+      "published": true
     },
     {
       "id": "06",
@@ -107,7 +112,8 @@
         "문제 해결"
       ],
       "url": "https://aiarchitect.tistory.com/6",
-      "file": "06-webrtc-ice-mdns-nat-turn-troubleshooting.md"
+      "file": "06-webrtc-ice-mdns-nat-turn-troubleshooting.md",
+      "published": true
     },
     {
       "id": "07",
@@ -125,7 +131,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/7",
-      "file": "07-recoverable-ai-agent-workflow.md"
+      "file": "07-recoverable-ai-agent-workflow.md",
+      "published": true
     },
     {
       "id": "08",
@@ -143,7 +150,8 @@
         "대용량 파일"
       ],
       "url": "https://aiarchitect.tistory.com/10",
-      "file": "08-remote-mcp-upload-ticket-pattern.md"
+      "file": "08-remote-mcp-upload-ticket-pattern.md",
+      "published": true
     },
     {
       "id": "09",
@@ -161,7 +169,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/11",
-      "file": "09-mcp-oauth21-discovery-pkce-resource-server.md"
+      "file": "09-mcp-oauth21-discovery-pkce-resource-server.md",
+      "published": true
     },
     {
       "id": "10",
@@ -179,7 +188,8 @@
         "환각 억제"
       ],
       "url": "https://aiarchitect.tistory.com/12",
-      "file": "10-realtime-stt-resampling-partial-final-hallucination.md"
+      "file": "10-realtime-stt-resampling-partial-final-hallucination.md",
+      "published": true
     },
     {
       "id": "11",
@@ -197,7 +207,8 @@
         "데이터 파이프라인"
       ],
       "url": "https://aiarchitect.tistory.com/9",
-      "file": "11-rag-idempotent-indexing-duplicate-chunk-prevention.md"
+      "file": "11-rag-idempotent-indexing-duplicate-chunk-prevention.md",
+      "published": true
     },
     {
       "id": "12",
@@ -215,7 +226,8 @@
         "Tool Calling"
       ],
       "url": "https://aiarchitect.tistory.com/13",
-      "file": "12-replaceable-gpt-claude-gemini-agent-core.md"
+      "file": "12-replaceable-gpt-claude-gemini-agent-core.md",
+      "published": true
     },
     {
       "id": "13",
@@ -233,7 +245,8 @@
         "JSON Schema"
       ],
       "url": "https://aiarchitect.tistory.com/14",
-      "file": "13-natural-language-mcp-tool-call-integration-testing.md"
+      "file": "13-natural-language-mcp-tool-call-integration-testing.md",
+      "published": true
     },
     {
       "id": "14",
@@ -251,7 +264,8 @@
         "엔터프라이즈 AI"
       ],
       "url": "https://aiarchitect.tistory.com/15",
-      "file": "14-why-ai-poc-stalls-before-production.md"
+      "file": "14-why-ai-poc-stalls-before-production.md",
+      "published": true
     },
     {
       "id": "15",
@@ -269,7 +283,8 @@
         "Tool Calling"
       ],
       "url": "https://aiarchitect.tistory.com/16",
-      "file": "15-ai-agent-action-approval-policy.md"
+      "file": "15-ai-agent-action-approval-policy.md",
+      "published": true
     },
     {
       "id": "16",
@@ -288,7 +303,8 @@
         "멱등성"
       ],
       "url": "https://aiarchitect.tistory.com/17",
-      "file": "16-stt-success-ai-summary-failure-diagnosis.md"
+      "file": "16-stt-success-ai-summary-failure-diagnosis.md",
+      "published": true
     },
     {
       "id": "17",
@@ -307,7 +323,8 @@
         "CloudEvents"
       ],
       "url": "https://aiarchitect.tistory.com/18",
-      "file": "17-async-ai-summary-readiness-polling-events.md"
+      "file": "17-async-ai-summary-readiness-polling-events.md",
+      "published": true
     },
     {
       "id": "18",
@@ -326,7 +343,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/19",
-      "file": "18-enterprise-ai-agent-authorization-audit-logs.md"
+      "file": "18-enterprise-ai-agent-authorization-audit-logs.md",
+      "published": true
     },
     {
       "id": "19",
@@ -345,7 +363,8 @@
         "MLOps"
       ],
       "url": "https://aiarchitect.tistory.com/20",
-      "file": "19-ai-project-success-criteria-acceptance-gates.md"
+      "file": "19-ai-project-success-criteria-acceptance-gates.md",
+      "published": true
     },
     {
       "id": "20",
@@ -364,7 +383,8 @@
         "AI 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/21",
-      "file": "20-ai-project-estimate-beyond-model-api-cost.md"
+      "file": "20-ai-project-estimate-beyond-model-api-cost.md",
+      "published": true
     },
     {
       "id": "21",
@@ -382,7 +402,8 @@
         "보안 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/8",
-      "file": "21-ai-agent-security-boundaries.md"
+      "file": "21-ai-agent-security-boundaries.md",
+      "published": true
     },
     {
       "id": "22",
@@ -401,7 +422,8 @@
         "AI Agent 보안"
       ],
       "url": "https://aiarchitect.tistory.com/22",
-      "file": "22-mcp-server-security-checklist.md"
+      "file": "22-mcp-server-security-checklist.md",
+      "published": true
     },
     {
       "id": "23",
@@ -420,7 +442,8 @@
         "LLM 보안"
       ],
       "url": "https://aiarchitect.tistory.com/23",
-      "file": "23-prompt-injection-trust-boundaries-tool-allowlist.md"
+      "file": "23-prompt-injection-trust-boundaries-tool-allowlist.md",
+      "published": true
     },
     {
       "id": "24",
@@ -439,7 +462,8 @@
         "자격 증명 관리"
       ],
       "url": "https://aiarchitect.tistory.com/24",
-      "file": "24-ai-agent-credential-broker-secret-masking.md"
+      "file": "24-ai-agent-credential-broker-secret-masking.md",
+      "published": true
     },
     {
       "id": "25",
@@ -458,7 +482,8 @@
         "AI Agent 보안"
       ],
       "url": "https://aiarchitect.tistory.com/25",
-      "file": "25-multitenant-rag-security-retrieval-filter-index-isolation.md"
+      "file": "25-multitenant-rag-security-retrieval-filter-index-isolation.md",
+      "published": true
     },
     {
       "id": "26",
@@ -477,7 +502,8 @@
         "클라우드 보안"
       ],
       "url": "https://aiarchitect.tistory.com/26",
-      "file": "26-secure-file-upload-presigned-url-quarantine-malware-zip-bomb.md"
+      "file": "26-secure-file-upload-presigned-url-quarantine-malware-zip-bomb.md",
+      "published": true
     },
     {
       "id": "27",
@@ -496,7 +522,8 @@
         "보안 관측성"
       ],
       "url": "https://aiarchitect.tistory.com/27",
-      "file": "27-ai-agent-audit-log-traceability-pii-masking-retention.md"
+      "file": "27-ai-agent-audit-log-traceability-pii-masking-retention.md",
+      "published": true
     },
     {
       "id": "28",
@@ -514,7 +541,8 @@
         "한국어"
       ],
       "url": "https://aiarchitect.tistory.com/28",
-      "file": "28-stt-accuracy-correction-domain-adaptation.md"
+      "file": "28-stt-accuracy-correction-domain-adaptation.md",
+      "published": true
     },
     {
       "id": "29",
@@ -532,7 +560,8 @@
         "DGX Spark"
       ],
       "url": "https://aiarchitect.tistory.com/29",
-      "file": "29-cloud-vs-local-llm-deployment-strategy.md"
+      "file": "29-cloud-vs-local-llm-deployment-strategy.md",
+      "published": true
     },
     {
       "id": "30",
@@ -550,7 +579,8 @@
         "WebRTC"
       ],
       "url": "https://aiarchitect.tistory.com/30",
-      "file": "30-speaker-diarization-design.md"
+      "file": "30-speaker-diarization-design.md",
+      "published": true
     },
     {
       "id": "31",
@@ -568,7 +598,8 @@
         "Orchestration"
       ],
       "url": "https://aiarchitect.tistory.com/31",
-      "file": "31-message-bus-multi-agent-collaboration.md"
+      "file": "31-message-bus-multi-agent-collaboration.md",
+      "published": true
     },
     {
       "id": "32",
@@ -586,7 +617,8 @@
         "Vector Search"
       ],
       "url": "https://aiarchitect.tistory.com/32",
-      "file": "32-korean-document-chunking.md"
+      "file": "32-korean-document-chunking.md",
+      "published": true
     },
     {
       "id": "33",
@@ -604,7 +636,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/33",
-      "file": "33-web-research-rag.md"
+      "file": "33-web-research-rag.md",
+      "published": true
     },
     {
       "id": "34",
@@ -622,7 +655,8 @@
         "Java Python"
       ],
       "url": "https://aiarchitect.tistory.com/34",
-      "file": "34-polyglot-security-contract-golden-vector.md"
+      "file": "34-polyglot-security-contract-golden-vector.md",
+      "published": true
     },
     {
       "id": "35",
@@ -640,7 +674,8 @@
         "개인정보"
       ],
       "url": "https://aiarchitect.tistory.com/35",
-      "file": "35-issue-tracker-work-automation-reporting.md"
+      "file": "35-issue-tracker-work-automation-reporting.md",
+      "published": true
     },
     {
       "id": "36",
@@ -659,7 +694,8 @@
         "API 설계"
       ],
       "url": "https://aiarchitect.tistory.com/40",
-      "file": "36-multiplatform-sdk-architecture-design.md"
+      "file": "36-multiplatform-sdk-architecture-design.md",
+      "published": true
     },
     {
       "id": "37",
@@ -678,7 +714,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/41",
-      "file": "37-java-server-sdk-design.md"
+      "file": "37-java-server-sdk-design.md",
+      "published": true
     },
     {
       "id": "38",
@@ -697,7 +734,8 @@
         "SDK 설계"
       ],
       "url": "https://aiarchitect.tistory.com/38",
-      "file": "38-spring-boot-starter-auto-configuration.md"
+      "file": "38-spring-boot-starter-auto-configuration.md",
+      "published": true
     },
     {
       "id": "39",
@@ -717,7 +755,8 @@
         "운영 안정성"
       ],
       "url": "https://aiarchitect.tistory.com/39",
-      "file": "39-server-sdk-resilience-auth-retry-idempotency.md"
+      "file": "39-server-sdk-resilience-auth-retry-idempotency.md",
+      "published": true
     },
     {
       "id": "40",
@@ -736,7 +775,8 @@
         "SDK 설계"
       ],
       "url": "https://aiarchitect.tistory.com/42",
-      "file": "40-android-kotlin-sdk-coroutines-lifecycle.md"
+      "file": "40-android-kotlin-sdk-coroutines-lifecycle.md",
+      "published": true
     },
     {
       "id": "41",
@@ -755,7 +795,8 @@
         "모바일 SDK"
       ],
       "url": "https://aiarchitect.tistory.com/43",
-      "file": "41-ios-swift-sdk-concurrency-lifecycle.md"
+      "file": "41-ios-swift-sdk-concurrency-lifecycle.md",
+      "published": true
     },
     {
       "id": "42",
@@ -774,7 +815,8 @@
         "프런트엔드"
       ],
       "url": "https://aiarchitect.tistory.com/44",
-      "file": "42-react-javascript-sdk-hooks-events.md"
+      "file": "42-react-javascript-sdk-hooks-events.md",
+      "published": true
     },
     {
       "id": "43",
@@ -793,7 +835,8 @@
         "적합성 테스트"
       ],
       "url": "https://aiarchitect.tistory.com/45",
-      "file": "43-cross-platform-sdk-api-error-contract.md"
+      "file": "43-cross-platform-sdk-api-error-contract.md",
+      "published": true
     },
     {
       "id": "44",
@@ -812,7 +855,8 @@
         "API 호환성"
       ],
       "url": "https://aiarchitect.tistory.com/46",
-      "file": "44-sdk-versioning-release-automation.md"
+      "file": "44-sdk-versioning-release-automation.md",
+      "published": true
     },
     {
       "id": "45",
@@ -830,8 +874,9 @@
         "End to End",
         "BFF"
       ],
-      "url": "https://aiarchitect.tistory.com/",
-      "file": "45-end-to-end-multiplatform-sdk-example.md"
+      "url": "https://aiarchitect.tistory.com/52",
+      "file": "45-end-to-end-multiplatform-sdk-example.md",
+      "published": true
     },
     {
       "id": "46",
@@ -849,7 +894,8 @@
         "DevSecOps"
       ],
       "url": "https://aiarchitect.tistory.com/47",
-      "file": "46-ai-coding-agent-harness-plugin-guardrails.md"
+      "file": "46-ai-coding-agent-harness-plugin-guardrails.md",
+      "published": true
     },
     {
       "id": "47",
@@ -867,7 +913,8 @@
         "RFC 9728"
       ],
       "url": "https://aiarchitect.tistory.com/48",
-      "file": "47-remote-mcp-six-clients-oauth-discovery.md"
+      "file": "47-remote-mcp-six-clients-oauth-discovery.md",
+      "published": true
     },
     {
       "id": "48",
@@ -885,7 +932,8 @@
         "회귀 방지"
       ],
       "url": "https://aiarchitect.tistory.com/49",
-      "file": "48-golden-tests-for-deterministic-generators.md"
+      "file": "48-golden-tests-for-deterministic-generators.md",
+      "published": true
     },
     {
       "id": "49",
@@ -903,7 +951,8 @@
         "보안"
       ],
       "url": "https://aiarchitect.tistory.com/50",
-      "file": "49-ai-agent-secret-guard-leak-prevention.md"
+      "file": "49-ai-agent-secret-guard-leak-prevention.md",
+      "published": true
     }
   ]
 }

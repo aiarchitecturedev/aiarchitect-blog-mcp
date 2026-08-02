@@ -5,14 +5,16 @@
 
 ## 0. 사전 점검 (로컬, 승인 불필요) — ✅ 완료
 
-- [x] `uv run pytest -q` — 9/9 통과
-- [x] 인메모리 MCP 스모크 — 도구 5종·검색 랭킹·백링크
+- [x] `uv run pytest -q` — **14/14 통과**(하드닝 케이스 포함)
+- [x] 인메모리 MCP 스모크 — 도구 5종·검색 랭킹(09·22·47)·백링크
 - [x] 실제 stdio 서브프로세스 end-to-end
 - [x] `uv build` — sdist + wheel, **49편 데이터 번들 확인**
-- [x] 격리 환경 wheel 설치 실행 — self-contained
-- [x] 금지 식별자 스캔 클린 (Keycloak은 공개 OSS 오탐)
+- [x] 격리 환경 wheel 설치 실행 — self-contained(소스 없이 49편·검색·본문)
+- [x] 금지 식별자 스캔 클린 (source·dist·번들 md 전부; Keycloak은 공개 OSS 오탐)
 - [x] `claude mcp add` 로컬 등록 — Connected
-- [ ] 배포 직전 재빌드 + 금지토큰 재스캔 (콘텐츠 갱신 시 필수)
+- [x] **하드닝(task#15)**: fail-closed(정식 게시 URL 없는 글 서빙 제외)·입력 검증
+      (`limit`/`offset` 클램프·타입 방어)·`readOnlyHint` 5종·BLOG-02/45 실 URL 보정
+- [x] 배포 직전 재빌드 + 금지토큰 재스캔 (2026-08-02 수행) — 콘텐츠 갱신 시 반복
 
 ## 1. PyPI 게시
 

@@ -22,14 +22,17 @@ mcp = FastMCP(
 
 _corpus = Corpus()
 
+# 모든 도구는 로컬 번들 코퍼스를 읽기만 한다(외부 호출·쓰기·부작용 없음).
+_READONLY = {"readOnlyHint": True, "idempotentHint": True, "openWorldHint": False}
 
-@mcp.tool
+
+@mcp.tool(annotations=_READONLY)
 def list_categories() -> list[dict]:
     """블로그 분류(카테고리)와 각 분류의 글 편수를 반환한다."""
     return _corpus.categories()
 
 
-@mcp.tool
+@mcp.tool(annotations=_READONLY)
 def list_articles(category: str | None = None, limit: int = 50, offset: int = 0) -> list[dict]:
     """글 목록을 반환한다.
 
@@ -41,7 +44,7 @@ def list_articles(category: str | None = None, limit: int = 50, offset: int = 0)
     return _corpus.list_articles(category=category, limit=limit, offset=offset)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READONLY)
 def search_articles(query: str, category: str | None = None, limit: int = 10) -> list[dict]:
     """제목·설명·태그·본문에서 query를 검색해 관련 글을 랭킹순으로 반환한다.
 
@@ -55,7 +58,7 @@ def search_articles(query: str, category: str | None = None, limit: int = 10) ->
     return _corpus.search(query, category=category, limit=limit)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READONLY)
 def get_article(article_id: str) -> str:
     """글 ID로 전체 본문(마크다운)을 반환한다. 상단·하단에 원문 URL 백링크를 포함한다.
 
@@ -65,7 +68,7 @@ def get_article(article_id: str) -> str:
     return _corpus.render_article(article_id)
 
 
-@mcp.tool
+@mcp.tool(annotations=_READONLY)
 def blog_home() -> str:
     """블로그 홈 URL과 서버가 제공하는 글 편수를 반환한다."""
     return f"AI아키텍트 기술 블로그: {BLOG_HOME} (총 {len(_corpus.records)}편 제공)"
