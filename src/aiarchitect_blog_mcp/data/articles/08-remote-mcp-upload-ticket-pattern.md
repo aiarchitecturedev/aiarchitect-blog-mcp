@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-08`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/10`
-- 분류: `AI Agent · MCP`
-- 권장 제목: `원격 MCP 파일 업로드 설계: 로컬 경로가 실패하는 이유와 Upload Ticket 패턴`
-- 검색 설명: `원격 MCP Server가 사용자의 로컬 파일 경로를 읽을 수 없는 이유와 Control Plane(제어 영역)·Data Plane(데이터 전송 영역)을 분리한 Upload Ticket(업로드 티켓) 기반 파일 전달, 검증과 복구 구조를 정리합니다.`
-- 권장 태그: `MCP`, `파일 업로드`, `Upload Ticket`, `AI Agent`, `원격 MCP`, `보안`, `대용량 파일`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # 원격 MCP 파일 업로드 설계: 로컬 경로가 실패하는 이유와 Upload Ticket 패턴
 
 AI Agent에게 “이 파일을 회의록으로 만들어 줘”라고 요청하면 사용자는 파일 경로를 알려 주는 것으로 충분하다고 생각할 수 있습니다.

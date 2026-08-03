@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-15`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 전환 및 공개 페이지 검증 완료
-- Tistory 글 번호: `16`
-- 공개 URL: https://aiarchitect.tistory.com/16
-- 분류: `AI Agent · MCP`
-- 권장 제목: `AI Agent 승인 정책 설계: 읽기·쓰기·중요·파괴 작업을 구분하는 방법`
-- 검색 설명: `AI Agent Tool을 읽기, 쓰기, 중요 작업과 파괴 작업으로 분류하고 권한 재검증, 실행 미리보기, 승인 바인딩, 만료, 재시도와 감사 로그까지 연결하는 실무 승인 정책을 설명합니다.`
-- 권장 태그: `AI Agent`, `MCP`, `Human-in-the-loop`, `Approval Policy`, `Least Privilege`, `OPA`, `Tool Calling`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # AI Agent 승인 정책 설계: 읽기·쓰기·중요·파괴 작업을 구분하는 방법
 
 AI Agent에게 “지난 회의를 찾아 요약해 줘”라고 요청했습니다.

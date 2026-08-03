@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-14`
-- 상태: 공개 완료
-- Tistory 상태: 공개 게시·공개 페이지 검증 완료
-- 공개 URL: https://aiarchitect.tistory.com/15
-- 분류: `기술 인사이트`
-- 권장 제목: `AI PoC가 운영 단계에서 멈추는 이유: 인증, 권한, 복구와 관측성`
-- 검색 설명: `AI 개념 검증이 데모에서는 성공했지만 운영 전환에서 멈추는 이유를 성공 기준, 인증·권한, 위험 작업 승인, 장애 복구, 품질 평가, 관측성, 비용과 배포 책임의 관점에서 정리합니다.`
-- 권장 태그: `AI PoC`, `Production Readiness`, `AI Agent`, `MLOps`, `Observability`, `SLO`, `엔터프라이즈 AI`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # AI PoC가 운영 단계에서 멈추는 이유: 인증, 권한, 복구와 관측성
 
 회의 파일을 올리면 녹취록과 요약이 생성됩니다. 질문을 입력하면 사내 문서를 검색하고, AI Agent가 업무 Tool까지 호출합니다.

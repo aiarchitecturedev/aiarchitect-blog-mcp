@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-10`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/12`
-- 분류: `프로젝트 문제 해결`
-- 권장 제목: `실시간 STT 설계: 48kHz 리샘플링, Partial·Final 자막과 환각 억제`
-- 검색 설명: `브라우저 음성을 실시간 STT 입력으로 변환할 때 실제 Sample Rate(샘플링 레이트)를 확인하고 48kHz를 16kHz로 안전하게 리샘플링하는 방법, Partial(중간 결과)·Final(확정 결과) 자막 상태와 무음·반복 환각 억제 기준을 정리합니다.`
-- 권장 태그: `STT`, `Faster-Whisper`, `WebRTC`, `리샘플링`, `실시간 자막`, `VAD`, `환각 억제`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/03-realtime-speech-recording.svg`
-
----
-
 # 실시간 STT 설계: 48kHz 리샘플링, Partial·Final 자막과 환각 억제
 
 파일 하나를 끝까지 받은 뒤 처리하는 STT(Speech-to-Text, 음성 인식)는 입력 형식을 정규화하고 모델을 한 번 실행하면 됩니다.

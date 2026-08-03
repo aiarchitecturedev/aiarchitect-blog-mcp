@@ -12,7 +12,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ["fastmcp>=2.8"]
+# 상한(<4)으로 비호환 major 자동 선택을 차단. 검증 기준은 uv.lock의 FastMCP 3.x.
+dependencies = ["fastmcp>=2.8,<4"]
 
 [project.scripts]
 aiarchitect-blog-mcp = "aiarchitect_blog_mcp:main"
@@ -29,6 +30,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/aiarchitect_blog_mcp"]
 # data/(articles_index.json + articles/*.md)는 패키지 하위라 기본 포함됨.
+
+[tool.hatch.build.targets.sdist]
+# 배포 표면 최소화: 익명성 가드 테스트(내부 마커를 리터럴로 담음)와 로컬 무시 파일은
+# sdist에 넣지 않는다. 테스트는 저장소에 남아 로컬/CI로 계속 실행된다.
+include = ["/src", "/scripts", "/README.md", "/LICENSE", "/pyproject.toml", "/uv.lock"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

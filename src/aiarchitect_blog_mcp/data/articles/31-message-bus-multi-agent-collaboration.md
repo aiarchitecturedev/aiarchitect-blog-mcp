@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-31`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-31 공개 전환 및 공개 페이지 검증 완료
-- 공개 URL: https://aiarchitect.tistory.com/31
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `메시지 버스 기반 멀티 에이전트 협업: 에이전트별 MCP·RAG 권한 분리`
-- 검색 설명: `여러 AI Agent가 Message Bus로 비동기 협업하는 오케스트레이터에서, 에이전트별 MCP 서버·RAG 컬렉션·동료 에이전트 호출 권한을 Allowlist로 최소화하고 위임·루프·예산·관측성을 통제하는 설계를 정리합니다.`
-- 권장 태그: `Multi-Agent`, `AI Agent`, `Message Bus`, `MCP`, `RAG`, `Allowlist`, `Orchestration`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # 메시지 버스 기반 멀티 에이전트 협업: 에이전트별 MCP·RAG 권한 분리
 
 하나의 거대한 AI Agent (AI 에이전트)에게 회의록 검색, 웹 조사, 초안 작성, 사실 검증, 최종 편집을 모두 시키면 초기 개발은 빠릅니다.

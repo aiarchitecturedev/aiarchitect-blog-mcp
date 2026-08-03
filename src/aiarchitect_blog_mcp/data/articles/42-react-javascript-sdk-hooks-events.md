@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-42`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/44`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `고객 맞춤형 웹을 위한 React JavaScript SDK: Core Client·Hook과 이벤트`
-- 검색 설명: `고객사가 React 웹을 원하는 UI와 상태 구조로 구현할 수 있도록 JavaScript SDK를 설계할 때 필요한 Core Client, Custom Hook, useSyncExternalStore, AbortSignal, 이벤트 구독, SSR, CORS·쿠키 인증과 패키지 배포 계약을 정리합니다.`
-- 권장 태그: `React`, `JavaScript SDK`, `Custom Hook`, `AbortSignal`, `useSyncExternalStore`, `CORS`, `웹 SDK`, `프런트엔드`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 고객 맞춤형 웹을 위한 React JavaScript SDK: Core Client·Hook과 이벤트
 
 앞선 글에서는 고객사가 Android·iOS 앱을 직접 설계하면서도 공통 업무 기능과 프라이빗 API 경계를 유지하는 Kotlin·Swift SDK를 살펴봤습니다. 이번 글은 같은 목적을 React 웹으로 확장합니다.

@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-16`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `프로젝트 문제 해결`
-- 공개 URL: https://aiarchitect.tistory.com/17
-- 권장 제목: `STT는 성공했는데 AI 요약은 왜 실패할까: 비동기 파이프라인 장애 진단`
-- 검색 설명: `STT 녹취록은 생성됐지만 AI 요약이 나오지 않을 때 미디어·녹취록·Queue·Worker·LLM·저장·조회 단계를 분리하고 오류 코드, 재시도, 멱등성과 분산 추적으로 원인을 찾는 실무 진단 순서를 정리합니다.`
-- 권장 태그: `STT`, `AI 요약`, `비동기 처리`, `장애 진단`, `LLM`, `Queue`, `OpenTelemetry`, `멱등성`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/02-meeting-knowledge-automation.svg`
-
----
-
 # STT는 성공했는데 AI 요약은 왜 실패할까: 비동기 파이프라인 장애 진단
 
 회의 음성 파일을 업로드했습니다.

@@ -15,7 +15,8 @@ BLOG_HOME = "https://aiarchitect.tistory.com/"
 DATA_DIR = Path(__file__).parent / "data"
 
 # 개별 게시글 URL 패턴(홈 폴백과 구분). 공개 배포 fail-closed 판정 기준.
-_ARTICLE_URL = re.compile(r"^https://aiarchitect\.tistory\.com/\d+/?$")
+# 글 번호는 ASCII 양의 정수만 허용(`/0`·`/00`·전각·아랍 등 Unicode 숫자 거부).
+_ARTICLE_URL = re.compile(r"^https://aiarchitect\.tistory\.com/[1-9][0-9]*/?$")
 
 # 입력 검증 상한(방어적 클램프)
 MAX_LIST_LIMIT = 200
@@ -26,16 +27,24 @@ def is_published(url: str) -> bool:
     """URL이 정식 게시글(홈 폴백이 아닌 개별 글)인지 판정한다.
 
     공개 배포 빌드·서빙에서 정식 게시 URL이 없는 글을 노출하지 않기 위한
-    fail-closed 기준. 홈 URL·빈 값·비정상 값은 모두 False.
+    fail-closed 기준. 홈 URL·빈 값·비문자열·비정상 값은 모두 False.
     """
-    return bool(_ARTICLE_URL.match((url or "").strip()))
+    if not isinstance(url, str):
+        return False
+    return bool(_ARTICLE_URL.match(url.strip()))
 
 
 def _clamp_int(value, default: int, lo: int, hi: int) -> int:
-    """정수로 강제 변환 후 [lo, hi]로 클램프한다. 변환 실패 시 default를 반환한다."""
+    """정수로 강제 변환 후 [lo, hi]로 클램프한다. 변환 실패 시 default를 반환한다.
+
+    bool은 정수로 인정하지 않고(True/False 오입력 방어), float('inf')·NaN 등
+    변환 불가 값(OverflowError·ValueError)은 default로 되돌린다.
+    """
+    if isinstance(value, bool):
+        return default
     try:
         n = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
     return max(lo, min(n, hi))
 
@@ -133,10 +142,13 @@ class Corpus:
     # --- 내부 헬퍼 ---
     @staticmethod
     def _is_published_rec(rec: dict) -> bool:
-        """레코드가 정식 게시글인지 판정한다. published 플래그 우선, 없으면 URL로 판정."""
-        if "published" in rec:
-            return bool(rec["published"])
-        return is_published(rec.get("url", ""))
+        """레코드가 정식 게시글인지 판정한다(엄밀 fail-closed).
+
+        URL이 정식 게시글 형식이어야 하며(홈 폴백·외부 도메인 거부), 동시에
+        `published` 플래그가 엄격히 `True`여야 한다. 플래그가 없으면 URL 판정만 적용.
+        문자열 `"false"`·홈 URL+참 플래그 같은 우회 조합을 모두 차단한다.
+        """
+        return is_published(rec.get("url", "")) and rec.get("published", True) is True
 
     def _norm_id(self, article_id) -> str:
         s = str(article_id).upper().replace("BLOG-", "").strip()

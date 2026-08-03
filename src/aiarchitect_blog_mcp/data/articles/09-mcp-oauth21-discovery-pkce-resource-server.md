@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-09`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/11`
-- 분류: `AI Agent · MCP`
-- 권장 제목: `MCP OAuth 2.1 인증 구조: Discovery, PKCE와 Resource Server 경계`
-- 검색 설명: `원격 MCP Server 인증에서 Protected Resource Metadata(보호 리소스 메타데이터), Authorization Server Discovery(인증 서버 탐색), PKCE(인증 코드 보호), Resource Indicator(대상 리소스 지정)와 Scope(권한 범위)를 연결하는 구조를 정리합니다.`
-- 권장 태그: `MCP`, `OAuth 2.1`, `PKCE`, `Resource Server`, `인증`, `권한 설계`, `AI Agent`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # MCP OAuth 2.1 인증 구조: Discovery, PKCE와 Resource Server 경계
 
 원격 MCP Server가 사용자별 문서, 회의, 업무 시스템이나 관리자 기능에 접근한다면 “로그인 화면을 붙였다”는 것만으로 인증 설계가 끝나지 않습니다.

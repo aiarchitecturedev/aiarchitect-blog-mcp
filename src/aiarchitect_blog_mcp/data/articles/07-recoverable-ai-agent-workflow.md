@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-07`
-- 상태: 공개 완료
-- 공개 URL: https://aiarchitect.tistory.com/7
-- Tistory 상태: 공개 게시·공개 페이지 검증 완료
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `운영 가능한 AI Agent 만들기: Checkpoint, Retry, Idempotency와 Outbox`
-- 검색 설명: `LLM과 외부 Tool이 포함된 긴 AI Agent Workflow를 실패 후 안전하게 재개하기 위한 Checkpoint(상태 저장), Retry(재시도), Idempotency(멱등성), Outbox(메시지 발행)와 승인 경계를 정리합니다.`
-- 권장 태그: `AI Agent`, `LangGraph`, `Checkpoint`, `Retry`, `Idempotency`, `Outbox`, `엔터프라이즈 아키텍처`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 운영 가능한 AI Agent 만들기: Checkpoint, Retry, Idempotency와 Outbox
 
 AI Agent 데모는 질문을 받고 LLM을 호출한 뒤 Tool 결과를 보여 주면 완성된 것처럼 보입니다. 운영 환경에서는 그 사이에 훨씬 많은 일이 생깁니다.

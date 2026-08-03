@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-36`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: https://aiarchitect.tistory.com/40
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `프라이빗 API를 보호하는 멀티플랫폼 SDK 아키텍처: Java·Kotlin·Swift·React 계약 설계`
-- 검색 설명: `프라이빗 망의 API 서버를 직접 노출하지 않으면서 고객사가 Android·iOS 앱과 React 웹을 원하는 형태로 구현하도록 Mobile·Front·Java/Spring Boot Server SDK를 설계한 배경과 공통 계약 원칙을 정리합니다.`
-- 권장 태그: `SDK`, `Java`, `Spring Boot`, `Kotlin`, `Swift`, `React`, `JavaScript`, `API 설계`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 프라이빗 API를 보호하는 멀티플랫폼 SDK 아키텍처: Java·Kotlin·Swift·React 계약 설계
 
 이미 운영 중인 API 서버와 웹 프런트 페이지, 모바일 앱이 있다고 가정해 보겠습니다. 표준 화면만 제공할 때는 이 세 구성요소만으로도 충분하지만, 고객사마다 업무 흐름·브랜드·화면 구성이 달라지면 하나의 UI를 그대로 제공하는 방식에는 한계가 생깁니다.

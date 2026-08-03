@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-12`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/13`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `멀티 LLM Agent Core 설계: GPT·Claude·Gemini를 교체 가능한 Provider로 연결하기`
-- 검색 설명: `GPT, Claude와 Gemini의 Message, Tool Calling, Streaming, 중단 사유, 사용량과 오류 차이를 Provider Adapter로 흡수하면서도 모델 고유 기능을 잃지 않는 멀티 LLM Agent Core 설계를 정리합니다.`
-- 권장 태그: `AI Agent`, `Multi LLM`, `Provider Adapter`, `OpenAI`, `Claude`, `Gemini`, `Tool Calling`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 멀티 LLM Agent Core 설계: GPT·Claude·Gemini를 교체 가능한 Provider로 연결하기
 
 AI Agent를 처음 만들 때는 특정 모델의 SDK를 직접 호출하는 방식이 가장 빠릅니다.

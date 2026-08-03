@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-18`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `엔터프라이즈 아키텍처`
-- 공개 URL: https://aiarchitect.tistory.com/19
-- 권장 제목: `엔터프라이즈 AI Agent 권한 설계: 사용자·테넌트·Tool 인가와 감사 로그`
-- 검색 설명: `AI Agent가 기업 데이터를 조회하고 Tool을 실행할 때 사용자, 테넌트, 객체, 작업과 환경 속성을 결합해 권한을 판단하고 정책 결정부터 실제 실행 결과까지 감사 로그로 연결하는 아키텍처를 정리합니다.`
-- 권장 태그: `AI Agent`, `MCP`, `Authorization`, `Multi-tenancy`, `ABAC`, `OPA`, `Audit Log`, `엔터프라이즈 아키텍처`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # 엔터프라이즈 AI Agent 권한 설계: 사용자·테넌트·Tool 인가와 감사 로그
 
 사용자가 AI Agent에게 요청합니다.

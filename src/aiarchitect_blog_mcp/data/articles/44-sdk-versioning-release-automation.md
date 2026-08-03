@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-44`
-- 상태: 공개 완료
-- Tistory 상태: 공개 게시 완료 · 2026-08-01 비로그인 공개 페이지 검증
-- 공개 URL: `https://aiarchitect.tistory.com/46`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `SDK 버전 관리와 배포 자동화: SemVer·호환성 표·패키지·릴리스 게이트`
-- 검색 설명: `Java·Kotlin·Swift·JavaScript SDK를 Maven·Gradle·Swift Package Manager·npm으로 안전하게 배포하기 위해 계약 버전, SemVer, API 호환성 검사, 실제 패키지 테스트와 Release Gate를 연결하는 방법을 정리합니다.`
-- 권장 태그: `SDK 배포`, `Semantic Versioning`, `CI CD`, `Maven`, `Gradle`, `Swift Package Manager`, `npm`, `API 호환성`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # SDK 버전 관리와 배포 자동화: SemVer·호환성 표·패키지·릴리스 게이트
 
 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK가 모두 준비되면 다음 문제는 배포입니다.

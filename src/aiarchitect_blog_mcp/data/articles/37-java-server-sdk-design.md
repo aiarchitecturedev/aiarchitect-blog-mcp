@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-37`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: https://aiarchitect.tistory.com/41
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `프라이빗 API를 연결하는 Java Server SDK 설계: 모듈·Client 수명·전송 계층`
-- 검색 설명: `고객사 서버에서 프라이빗 API를 안전하게 사용하도록 Java Server SDK를 설계할 때 필요한 모듈 경계, 장수명 Client, 동기·비동기 API, 인증·재시도·오류·관측성 원칙을 정리합니다.`
-- 권장 태그: `Java`, `Server SDK`, `API Client`, `Spring Boot`, `Private API`, `HttpClient`, `SDK 설계`, `엔터프라이즈 아키텍처`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 프라이빗 API를 연결하는 Java Server SDK 설계: 모듈·Client 수명·전송 계층
 
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 원하는 형태로 구현하면서도, 프라이빗 망의 API 서버를 직접 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다.

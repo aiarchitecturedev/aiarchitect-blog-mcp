@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-45`
-- 상태: 공개 대기
-- Tistory 상태: Boss 게시 승인 완료 · 일일 공개 발행 제한 해제 후 입력·발행 대기
-- 공개 URL: `미발급`
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `고객 Mobile·Web에서 Server SDK와 Private API까지: End-to-End 통합 예제`
-- 검색 설명: `Android Kotlin·iOS Swift·React JavaScript 고객 채널에서 Spring Boot 기반 Java Server SDK를 거쳐 프라이빗 API를 호출하는 전체 흐름을 인증, 멱등성, 비동기 상태, 이벤트 복구와 관측성까지 하나의 합성 예제로 설명합니다.`
-- 권장 태그: `멀티플랫폼 SDK`, `Private API`, `Spring Boot`, `Kotlin`, `Swift`, `React`, `End to End`, `BFF`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 고객 Mobile·Web에서 Server SDK와 Private API까지: End-to-End 통합 예제
 
 운영 중인 서비스에 API 서버, 웹 페이지와 모바일 앱이 이미 있어도 고객사가 원하는 화면과 업무 흐름은 서로 다를 수 있습니다. 이때 고객별 앱과 웹을 모두 대신 개발하면 변경 속도와 운영 책임이 한곳에 집중됩니다.

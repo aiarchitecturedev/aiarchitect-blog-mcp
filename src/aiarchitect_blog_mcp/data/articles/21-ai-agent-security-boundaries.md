@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-21`
-- 상태: 공개 완료
-- Tistory 상태: 공개·렌더링 검증 완료
-- 공개 URL: `https://aiarchitect.tistory.com/8`
-- 분류: `보안`
-- 권장 제목: `AI Agent 보안 설계: Prompt Injection, Tool 권한과 데이터 유출을 막는 8개 경계`
-- 검색 설명: `AI Agent 운영에서 Prompt Injection(프롬프트 주입), Least Privilege(최소 권한), Tool Approval(도구 승인)과 Data Exfiltration(데이터 유출) 위험을 줄이는 8개 보안 경계를 정리합니다.`
-- 권장 태그: `AI Agent 보안`, `Prompt Injection`, `Tool 권한`, `데이터 유출`, `MCP 보안`, `최소 권한`, `보안 아키텍처`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # AI Agent 보안 설계: Prompt Injection, Tool 권한과 데이터 유출을 막는 8개 경계
 
 일반적인 Chatbot은 잘못된 답을 만들 수 있습니다. Tool을 사용하는 AI Agent는 잘못된 답에 그치지 않고 파일을 읽고, 메시지를 보내고, 업무 상태를 바꾸거나 외부 시스템을 호출할 수 있습니다.

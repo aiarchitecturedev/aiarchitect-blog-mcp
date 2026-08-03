@@ -1,16 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-03`
-- 상태: 공개 완료
-- 공개 URL: https://aiarchitect.tistory.com/3
-- 분류: `AI Agent · MCP`
-- 작성 기준: MCP `2026-07-28` 사양
-- 권장 제목: `기업용 MCP Tool 설계 원칙: 이름, 설명, 입력 스키마와 권한 경계`
-- 검색 설명: `기업용 MCP Tool을 모델이 정확히 선택하고 서버가 안전하게 실행하도록 만드는 이름, 설명, JSON Schema, 권한, 승인, 출력과 오류 설계 원칙을 예제로 정리합니다.`
-- 권장 태그: `MCP`, `Model Context Protocol`, `Tool Calling`, `JSON Schema`, `AI Agent`, `권한 설계`, `엔터프라이즈 AI`
-
----
-
 # 기업용 MCP Tool 설계 원칙: 이름, 설명, 입력 스키마와 권한 경계
 
 MCP Server에 Tool을 많이 등록한다고 AI Agent의 업무 수행 능력이 자동으로 좋아지지는 않습니다.

@@ -1,16 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-04`
-- 상태: 공개 완료
-- 공개 URL: https://aiarchitect.tistory.com/4
-- 분류: `RAG · LLM 시스템`
-- 권장 제목: `회의 음성에서 RAG까지: 녹취록·요약·검색·업무 연결 파이프라인`
-- 검색 설명: `회의 음성을 STT 녹취록, 구조화 요약, 주제별 Chunk, Embedding과 검색으로 연결하고 다시 업무 Tool Calling까지 확장하는 운영형 RAG 파이프라인을 정리합니다.`
-- 권장 태그: `RAG`, `STT`, `회의록`, `Embedding`, `Vector Search`, `Faster-Whisper`, `AI Agent`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/02-meeting-knowledge-automation.svg`
-
----
-
 # 회의 음성에서 RAG까지: 녹취록·요약·검색·업무 연결 파이프라인
 
 회의를 녹음하고 AI 요약을 생성하는 것만으로 회의 데이터가 조직의 지식이 되지는 않습니다.

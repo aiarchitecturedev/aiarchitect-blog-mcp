@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-39`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/39`
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `프라이빗 망 Server SDK 운영 안정성: 인증·재시도·멱등성과 관측성`
-- 검색 설명: `고객사 서버와 프라이빗 API 사이의 Java Server SDK를 운영할 때 필요한 Deadline, 인증 갱신, 멱등성, 제한적 재시도, Jitter, Circuit Breaker, Bulkhead, Health와 관측성 설계를 정리합니다.`
-- 권장 태그: `Java SDK`, `Private API`, `Resilience`, `Retry`, `Idempotency`, `Circuit Breaker`, `OpenTelemetry`, `OAuth 2.0`, `운영 안정성`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 프라이빗 망 Server SDK 운영 안정성: 인증·재시도·멱등성과 관측성
 
 앞선 두 글에서는 프라이빗 API를 호출하는 Java Server SDK의 모듈·전송 계층과, 이를 고객사 Spring Boot 애플리케이션에 연결하는 Starter를 설계했습니다.

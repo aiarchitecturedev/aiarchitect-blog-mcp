@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-13`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/14`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `자연어에서 MCP Tool Call까지: 통합 테스트 (Integration Test) 시나리오 설계`
-- 검색 설명: `자연어 요청이 올바른 MCP Tool과 인자로 변환되는지, 여러 Tool을 어떤 순서로 호출하는지, 읽기·쓰기 승인과 권한 오류를 어떻게 검증하는지 실전 테스트 구조로 정리합니다.`
-- 권장 태그: `MCP`, `AI Agent`, `Tool Calling`, `통합 테스트`, `Golden Case`, `회귀 테스트`, `JSON Schema`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # 자연어에서 MCP Tool Call까지: 통합 테스트 (Integration Test) 시나리오 설계
 
 AI Agent에게 “내 최근 회의 요약을 보여줘”라고 요청했을 때 자연스러운 답변이 돌아왔다고 가정해 보겠습니다.

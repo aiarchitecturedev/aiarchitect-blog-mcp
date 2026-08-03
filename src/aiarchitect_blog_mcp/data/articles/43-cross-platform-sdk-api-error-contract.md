@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-43`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/45`
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `크로스플랫폼 SDK 공통 계약: API·오류·상태·이벤트와 적합성 테스트`
-- 검색 설명: `Java·Kotlin·Swift·JavaScript SDK가 같은 API를 서로 다르게 해석하지 않도록 공통 의미 계약, 오류·상태·이벤트 모델, 타입 변환 원칙과 Golden Vector 기반 적합성 테스트를 설계하는 방법을 정리합니다.`
-- 권장 태그: `SDK 설계`, `크로스플랫폼`, `API 계약`, `Contract Test`, `Golden Vector`, `OpenAPI`, `CloudEvents`, `적합성 테스트`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 크로스플랫폼 SDK 공통 계약: API·오류·상태·이벤트와 적합성 테스트
 
 같은 서비스를 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK로 제공하면 네 개의 구현이 생깁니다. 그러나 고객에게 전달해야 할 업무 의미까지 네 개가 되어서는 안 됩니다.

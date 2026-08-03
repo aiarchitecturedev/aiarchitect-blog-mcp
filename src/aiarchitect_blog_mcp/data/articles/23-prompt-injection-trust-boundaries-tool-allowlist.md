@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-23`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `보안`
-- 공개 URL: `https://aiarchitect.tistory.com/23`
-- 권장 제목: `Prompt Injection 방어: 신뢰 경계·데이터 표식·Tool Allowlist`
-- 검색 설명: `AI Agent의 직접·간접·멀티모달 Prompt Injection을 신뢰 경계, 출처·신뢰 표식, 원래 사용자 의도, Tool Allowlist, 결과 재검증과 공격 회귀 테스트로 방어하는 방법을 정리합니다.`
-- 권장 태그: `Prompt Injection`, `AI Agent 보안`, `간접 프롬프트 주입`, `Tool Allowlist`, `신뢰 경계`, `멀티모달 보안`, `MCP 보안`, `LLM 보안`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # Prompt Injection 방어: 신뢰 경계·데이터 표식·Tool Allowlist
 
 AI Agent에게 “이 문서는 요약만 하라”고 요청했다고 가정해 보겠습니다.

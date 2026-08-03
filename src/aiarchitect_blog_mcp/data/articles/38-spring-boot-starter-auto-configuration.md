@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-38`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/38`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `고객사 서버에 SDK를 연결하는 Spring Boot Starter: Auto-configuration과 테스트`
-- 검색 설명: `프라이빗 API용 Java Server SDK를 고객사 Spring Boot 애플리케이션에 안전하게 연결하는 Starter 설계를 Auto-configuration, 타입 안전 설정, 사용자 Bean 우선권, Secret 주입, 수명 관리와 테스트 관점에서 정리합니다.`
-- 권장 태그: `Spring Boot`, `Spring Boot Starter`, `Auto-configuration`, `Java SDK`, `ConfigurationProperties`, `ApplicationContextRunner`, `Private API`, `SDK 설계`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 고객사 서버에 SDK를 연결하는 Spring Boot Starter: Auto-configuration과 테스트
 
 앞선 글에서는 고객사 서버가 프라이빗 API를 안전하게 호출하도록 Java Server SDK의 공개 API, 전송 계층, 인증, 오류, 재시도와 Client 수명을 설계했습니다.

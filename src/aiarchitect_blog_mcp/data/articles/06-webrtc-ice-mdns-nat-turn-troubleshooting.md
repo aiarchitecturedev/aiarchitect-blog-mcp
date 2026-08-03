@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-06`
-- 상태: 공개 완료
-- 공개 URL: https://aiarchitect.tistory.com/6
-- Tistory 상태: 공개 게시·공개 페이지 검증 완료
-- 분류: `프로젝트 문제 해결`
-- 권장 제목: `브라우저 WebRTC가 연결되지 않을 때: ICE, mDNS, NAT와 TURN 진단 순서`
-- 검색 설명: `로컬에서는 되지만 실제 네트워크에서 실패하는 WebRTC 연결을 권한, 시그널링, ICE Candidate, mDNS, NAT, TURN, DTLS와 미디어 통계 순서로 진단하는 방법을 정리합니다.`
-- 권장 태그: `WebRTC`, `ICE`, `mDNS`, `NAT`, `TURN`, `Media Server`, `문제 해결`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/03-realtime-speech-recording.svg`
-
----
-
 # 브라우저 WebRTC가 연결되지 않을 때: ICE, mDNS, NAT와 TURN 진단 순서
 
 개발 환경에서는 잘 되던 WebRTC가 사내망, 고객사망 또는 모바일 네트워크에서 갑자기 연결되지 않는 경우가 있습니다. 이때 콘솔에서 `.local` 주소를 발견하고 mDNS를 의심하거나, 곧바로 TURN 서버부터 추가하기 쉽습니다.

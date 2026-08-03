@@ -1,18 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-41`
-- 상태: 공개 완료
-- Tistory 상태: 공개
-- 공개 URL: `https://aiarchitect.tistory.com/43`
-- 분류: `개발 도구 · 자동화`
-- 권장 제목: `고객 맞춤형 iOS 앱을 위한 Swift SDK: async/await·Task 취소와 Keychain`
-- 검색 설명: `고객사가 iOS 앱을 원하는 UI와 업무 흐름으로 구현할 수 있도록 Swift SDK를 설계할 때 필요한 async/await, Task 취소, AsyncSequence, actor 격리, Keychain, SwiftUI·UIKit 수명 주기와 테스트 계약을 정리합니다.`
-- 권장 태그: `Swift`, `iOS SDK`, `async await`, `Swift Concurrency`, `Task 취소`, `AsyncSequence`, `Keychain`, `모바일 SDK`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-- 도식 정책: `GitHub에는 Mermaid 원본을 유지하고, Tistory 게시 시 검증된 SVG 또는 PNG로 변환해 삽입`
-
----
-
 # 고객 맞춤형 iOS 앱을 위한 Swift SDK: async/await·Task 취소와 Keychain
 
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 직접 설계하면서도 프라이빗 API를 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다. Android 편에 이어 이번 글은 iOS Swift SDK의 공개 API와 실행 계약을 구체화합니다.

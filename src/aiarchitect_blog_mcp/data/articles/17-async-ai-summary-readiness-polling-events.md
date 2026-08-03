@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-17`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `프로젝트 문제 해결`
-- 공개 URL: https://aiarchitect.tistory.com/18
-- 권장 제목: `비동기 AI 요약 완료 상태 설계: Polling·Event와 Readiness Predicate`
-- 검색 설명: `비동기 AI 요약에서 Job 완료와 결과 사용 가능 상태를 분리하고, Readiness Predicate, Version, Condition, Polling, Event 계약으로 기존 결과·재생성·실패·상태 불일치를 정확히 판정하는 방법을 정리합니다.`
-- 권장 태그: `비동기 처리`, `AI 요약`, `상태 머신`, `Readiness Predicate`, `Polling`, `Event`, `API 설계`, `CloudEvents`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/02-meeting-knowledge-automation.svg`
-
----
-
 # 비동기 AI 요약 완료 상태 설계: Polling·Event와 Readiness Predicate
 
 AI 요약 생성 API를 호출했습니다.

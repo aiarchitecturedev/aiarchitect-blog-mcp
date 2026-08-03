@@ -6,9 +6,11 @@
 
 from aiarchitect_blog_mcp.corpus import (
     BLOG_HOME,
+    DATA_DIR,
     MAX_LIST_LIMIT,
     MAX_SEARCH_LIMIT,
     Corpus,
+    _clamp_int,
     build_record,
     extract_body,
     is_published,
@@ -64,6 +66,41 @@ def test_is_published_rules():
     assert not is_published("https://evil.example.com/2")        # 다른 호스트
 
 
+def test_is_published_rejects_zero_and_non_str():
+    assert not is_published("https://aiarchitect.tistory.com/0")   # 0 거부
+    assert not is_published("https://aiarchitect.tistory.com/00")  # 앞자리 0 거부
+    assert not is_published(None)                                  # 비문자열
+    assert not is_published(123)                                   # 비문자열
+
+
+def test_is_published_rejects_unicode_digits():
+    """Tistory 글 번호는 ASCII 정수만. 전각·아랍·위첨자 숫자 우회를 차단한다."""
+    assert not is_published("https://aiarchitect.tistory.com/1２")  # 전각 2
+    assert not is_published("https://aiarchitect.tistory.com/1٢")  # 아랍-인도 2
+    assert not is_published("https://aiarchitect.tistory.com/²")   # 위첨자 2
+    assert is_published("https://aiarchitect.tistory.com/12")      # 정상 ASCII
+
+
+def test_clamp_int_handles_infinity_and_bool():
+    assert _clamp_int(float("inf"), 10, 0, 200) == 10   # OverflowError → default
+    assert _clamp_int(float("-inf"), 10, 0, 200) == 10
+    assert _clamp_int(float("nan"), 10, 0, 200) == 10   # int(nan) → ValueError
+    assert _clamp_int(True, 10, 0, 200) == 10           # bool 거부 → default
+    assert _clamp_int(5, 10, 0, 200) == 5               # 정상
+    assert _clamp_int(999, 10, 0, 200) == 200           # 상한 클램프
+
+
+def test_is_published_rec_strict_fail_closed():
+    """published 플래그를 이용한 우회(홈 URL·외부 도메인·문자열 참값)를 모두 차단한다."""
+    rec_is = Corpus._is_published_rec
+    assert not rec_is({"url": "https://aiarchitect.tistory.com/", "published": True})   # 홈+참
+    assert not rec_is({"url": "https://evil.example.com/2", "published": True})         # 외부+참
+    assert not rec_is({"url": "https://aiarchitect.tistory.com/2", "published": "false"})  # "false"
+    assert rec_is({"url": "https://aiarchitect.tistory.com/2", "published": True})      # 정식+참
+    assert rec_is({"url": "https://aiarchitect.tistory.com/2"})                         # 플래그 없음→URL
+    assert not rec_is({"url": "https://aiarchitect.tistory.com/"})                      # 홈, 플래그 없음
+
+
 # --- 코퍼스(빌드 산출물) 골든 테스트 ---
 
 def test_corpus_count_is_49():
@@ -89,6 +126,44 @@ def test_fail_closed_no_home_fallback_served():
     for r in c.records:
         assert is_published(r["url"]), f"홈 폴백이 노출됨: {r['id']} -> {r['url']}"
     assert c.excluded_ids == [], f"제외 대상이 남아 있음: {c.excluded_ids}"
+
+
+def test_bundled_articles_have_no_editorial_frontmatter():
+    """번들 원본 49편에 내부 편집 헤더(상태·Boss 승인·권장*·내부 경로)가 없어야 한다."""
+    markers = [
+        "# Tistory 기술자료 초안", "검토용 초안", "공개 게시 전 Boss", "Boss 게시 승인",
+        "권장 제목", "권장 태그", "권장 대표 이미지", "portfolio/architecture-diagrams",
+        "도식 정책", "공개 URL: `미발급`",
+    ]
+    files = sorted((DATA_DIR / "articles").glob("*.md"))
+    assert len(files) == 49
+    for f in files:
+        text = f.read_text(encoding="utf-8")
+        assert text.startswith("# "), f"{f.name}: 실제 H1로 시작하지 않음"
+        for m in markers:
+            assert m not in text, f"{f.name}: 내부 편집 마커 노출 → {m!r}"
+
+
+def test_no_internal_repo_paths_in_bundled_data():
+    """번들 인덱스·본문에 내부 저장소 경로 식별자가 없어야 한다(공개 배포 안전)."""
+    import json
+    forbidden = ["github-portfolio-public", "aiarchitect/blogs"]
+    idx = json.loads((DATA_DIR / "articles_index.json").read_text(encoding="utf-8"))
+    for f in forbidden:
+        assert f not in json.dumps(idx, ensure_ascii=False), f"인덱스에 내부 경로: {f}"
+    for p in sorted((DATA_DIR / "articles").glob("*.md")):
+        text = p.read_text(encoding="utf-8")
+        for f in forbidden:
+            assert f not in text, f"{p.name}: 내부 경로 노출 → {f}"
+
+
+def test_rendered_articles_have_no_internal_markers():
+    """서빙(render_article) 결과에도 내부 편집 마커가 없어야 한다."""
+    c = Corpus()
+    for r in c.records:
+        md = c.render_article(r["id"])
+        for m in ("Boss", "검토용 초안", "portfolio/architecture-diagrams", "권장 대표 이미지"):
+            assert m not in md, f"{r['id']}: 렌더 결과에 내부 마커 → {m!r}"
 
 
 def test_list_articles_clamps_negative_and_oversized():

@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-30`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `프로젝트 문제 해결`
-- 공개 URL: `https://aiarchitect.tistory.com/30`
-- 권장 제목: `화자 분리(Speaker Diarization) 설계: STT와는 다른 문제`
-- 검색 설명: `회의록·실시간 자막에서 화자 분리(Speaker Diarization)는 STT와 다른 문제입니다. VAD·임베딩·클러스터링 파이프라인, 스트리밍 라벨 일관성, STT 정렬, 참석자 귀속, DER의 한계까지 설계 관점으로 정리합니다.`
-- 권장 태그: `Speaker Diarization`, `화자 분리`, `STT`, `회의록`, `실시간 자막`, `Faster-Whisper`, `WebRTC`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/03-realtime-speech-recording.svg`
-
----
-
 # 화자 분리(Speaker Diarization) 설계: STT와는 다른 문제
 
 회의록 제품에서 가장 자주 오해되는 지점 하나는, "음성 인식만 좋으면 화자 구분도 자연스럽게 따라온다"는 가정입니다.

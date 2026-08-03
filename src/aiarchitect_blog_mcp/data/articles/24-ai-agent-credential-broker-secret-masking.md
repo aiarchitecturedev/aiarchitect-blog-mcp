@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-24`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `보안`
-- 공개 URL: `https://aiarchitect.tistory.com/24`
-- 권장 제목: `AI Agent 자격 증명 관리: 단기 Token·Credential Broker·Secret Masking`
-- 검색 설명: `AI Agent의 Token과 API Key를 모델 Context에서 분리하고, Credential Broker를 통해 Downstream별 단기 자격 증명을 발급·주입·회전·폐기하며 Prompt·Tool·Log에서 Secret을 제거하는 운영 설계를 정리합니다.`
-- 권장 태그: `AI Agent 보안`, `Credential Broker`, `Short-lived Token`, `Secret Manager`, `Secret Masking`, `OAuth Token Exchange`, `MCP 보안`, `자격 증명 관리`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # AI Agent 자격 증명 관리: 단기 Token·Credential Broker·Secret Masking
 
 AI Agent가 업무를 수행하려면 여러 시스템에 접근해야 합니다.

@@ -53,8 +53,8 @@ uv run pytest -q                     # 파서·검색 골든 테스트
 uv run aiarchitect-blog-mcp          # stdio 서버 실행
 ```
 
-`build_index.py`는 기본적으로 `../github-portfolio-public/aiarchitect/blogs/*.md` 를 읽습니다.
-다른 경로면 인자로 넘기세요: `python scripts/build_index.py /path/to/blogs`.
+`build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`)를 인자로 받습니다:
+`python scripts/build_index.py /path/to/blogs`.
 
 ## 📚 다루는 주제
 

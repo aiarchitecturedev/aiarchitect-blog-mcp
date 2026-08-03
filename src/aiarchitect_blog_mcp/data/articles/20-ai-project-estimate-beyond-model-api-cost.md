@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-20`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `기술 인사이트`
-- 공개 URL: https://aiarchitect.tistory.com/21
-- 권장 제목: `AI 프로젝트 견적이 모델 API 비용만으로 정해지지 않는 이유: 10개 산정 항목`
-- 검색 설명: `AI 프로젝트 견적을 모델 Token 비용만으로 계산할 수 없는 이유와 사전 진단, 데이터, 통합, 평가, 보안, 인프라, 운영 및 불확실성을 견적 항목으로 분해하는 방법을 정리합니다.`
-- 권장 태그: `AI 프로젝트`, `프로젝트 견적`, `AI 비용`, `TCO`, `FinOps`, `MLOps`, `RAG`, `AI 아키텍처`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # AI 프로젝트 견적이 모델 API 비용만으로 정해지지 않는 이유: 10개 산정 항목
 
 AI 프로젝트 견적을 요청하면 가장 먼저 모델 가격표를 확인하기 쉽습니다.

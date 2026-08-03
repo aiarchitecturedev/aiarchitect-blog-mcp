@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-29`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `엔터프라이즈 아키텍처`
-- 공개 URL: `https://aiarchitect.tistory.com/29`
-- 권장 제목: `클라우드 API vs 로컬 LLM: 망 분리·비용·프라이버시로 정하는 배치 기준`
-- 검색 설명: `클라우드 LLM API와 로컬 오픈 웨이트 모델을 데이터 분류·망분리·지연·처리량·총소유비용(TCO) 기준으로 나눠 배치하는 방법과, 안전한 하이브리드 라우팅·장애 복구(fallback) 원칙을 정리합니다. Gemma 3/4·Qwen3 모델 선택, 양자화, vLLM 서빙, DGX Spark 모델 크기 산정, 온프레미스·망분리 재배치도 함께 다룹니다.`
-- 권장 태그: `Local LLM`, `On-Premise`, `Gemma`, `Qwen`, `양자화`, `vLLM`, `DGX Spark`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 클라우드 API vs 로컬 LLM: 망 분리·비용·프라이버시로 정하는 배치 기준
 
 AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니다. 키를 발급받고, SDK를 붙이고, 프롬프트를 넣으면 최신 모델이 응답합니다. 서버도, GPU도, 모델 파일도 필요 없습니다.

@@ -1,16 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-47`
-- 상태: 공개 완료
-- Tistory 상태: 2026-08-01 공개 게시·검증 완료
-- 공개 URL: https://aiarchitect.tistory.com/48
-- 분류: `AI Agent · MCP`
-- 권장 제목: `원격 MCP 서버를 여러 클라이언트에 붙이기: URL 중심 OAuth 디스커버리와 등록 패턴`
-- 검색 설명: `원격 MCP 서버(Streamable HTTP)를 Codex·Claude Code·claude.ai·Claude Desktop·ChatGPT 등 여러 클라이언트에 등록하는 방법. URL 하나만 넣으면 표준 OAuth 2.1 디스커버리(RFC 9728·8414·PKCE)가 나머지를 처리하는 이유와, 설정 파일·커스텀 커넥터·stdio 브리지 세 가지 등록 형태, 원격 파일 업로드 3콜 티켓, 도구 카탈로그·재시도 코드 같은 운영 공통을 정리합니다.`
-- 권장 태그: `MCP`, `OAuth 2.1`, `PKCE`, `AI Agent`, `Claude Code`, `커넥터`, `RFC 9728`
-
----
-
 # 원격 MCP 서버를 여러 클라이언트에 붙이기: URL 중심 OAuth 디스커버리와 등록 패턴
 
 내부 기능을 **원격 MCP 서버 (Remote MCP Server, Streamable HTTP)** 로 노출하면, 하나의 서버를 여러 AI 클라이언트가 자연어로 함께 쓸 수 있습니다. Codex, Claude Code, claude.ai, Claude Desktop, ChatGPT — 클라이언트는 제각각이지만 서버는 하나입니다(같은 제품이라도 웹·데스크톱 표면이 커넥터를 공유하기도 합니다). 그런데 막상 붙이려고 하면 "클라이언트마다 등록 방법이 다른데?"라는 벽에 부딪힙니다.

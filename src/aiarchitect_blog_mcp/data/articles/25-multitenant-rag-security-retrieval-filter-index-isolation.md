@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-25`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `보안`
-- 공개 URL: `https://aiarchitect.tistory.com/25`
-- 권장 제목: `멀티테넌트 RAG 보안: 수집 권한·Retrieval Filter·Index 격리`
-- 검색 설명: `멀티테넌트 RAG에서 원본 문서의 ACL을 Chunk와 Vector에 전파하고, 인증된 Tenant Context로 Retrieval Filter를 강제하며 Index·Cache·Citation·삭제까지 권한 경계를 유지하는 방법을 정리합니다.`
-- 권장 태그: `RAG 보안`, `멀티테넌트`, `Retrieval Filter`, `Vector Database`, `ACL`, `Index 격리`, `검색 권한`, `AI Agent 보안`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 멀티테넌트 RAG 보안: 수집 권한·Retrieval Filter·Index 격리
 
 RAG (Retrieval-Augmented Generation, 검색 증강 생성)는 사용자의 질문과 관련된 문서를 찾아 모델 Context에 넣습니다.

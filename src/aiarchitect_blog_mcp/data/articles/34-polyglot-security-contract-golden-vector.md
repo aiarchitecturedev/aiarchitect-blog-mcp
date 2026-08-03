@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-34`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-31 공개 전환 및 공개 페이지 검증 완료
-- 공개 URL: https://aiarchitect.tistory.com/34
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `폴리글랏 보안 계약 검증: Java↔Python Golden Vector와 Canonical Byte`
-- 검색 설명: `Java Security Gateway와 Python AI Orchestrator처럼 언어가 다른 서비스 사이의 토큰·JWKS·정규 바이트 보안 계약을 골든 벡터로 교차 검증하는 방법을 정리합니다. 직렬화·인코딩·시간·정렬 차이가 만드는 보안 불일치와 계약 테스트, 키 롤오버 운영까지 다룹니다.`
-- 권장 태그: `JWT`, `JWKS`, `RS256`, `Golden Vector`, `Canonical`, `Contract Test`, `Java Python`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 폴리글랏 보안 계약 검증: Java↔Python Golden Vector와 Canonical Byte
 
 기업용 AI 백엔드는 **한 언어로만 만들어지지 않는 경우가 많습니다.** 인증과 테넌트 정책을 담당하는 Java 17 / Spring Boot 기반 Security Gateway가 앞에 있고, Agent·RAG·모델 조율을 담당하는 Python / FastAPI 기반 Orchestrator가 뒤에 있는 구조를 종종 사용합니다. 이 두 서비스의 책임을 어떻게 나눌지는 이미 별도 글([Java Security Gateway와 Python AI Orchestrator의 책임 분리](https://aiarchitect.tistory.com/5))에서 다뤘습니다.

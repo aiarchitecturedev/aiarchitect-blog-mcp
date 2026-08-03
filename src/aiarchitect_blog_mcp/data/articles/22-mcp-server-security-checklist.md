@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-22`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `보안`
-- 공개 URL: `https://aiarchitect.tistory.com/22`
-- 권장 제목: `MCP Server 보안 체크리스트: OAuth·Scope·Origin·SSRF·Rate Limit`
-- 검색 설명: `원격 MCP Server를 운영할 때 OAuth Token과 Audience, 최소 Scope, Origin과 DNS Rebinding, SSRF, Tool별 Rate Limit 및 상태 핸들 인가를 배포 전 시험 항목으로 정리합니다.`
-- 권장 태그: `MCP 보안`, `MCP Server`, `OAuth 2.1`, `SSRF`, `Rate Limit`, `Origin`, `API Security`, `AI Agent 보안`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # MCP Server 보안 체크리스트: OAuth·Scope·Origin·SSRF·Rate Limit
 
 MCP Server가 `tools/list`와 `tools/call`에 정상 응답한다고 운영 준비가 끝난 것은 아닙니다.

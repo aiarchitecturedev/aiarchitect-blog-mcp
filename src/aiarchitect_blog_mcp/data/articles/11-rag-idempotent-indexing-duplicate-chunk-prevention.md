@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-11`
-- 상태: 공개 완료
-- Tistory 상태: 공개 게시·공개 페이지 검증 완료
-- 공개 URL: `https://aiarchitect.tistory.com/9`
-- 분류: `RAG · LLM 시스템`
-- 권장 제목: `RAG 운영 설계: 멱등 인덱싱 (Idempotent Indexing)과 중복 Chunk 방지`
-- 검색 설명: `RAG 수집 작업이 재시도되거나 원문·Chunker·Embedding 모델이 바뀌어도 중복 Vector와 오래된 Chunk가 남지 않도록 원본 키 (Source Key), 원본 버전 (Revision), 내용 해시 (Content Hash), 결정적 Chunk ID와 활성 버전을 설계하는 방법을 정리합니다.`
-- 권장 태그: `RAG`, `Idempotent Indexing`, `Vector Database`, `Chunking`, `Embedding`, `Content Hash`, `데이터 파이프라인`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/02-meeting-knowledge-automation.svg`
-
----
-
 # RAG 운영 설계: 멱등 인덱싱 (Idempotent Indexing)과 중복 Chunk 방지
 
 검색 증강 생성 (Retrieval-Augmented Generation, RAG) 데모에서는 문서를 읽고 검색 단위 조각 (Chunk)으로 나눈 뒤 벡터 표현 (Embedding)을 저장하면 작업이 끝난 것처럼 보입니다.

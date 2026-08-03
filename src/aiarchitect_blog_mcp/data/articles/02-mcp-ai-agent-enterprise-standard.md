@@ -1,14 +1,3 @@
-# Tistory 기술자료 초안
-
-- 상태: 검토용 초안 — 공개 게시 전 Boss 승인 필요
-- 분류: `AI Agent · MCP`
-- 작성 기준: MCP `2026-07-28` 사양
-- 권장 제목: `MCP란 무엇인가? AI Agent와 기업 시스템을 연결하는 표준 구조`
-- 검색 설명: `MCP의 Host·Client·Server 구조와 Tools·Resources·Prompts의 차이, REST API와의 관계, 기업 환경에서 반드시 고려해야 할 보안·권한·감사 설계 원칙을 정리합니다.`
-- 권장 태그: `MCP`, `Model Context Protocol`, `AI Agent`, `AI 에이전트`, `엔터프라이즈 AI`, `시스템 통합`, `LLM`
-
----
-
 # MCP란 무엇인가? AI Agent와 기업 시스템을 연결하는 표준 구조
 
 생성형 AI가 문장을 잘 만드는 것과 실제 업무를 처리하는 것은 다른 문제입니다.

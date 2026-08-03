@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-27`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-30 공개 게시 및 공개 페이지 검증 완료
-- 분류: `보안`
-- 공개 URL: `https://aiarchitect.tistory.com/27`
-- 권장 제목: `AI Agent 감사 로그 설계: 추적성·개인정보 Masking과 보존 기간`
-- 검색 설명: `AI Agent의 사용자 요청, 정책 결정, 승인, Tool 실행과 실제 Side Effect를 하나의 감사 증거로 연결하고 개인정보를 최소화하면서 무결성·보존·탐지·사고 대응까지 운영하는 방법을 정리합니다.`
-- 권장 태그: `AI Agent 보안`, `감사 로그`, `Audit Trail`, `개인정보 Masking`, `OpenTelemetry`, `SIEM`, `사고 대응`, `보안 관측성`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/04-mcp-enterprise-integration.svg`
-
----
-
 # AI Agent 감사 로그 설계: 추적성·개인정보 Masking과 보존 기간
 
 AI Agent에게 다음과 같이 요청했다고 가정해 보겠습니다.

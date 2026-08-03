@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-05`
-- 상태: 공개 완료
-- 공개 URL: https://aiarchitect.tistory.com/5
-- Tistory 상태: 공개 게시·공개 페이지 검증 완료
-- 분류: `엔터프라이즈 아키텍처`
-- 권장 제목: `기업용 AI 백엔드 설계: Java Security Gateway와 Python AI Orchestrator의 책임 분리`
-- 검색 설명: `기업용 AI 백엔드에서 Java Security Gateway와 Python AI Orchestrator를 분리하는 기준, 내부 토큰 계약, REST·SSE·파일 전달 경계와 권한 재검증 원칙을 정리합니다.`
-- 권장 태그: `엔터프라이즈 아키텍처`, `Java`, `Spring Boot`, `Python`, `FastAPI`, `AI Agent`, `Security Gateway`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/01-enterprise-ai-reference-architecture.svg`
-
----
-
 # 기업용 AI 백엔드 설계: Java Security Gateway와 Python AI Orchestrator의 책임 분리
 
 기업용 AI 서비스를 설계할 때 자주 나오는 질문이 있습니다.

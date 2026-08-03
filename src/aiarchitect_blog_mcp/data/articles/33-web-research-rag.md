@@ -1,17 +1,3 @@
-# Tistory 기술자료 초안
-
-- 문서 ID: `BLOG-33`
-- 상태: 공개 완료
-- Tistory 상태: 2026-07-31 공개 전환 및 공개 페이지 검증 완료
-- 공개 URL: https://aiarchitect.tistory.com/33
-- 분류: `RAG · LLM 시스템`
-- 권장 제목: `웹 리서치 RAG: 공개 웹 문서 추출·청킹·Semantic Search를 MCP로 제공하기`
-- 검색 설명: `공개 웹 문서를 크롤링·추출·청킹·임베딩해 ChromaDB에 인덱싱하고 Semantic Search를 MCP 도구로 노출하는 웹 리서치 RAG의 설계. robots.txt·rate limit·크롤러 보안, 검색 계약, 신선도, 저작권, 그리고 크롤 콘텐츠를 신뢰할 수 없는 입력으로 다루는 인젝션 경계를 다룹니다.`
-- 권장 태그: `RAG`, `Web Research`, `MCP`, `Semantic Search`, `Embedding`, `ChromaDB`, `AI Agent`
-- 권장 대표 이미지: `portfolio/architecture-diagrams/02-meeting-knowledge-automation.svg`
-
----
-
 # 웹 리서치 RAG: 공개 웹 문서 추출·청킹·Semantic Search를 MCP로 제공하기
 
 AI 에이전트에게 지식을 주는 방법은 하나가 아닙니다. 사내 회의 녹취를 검색 가능한 지식으로 만드는 파이프라인은 이전 글에서 다뤘습니다([회의 오디오 → RAG](https://aiarchitect.tistory.com/4)). 이 글은 성격이 전혀 다른 지식원, 즉 **공개 웹 문서**를 대상으로 한 검색 증강 생성 (Retrieval-Augmented Generation, RAG)을 다룹니다.
