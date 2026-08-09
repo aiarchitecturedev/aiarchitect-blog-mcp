@@ -1,15 +1,17 @@
 [project]
 name = "aiarchitect-blog-mcp"
-version = "0.1.0"
-description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 49 articles — as searchable tools for AI agents."
+version = "0.1.1"
+description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 69 articles — as searchable tools for AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+# 코드는 MIT, 번들된 글 본문은 별도 커스텀 라이선스(LicenseRef). 자세한 조건은 LICENSE / LICENSE-ARTICLES.
+license = "MIT AND LicenseRef-AIArchitect-Articles"
+license-files = ["LICENSE", "LICENSE-ARTICLES"]
 authors = [{ name = "AI아키텍트" }]
 keywords = ["mcp", "model-context-protocol", "blog", "ai-architecture", "rag", "ai-agent"]
+# PEP 639: SPDX license 표현식을 쓰므로 License classifier는 넣지 않는다(중복·거부 방지).
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 # 상한(<4)으로 비호환 major 자동 선택을 차단. 검증 기준은 uv.lock의 FastMCP 3.x.
@@ -32,9 +34,10 @@ packages = ["src/aiarchitect_blog_mcp"]
 # data/(articles_index.json + articles/*.md)는 패키지 하위라 기본 포함됨.
 
 [tool.hatch.build.targets.sdist]
-# 배포 표면 최소화: 익명성 가드 테스트(내부 마커를 리터럴로 담음)와 로컬 무시 파일은
-# sdist에 넣지 않는다. 테스트는 저장소에 남아 로컬/CI로 계속 실행된다.
-include = ["/src", "/scripts", "/README.md", "/LICENSE", "/pyproject.toml", "/uv.lock"]
+# 배포 표면 최소화: 테스트와 코퍼스 생성 스크립트(scripts/)는 sdist에 넣지 않는다.
+# scripts/build_index.py는 유지관리 전용 도구이며 sdist→wheel 빌드에 필요 없다.
+# 개인 식별자 denylist(.private-tokens)는 .gitignore·비추적이라 어차피 포함되지 않는다.
+include = ["/src", "/README.md", "/LICENSE", "/LICENSE-ARTICLES", "/pyproject.toml", "/uv.lock"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

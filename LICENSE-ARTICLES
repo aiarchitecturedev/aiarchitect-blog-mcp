@@ -1,0 +1,54 @@
+License for the bundled blog article texts
+===========================================
+
+SPDX identifier: LicenseRef-AIArchitect-Articles
+
+This license applies ONLY to the bundled blog article texts distributed under
+`src/aiarchitect_blog_mcp/data/articles/` (and their representation inside
+`src/aiarchitect_blog_mcp/data/articles_index.json`). The SOURCE CODE of
+aiarchitect-blog-mcp is licensed separately under the MIT License (see LICENSE).
+
+Copyright and ownership
+-----------------------
+The article texts are Copyright (c) AI아키텍트 (https://aiarchitect.tistory.com/).
+They are the publicly published blog articles of AI아키텍트, re-exposed by this
+software for convenient search and reading by AI agents. All rights to the
+article texts are reserved by the original author except as expressly granted
+below.
+
+Grant
+-----
+Permission is granted, free of charge, to any person obtaining a copy of this
+software package, to:
+
+  1. redistribute the article texts verbatim ONLY as an unmodified part of the
+     aiarchitect-blog-mcp software package (e.g. via PyPI, mirrors, or vendored
+     dependencies), retaining this notice; and
+  2. use the article texts as served by this software — that is, to read,
+     search, index, and display them for informational purposes, including
+     when operating this software as an MCP server for AI agents.
+
+Restrictions
+------------
+Except as stated in the Grant above, no other rights are granted. In
+particular, without the prior written permission of the original author you may
+NOT:
+
+  - redistribute the article texts detached from this software package;
+  - republish, sell, or sublicense the article texts as standalone content;
+  - create and distribute modified or derivative versions of the article texts;
+  - remove or alter authorship, copyright, or source-URL attribution.
+
+Each bundled article retains a canonical source URL on
+https://aiarchitect.tistory.com/ . That page is the authoritative version.
+
+Attribution
+-----------
+Redistributions that include the article texts must retain this notice and the
+per-article source URLs.
+
+No warranty
+-----------
+THE ARTICLE TEXTS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. For any use beyond the Grant above, contact the author via
+https://aiarchitect.tistory.com/ .

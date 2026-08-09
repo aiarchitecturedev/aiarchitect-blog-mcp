@@ -751,7 +751,7 @@ if stale_ids:
 
 에이전트를 더 많이 붙일수록, 각 에이전트가 **할 수 없는 일** 의 목록이 시스템의 신뢰성을 결정합니다.
 
-## 참고 자료
+## 26. 참고 자료
 
 - [Model Context Protocol: Security Best Practices (2026-07-28)](https://modelcontextprotocol.io/docs/tutorials/security/security_best_practices)
 - [Model Context Protocol: Authorization Specification (2026-07-28)](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)

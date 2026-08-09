@@ -591,7 +591,7 @@ OWASP도 분리(Segregation) 하나에 기대지 말고, **입력·출력 검사
 
 ---
 
-## 공식 참고 자료
+## 21. 공식 참고 자료
 
 - Model Context Protocol — Server Tools 사양(현재 버전, 전체 JSON Schema 2020-12·outputSchema·structuredContent·untrusted annotations): https://modelcontextprotocol.io/specification/2026-07-28/server/tools
 - Model Context Protocol — Schema Reference(현재 버전): https://modelcontextprotocol.io/specification/2026-07-28/schema

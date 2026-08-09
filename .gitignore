@@ -6,3 +6,6 @@ dist/
 build/
 *.egg-info/
 .DS_Store
+
+# 익명성 가드 denylist(개인 식별자 리터럴) — 절대 커밋 금지
+.private-tokens

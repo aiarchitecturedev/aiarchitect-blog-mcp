@@ -4,6 +4,12 @@
     python scripts/build_index.py
 """
 
+import json
+from collections import Counter
+from pathlib import Path
+
+import pytest
+
 from aiarchitect_blog_mcp.corpus import (
     BLOG_HOME,
     DATA_DIR,
@@ -16,6 +22,34 @@ from aiarchitect_blog_mcp.corpus import (
     is_published,
     parse_metadata,
 )
+
+EXPECTED_IDS = [f"{number:02d}" for number in range(1, 70)]
+EXPECTED_CATEGORY_COUNTS = {
+    "보안": 19,
+    "엔터프라이즈 아키텍처": 14,
+    "개발 도구 · 자동화": 11,
+    "AI Agent · MCP": 8,
+    "기술 인사이트": 6,
+    "프로젝트 문제 해결": 6,
+    "RAG · LLM 시스템": 5,
+}
+def _load_private_tokens() -> tuple[str, ...]:
+    """비배포 로컬 denylist(.private-tokens)에서 토큰을 로드한다.
+
+    개인 식별자 리터럴을 tracked 소스에 남기지 않기 위해 외부 파일에서 읽는다(release #16).
+    파일이 없으면 빈 튜플(관련 테스트는 skip).
+    """
+    path = Path(__file__).parents[1] / ".private-tokens"
+    if not path.exists():
+        return ()
+    return tuple(
+        s.lower()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if (s := line.strip()) and not s.startswith("#")
+    )
+
+
+FORBIDDEN_PRIVATE_TOKENS = _load_private_tokens()
 
 
 # --- 순수 파서 테스트(데이터 불필요) ---
@@ -101,16 +135,51 @@ def test_is_published_rec_strict_fail_closed():
     assert not rec_is({"url": "https://aiarchitect.tistory.com/"})                      # 홈, 플래그 없음
 
 
-# --- 코퍼스(빌드 산출물) 골든 테스트 ---
-
-def test_corpus_count_is_49():
-    assert len(Corpus().records) == 49
+# --- 코퍼스(69편 빌드 산출물) 골든 테스트 ---
 
 
-def test_seven_categories_sum_to_49():
-    cats = Corpus().categories()
-    assert len(cats) == 7
-    assert sum(c["count"] for c in cats) == 49
+def test_index_corpus_and_bundle_have_the_same_expected_69_articles():
+    index = json.loads((DATA_DIR / "articles_index.json").read_text(encoding="utf-8"))
+    index_records = index["articles"]
+    corpus = Corpus()
+    bundle_files = sorted((DATA_DIR / "articles").glob("*.md"))
+
+    assert index["count"] == 69
+    assert len(index_records) == 69
+    assert [record["id"] for record in index_records] == EXPECTED_IDS
+    assert [record["id"] for record in corpus.records] == EXPECTED_IDS
+    assert [record["file"] for record in index_records] == [path.name for path in bundle_files]
+    assert len(bundle_files) == 69
+
+
+def test_seven_categories_match_target_counts():
+    actual = Counter(record["category"] for record in Corpus().records)
+    assert actual == Counter(EXPECTED_CATEGORY_COUNTS)
+    assert sum(actual.values()) == 69
+
+
+def test_ids_and_official_urls_are_unique_and_complete():
+    corpus = Corpus()
+    ids = [record["id"] for record in corpus.records]
+    urls = [record["url"] for record in corpus.records]
+
+    assert ids == EXPECTED_IDS
+    assert len(ids) == len(set(ids)) == 69
+    assert len(urls) == len(set(urls)) == 69
+    assert all(is_published(url) for url in urls)
+    assert corpus.excluded_ids == []
+
+
+def test_default_pagination_combines_50_and_19_into_69():
+    corpus = Corpus()
+    first_page = corpus.list_articles()
+    second_page = corpus.list_articles(offset=50)
+    combined_ids = [record["id"] for record in first_page + second_page]
+
+    assert len(first_page) == 50
+    assert len(second_page) == 19
+    assert combined_ids == EXPECTED_IDS
+    assert len(set(combined_ids)) == 69
 
 
 def test_every_record_has_title_category_url():
@@ -128,42 +197,51 @@ def test_fail_closed_no_home_fallback_served():
     assert c.excluded_ids == [], f"제외 대상이 남아 있음: {c.excluded_ids}"
 
 
-def test_bundled_articles_have_no_editorial_frontmatter():
-    """번들 원본 49편에 내부 편집 헤더(상태·Boss 승인·권장*·내부 경로)가 없어야 한다."""
-    markers = [
-        "# Tistory 기술자료 초안", "검토용 초안", "공개 게시 전 Boss", "Boss 게시 승인",
-        "권장 제목", "권장 태그", "권장 대표 이미지", "portfolio/architecture-diagrams",
-        "도식 정책", "공개 URL: `미발급`",
-    ]
+def test_bundled_articles_start_with_h1_and_have_no_editorial_metadata():
+    """번들 원본은 실제 H1로 시작하고 파서가 읽을 편집 메타데이터가 없어야 한다."""
     files = sorted((DATA_DIR / "articles").glob("*.md"))
-    assert len(files) == 49
+    assert len(files) == 69
     for f in files:
         text = f.read_text(encoding="utf-8")
         assert text.startswith("# "), f"{f.name}: 실제 H1로 시작하지 않음"
-        for m in markers:
-            assert m not in text, f"{f.name}: 내부 편집 마커 노출 → {m!r}"
+        assert parse_metadata(text) == {}, f"{f.name}: 편집 메타데이터가 남아 있음"
 
 
-def test_no_internal_repo_paths_in_bundled_data():
-    """번들 인덱스·본문에 내부 저장소 경로 식별자가 없어야 한다(공개 배포 안전)."""
-    import json
-    forbidden = ["github-portfolio-public", "aiarchitect/blogs"]
+def test_no_exact_private_identifiers_in_bundled_data():
+    """정확한 비공개 토큰을 차단하되 일반적인 `/Users/` 예시는 허용한다."""
+    if not FORBIDDEN_PRIVATE_TOKENS:
+        pytest.skip(".private-tokens 미존재 — 정확 토큰 검사 생략(유지관리자 로컬 정책 파일 필요)")
     idx = json.loads((DATA_DIR / "articles_index.json").read_text(encoding="utf-8"))
-    for f in forbidden:
-        assert f not in json.dumps(idx, ensure_ascii=False), f"인덱스에 내부 경로: {f}"
+    index_text = json.dumps(idx, ensure_ascii=False).lower()
+    for token in FORBIDDEN_PRIVATE_TOKENS:
+        assert token not in index_text, f"인덱스에 비공개 식별자: {token}"
     for p in sorted((DATA_DIR / "articles").glob("*.md")):
-        text = p.read_text(encoding="utf-8")
-        for f in forbidden:
-            assert f not in text, f"{p.name}: 내부 경로 노출 → {f}"
+        text = p.read_text(encoding="utf-8").lower()
+        for token in FORBIDDEN_PRIVATE_TOKENS:
+            assert token not in text, f"{p.name}: 비공개 식별자 노출 → {token}"
 
 
-def test_rendered_articles_have_no_internal_markers():
-    """서빙(render_article) 결과에도 내부 편집 마커가 없어야 한다."""
-    c = Corpus()
-    for r in c.records:
-        md = c.render_article(r["id"])
-        for m in ("Boss", "검토용 초안", "portfolio/architecture-diagrams", "권장 대표 이미지"):
-            assert m not in md, f"{r['id']}: 렌더 결과에 내부 마커 → {m!r}"
+def test_private_tokens_not_reintroduced_as_literals_in_tracked_sources():
+    """externalized denylist가 tracked 소스에 리터럴로 재유입되지 않았는지 회귀 검증.
+
+    개인 식별자는 오직 비추적 `.private-tokens`에만 존재해야 한다.
+    """
+    if not FORBIDDEN_PRIVATE_TOKENS:
+        pytest.skip(".private-tokens 미존재")
+    root = Path(__file__).parents[1]
+    targets = [
+        root / "scripts" / "build_index.py",
+        root / "tests" / "test_corpus.py",
+        root / "tests" / "test_build_index.py",
+        root / "pyproject.toml",
+        root / "README.md",
+    ]
+    for f in targets:
+        if not f.exists():
+            continue
+        text = f.read_text(encoding="utf-8").lower()
+        for token in FORBIDDEN_PRIVATE_TOKENS:
+            assert token not in text, f"{f.name}: denylist 토큰 리터럴 재유입 → {token}"
 
 
 def test_list_articles_clamps_negative_and_oversized():
@@ -188,10 +266,24 @@ def test_search_finds_relevant_article():
     assert all("url" in r and "snippet" in r for r in res)
 
 
-def test_get_article_includes_backlink_twice():
-    md = Corpus().render_article("09")
-    assert md.count("aiarchitect.tistory.com") >= 2  # 상단 + 하단 백링크
-    assert md.startswith("# ")
+def test_search_body_and_backlinks_for_new_corpus_articles():
+    corpus = Corpus()
+    queries = {
+        "50": "Log Forging",
+        "61": "출처 링크",
+        "69": "익명성 게이트",
+    }
+    by_id = {record["id"]: record for record in corpus.records}
+
+    for article_id, query in queries.items():
+        results = corpus.search(query, limit=50)
+        assert article_id in {record["id"] for record in results}, (article_id, query)
+
+        rendered = corpus.render_article(article_id)
+        article_url = by_id[article_id]["url"]
+        assert rendered.startswith("# ")
+        assert article_url in rendered
+        assert rendered.count(article_url) >= 2  # 상단 원문 + 하단 백링크
 
 
 def test_get_article_unknown_id_is_graceful():

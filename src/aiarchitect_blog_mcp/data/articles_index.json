@@ -1,6 +1,6 @@
 {
   "source": "https://aiarchitect.tistory.com/",
-  "count": 49,
+  "count": 69,
   "articles": [
     {
       "id": "01",
@@ -17,8 +17,8 @@
         "엔터프라이즈아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/1",
-      "file": "01-ai-architecture-technical-blog-introduction.md",
-      "published": true
+      "published": true,
+      "file": "01-ai-architecture-technical-blog-introduction.md"
     },
     {
       "id": "02",
@@ -36,8 +36,8 @@
         "LLM"
       ],
       "url": "https://aiarchitect.tistory.com/2",
-      "file": "02-mcp-ai-agent-enterprise-standard.md",
-      "published": true
+      "published": true,
+      "file": "02-mcp-ai-agent-enterprise-standard.md"
     },
     {
       "id": "03",
@@ -55,8 +55,8 @@
         "엔터프라이즈 AI"
       ],
       "url": "https://aiarchitect.tistory.com/3",
-      "file": "03-mcp-tool-design-principles.md",
-      "published": true
+      "published": true,
+      "file": "03-mcp-tool-design-principles.md"
     },
     {
       "id": "04",
@@ -74,8 +74,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/4",
-      "file": "04-meeting-audio-to-rag-pipeline.md",
-      "published": true
+      "published": true,
+      "file": "04-meeting-audio-to-rag-pipeline.md"
     },
     {
       "id": "05",
@@ -93,8 +93,8 @@
         "Security Gateway"
       ],
       "url": "https://aiarchitect.tistory.com/5",
-      "file": "05-java-security-gateway-python-ai-orchestrator.md",
-      "published": true
+      "published": true,
+      "file": "05-java-security-gateway-python-ai-orchestrator.md"
     },
     {
       "id": "06",
@@ -112,8 +112,8 @@
         "문제 해결"
       ],
       "url": "https://aiarchitect.tistory.com/6",
-      "file": "06-webrtc-ice-mdns-nat-turn-troubleshooting.md",
-      "published": true
+      "published": true,
+      "file": "06-webrtc-ice-mdns-nat-turn-troubleshooting.md"
     },
     {
       "id": "07",
@@ -131,8 +131,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/7",
-      "file": "07-recoverable-ai-agent-workflow.md",
-      "published": true
+      "published": true,
+      "file": "07-recoverable-ai-agent-workflow.md"
     },
     {
       "id": "08",
@@ -150,8 +150,8 @@
         "대용량 파일"
       ],
       "url": "https://aiarchitect.tistory.com/10",
-      "file": "08-remote-mcp-upload-ticket-pattern.md",
-      "published": true
+      "published": true,
+      "file": "08-remote-mcp-upload-ticket-pattern.md"
     },
     {
       "id": "09",
@@ -169,8 +169,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/11",
-      "file": "09-mcp-oauth21-discovery-pkce-resource-server.md",
-      "published": true
+      "published": true,
+      "file": "09-mcp-oauth21-discovery-pkce-resource-server.md"
     },
     {
       "id": "10",
@@ -188,8 +188,8 @@
         "환각 억제"
       ],
       "url": "https://aiarchitect.tistory.com/12",
-      "file": "10-realtime-stt-resampling-partial-final-hallucination.md",
-      "published": true
+      "published": true,
+      "file": "10-realtime-stt-resampling-partial-final-hallucination.md"
     },
     {
       "id": "11",
@@ -207,8 +207,8 @@
         "데이터 파이프라인"
       ],
       "url": "https://aiarchitect.tistory.com/9",
-      "file": "11-rag-idempotent-indexing-duplicate-chunk-prevention.md",
-      "published": true
+      "published": true,
+      "file": "11-rag-idempotent-indexing-duplicate-chunk-prevention.md"
     },
     {
       "id": "12",
@@ -226,8 +226,8 @@
         "Tool Calling"
       ],
       "url": "https://aiarchitect.tistory.com/13",
-      "file": "12-replaceable-gpt-claude-gemini-agent-core.md",
-      "published": true
+      "published": true,
+      "file": "12-replaceable-gpt-claude-gemini-agent-core.md"
     },
     {
       "id": "13",
@@ -245,8 +245,8 @@
         "JSON Schema"
       ],
       "url": "https://aiarchitect.tistory.com/14",
-      "file": "13-natural-language-mcp-tool-call-integration-testing.md",
-      "published": true
+      "published": true,
+      "file": "13-natural-language-mcp-tool-call-integration-testing.md"
     },
     {
       "id": "14",
@@ -264,8 +264,8 @@
         "엔터프라이즈 AI"
       ],
       "url": "https://aiarchitect.tistory.com/15",
-      "file": "14-why-ai-poc-stalls-before-production.md",
-      "published": true
+      "published": true,
+      "file": "14-why-ai-poc-stalls-before-production.md"
     },
     {
       "id": "15",
@@ -283,8 +283,8 @@
         "Tool Calling"
       ],
       "url": "https://aiarchitect.tistory.com/16",
-      "file": "15-ai-agent-action-approval-policy.md",
-      "published": true
+      "published": true,
+      "file": "15-ai-agent-action-approval-policy.md"
     },
     {
       "id": "16",
@@ -303,8 +303,8 @@
         "멱등성"
       ],
       "url": "https://aiarchitect.tistory.com/17",
-      "file": "16-stt-success-ai-summary-failure-diagnosis.md",
-      "published": true
+      "published": true,
+      "file": "16-stt-success-ai-summary-failure-diagnosis.md"
     },
     {
       "id": "17",
@@ -323,8 +323,8 @@
         "CloudEvents"
       ],
       "url": "https://aiarchitect.tistory.com/18",
-      "file": "17-async-ai-summary-readiness-polling-events.md",
-      "published": true
+      "published": true,
+      "file": "17-async-ai-summary-readiness-polling-events.md"
     },
     {
       "id": "18",
@@ -343,8 +343,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/19",
-      "file": "18-enterprise-ai-agent-authorization-audit-logs.md",
-      "published": true
+      "published": true,
+      "file": "18-enterprise-ai-agent-authorization-audit-logs.md"
     },
     {
       "id": "19",
@@ -363,8 +363,8 @@
         "MLOps"
       ],
       "url": "https://aiarchitect.tistory.com/20",
-      "file": "19-ai-project-success-criteria-acceptance-gates.md",
-      "published": true
+      "published": true,
+      "file": "19-ai-project-success-criteria-acceptance-gates.md"
     },
     {
       "id": "20",
@@ -383,8 +383,8 @@
         "AI 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/21",
-      "file": "20-ai-project-estimate-beyond-model-api-cost.md",
-      "published": true
+      "published": true,
+      "file": "20-ai-project-estimate-beyond-model-api-cost.md"
     },
     {
       "id": "21",
@@ -402,8 +402,8 @@
         "보안 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/8",
-      "file": "21-ai-agent-security-boundaries.md",
-      "published": true
+      "published": true,
+      "file": "21-ai-agent-security-boundaries.md"
     },
     {
       "id": "22",
@@ -422,8 +422,8 @@
         "AI Agent 보안"
       ],
       "url": "https://aiarchitect.tistory.com/22",
-      "file": "22-mcp-server-security-checklist.md",
-      "published": true
+      "published": true,
+      "file": "22-mcp-server-security-checklist.md"
     },
     {
       "id": "23",
@@ -442,8 +442,8 @@
         "LLM 보안"
       ],
       "url": "https://aiarchitect.tistory.com/23",
-      "file": "23-prompt-injection-trust-boundaries-tool-allowlist.md",
-      "published": true
+      "published": true,
+      "file": "23-prompt-injection-trust-boundaries-tool-allowlist.md"
     },
     {
       "id": "24",
@@ -462,8 +462,8 @@
         "자격 증명 관리"
       ],
       "url": "https://aiarchitect.tistory.com/24",
-      "file": "24-ai-agent-credential-broker-secret-masking.md",
-      "published": true
+      "published": true,
+      "file": "24-ai-agent-credential-broker-secret-masking.md"
     },
     {
       "id": "25",
@@ -482,8 +482,8 @@
         "AI Agent 보안"
       ],
       "url": "https://aiarchitect.tistory.com/25",
-      "file": "25-multitenant-rag-security-retrieval-filter-index-isolation.md",
-      "published": true
+      "published": true,
+      "file": "25-multitenant-rag-security-retrieval-filter-index-isolation.md"
     },
     {
       "id": "26",
@@ -502,8 +502,8 @@
         "클라우드 보안"
       ],
       "url": "https://aiarchitect.tistory.com/26",
-      "file": "26-secure-file-upload-presigned-url-quarantine-malware-zip-bomb.md",
-      "published": true
+      "published": true,
+      "file": "26-secure-file-upload-presigned-url-quarantine-malware-zip-bomb.md"
     },
     {
       "id": "27",
@@ -522,8 +522,8 @@
         "보안 관측성"
       ],
       "url": "https://aiarchitect.tistory.com/27",
-      "file": "27-ai-agent-audit-log-traceability-pii-masking-retention.md",
-      "published": true
+      "published": true,
+      "file": "27-ai-agent-audit-log-traceability-pii-masking-retention.md"
     },
     {
       "id": "28",
@@ -541,8 +541,8 @@
         "한국어"
       ],
       "url": "https://aiarchitect.tistory.com/28",
-      "file": "28-stt-accuracy-correction-domain-adaptation.md",
-      "published": true
+      "published": true,
+      "file": "28-stt-accuracy-correction-domain-adaptation.md"
     },
     {
       "id": "29",
@@ -560,8 +560,8 @@
         "DGX Spark"
       ],
       "url": "https://aiarchitect.tistory.com/29",
-      "file": "29-cloud-vs-local-llm-deployment-strategy.md",
-      "published": true
+      "published": true,
+      "file": "29-cloud-vs-local-llm-deployment-strategy.md"
     },
     {
       "id": "30",
@@ -579,8 +579,8 @@
         "WebRTC"
       ],
       "url": "https://aiarchitect.tistory.com/30",
-      "file": "30-speaker-diarization-design.md",
-      "published": true
+      "published": true,
+      "file": "30-speaker-diarization-design.md"
     },
     {
       "id": "31",
@@ -598,8 +598,8 @@
         "Orchestration"
       ],
       "url": "https://aiarchitect.tistory.com/31",
-      "file": "31-message-bus-multi-agent-collaboration.md",
-      "published": true
+      "published": true,
+      "file": "31-message-bus-multi-agent-collaboration.md"
     },
     {
       "id": "32",
@@ -617,8 +617,8 @@
         "Vector Search"
       ],
       "url": "https://aiarchitect.tistory.com/32",
-      "file": "32-korean-document-chunking.md",
-      "published": true
+      "published": true,
+      "file": "32-korean-document-chunking.md"
     },
     {
       "id": "33",
@@ -636,8 +636,8 @@
         "AI Agent"
       ],
       "url": "https://aiarchitect.tistory.com/33",
-      "file": "33-web-research-rag.md",
-      "published": true
+      "published": true,
+      "file": "33-web-research-rag.md"
     },
     {
       "id": "34",
@@ -655,8 +655,8 @@
         "Java Python"
       ],
       "url": "https://aiarchitect.tistory.com/34",
-      "file": "34-polyglot-security-contract-golden-vector.md",
-      "published": true
+      "published": true,
+      "file": "34-polyglot-security-contract-golden-vector.md"
     },
     {
       "id": "35",
@@ -674,8 +674,8 @@
         "개인정보"
       ],
       "url": "https://aiarchitect.tistory.com/35",
-      "file": "35-issue-tracker-work-automation-reporting.md",
-      "published": true
+      "published": true,
+      "file": "35-issue-tracker-work-automation-reporting.md"
     },
     {
       "id": "36",
@@ -694,8 +694,8 @@
         "API 설계"
       ],
       "url": "https://aiarchitect.tistory.com/40",
-      "file": "36-multiplatform-sdk-architecture-design.md",
-      "published": true
+      "published": true,
+      "file": "36-multiplatform-sdk-architecture-design.md"
     },
     {
       "id": "37",
@@ -714,8 +714,8 @@
         "엔터프라이즈 아키텍처"
       ],
       "url": "https://aiarchitect.tistory.com/41",
-      "file": "37-java-server-sdk-design.md",
-      "published": true
+      "published": true,
+      "file": "37-java-server-sdk-design.md"
     },
     {
       "id": "38",
@@ -734,8 +734,8 @@
         "SDK 설계"
       ],
       "url": "https://aiarchitect.tistory.com/38",
-      "file": "38-spring-boot-starter-auto-configuration.md",
-      "published": true
+      "published": true,
+      "file": "38-spring-boot-starter-auto-configuration.md"
     },
     {
       "id": "39",
@@ -755,8 +755,8 @@
         "운영 안정성"
       ],
       "url": "https://aiarchitect.tistory.com/39",
-      "file": "39-server-sdk-resilience-auth-retry-idempotency.md",
-      "published": true
+      "published": true,
+      "file": "39-server-sdk-resilience-auth-retry-idempotency.md"
     },
     {
       "id": "40",
@@ -775,8 +775,8 @@
         "SDK 설계"
       ],
       "url": "https://aiarchitect.tistory.com/42",
-      "file": "40-android-kotlin-sdk-coroutines-lifecycle.md",
-      "published": true
+      "published": true,
+      "file": "40-android-kotlin-sdk-coroutines-lifecycle.md"
     },
     {
       "id": "41",
@@ -795,8 +795,8 @@
         "모바일 SDK"
       ],
       "url": "https://aiarchitect.tistory.com/43",
-      "file": "41-ios-swift-sdk-concurrency-lifecycle.md",
-      "published": true
+      "published": true,
+      "file": "41-ios-swift-sdk-concurrency-lifecycle.md"
     },
     {
       "id": "42",
@@ -815,8 +815,8 @@
         "프런트엔드"
       ],
       "url": "https://aiarchitect.tistory.com/44",
-      "file": "42-react-javascript-sdk-hooks-events.md",
-      "published": true
+      "published": true,
+      "file": "42-react-javascript-sdk-hooks-events.md"
     },
     {
       "id": "43",
@@ -835,8 +835,8 @@
         "적합성 테스트"
       ],
       "url": "https://aiarchitect.tistory.com/45",
-      "file": "43-cross-platform-sdk-api-error-contract.md",
-      "published": true
+      "published": true,
+      "file": "43-cross-platform-sdk-api-error-contract.md"
     },
     {
       "id": "44",
@@ -855,8 +855,8 @@
         "API 호환성"
       ],
       "url": "https://aiarchitect.tistory.com/46",
-      "file": "44-sdk-versioning-release-automation.md",
-      "published": true
+      "published": true,
+      "file": "44-sdk-versioning-release-automation.md"
     },
     {
       "id": "45",
@@ -875,8 +875,8 @@
         "BFF"
       ],
       "url": "https://aiarchitect.tistory.com/52",
-      "file": "45-end-to-end-multiplatform-sdk-example.md",
-      "published": true
+      "published": true,
+      "file": "45-end-to-end-multiplatform-sdk-example.md"
     },
     {
       "id": "46",
@@ -894,8 +894,8 @@
         "DevSecOps"
       ],
       "url": "https://aiarchitect.tistory.com/47",
-      "file": "46-ai-coding-agent-harness-plugin-guardrails.md",
-      "published": true
+      "published": true,
+      "file": "46-ai-coding-agent-harness-plugin-guardrails.md"
     },
     {
       "id": "47",
@@ -913,8 +913,8 @@
         "RFC 9728"
       ],
       "url": "https://aiarchitect.tistory.com/48",
-      "file": "47-remote-mcp-six-clients-oauth-discovery.md",
-      "published": true
+      "published": true,
+      "file": "47-remote-mcp-six-clients-oauth-discovery.md"
     },
     {
       "id": "48",
@@ -932,8 +932,8 @@
         "회귀 방지"
       ],
       "url": "https://aiarchitect.tistory.com/49",
-      "file": "48-golden-tests-for-deterministic-generators.md",
-      "published": true
+      "published": true,
+      "file": "48-golden-tests-for-deterministic-generators.md"
     },
     {
       "id": "49",
@@ -951,8 +951,402 @@
         "보안"
       ],
       "url": "https://aiarchitect.tistory.com/50",
-      "file": "49-ai-agent-secret-guard-leak-prevention.md",
-      "published": true
+      "published": true,
+      "file": "49-ai-agent-secret-guard-leak-prevention.md"
+    },
+    {
+      "id": "50",
+      "doc_id": "BLOG-50",
+      "title": "OWASP Top 10:2025로 시작하는 Secure Coding: SQL Injection·Brute Force·Log Forging 방어",
+      "category": "보안",
+      "description": "Java 21·Spring Boot 3 예제로 SQL Injection, Brute Force와 Log Forging의 취약 코드·안전한 구현·자동화 테스트·운영 경보를 OWASP Top 10:2025 기준으로 설명합니다.",
+      "tags": [
+        "Secure Coding",
+        "OWASP Top 10",
+        "SQL Injection",
+        "Brute Force",
+        "Log Forging",
+        "Spring Security",
+        "Java",
+        "Spring Boot"
+      ],
+      "url": "https://aiarchitect.tistory.com/51",
+      "published": true,
+      "file": "50-owasp-secure-coding-sql-brute-force-log-forging.md"
+    },
+    {
+      "id": "51",
+      "doc_id": "BLOG-51",
+      "title": "Broken Access Control Secure Coding: IDOR·권한 우회·Tenant 격리",
+      "category": "보안",
+      "description": "Java 21·Spring Boot 3 예제로 IDOR, 수평·수직 권한 상승, Tenant 경계 누락과 Mass Assignment를 막는 객체 단위 인가·Query Scope·회귀 테스트를 설명합니다.",
+      "tags": [
+        "Broken Access Control",
+        "IDOR",
+        "Authorization",
+        "Multi Tenant",
+        "Spring Security",
+        "Secure Coding",
+        "Java",
+        "Spring Boot"
+      ],
+      "url": "https://aiarchitect.tistory.com/53",
+      "published": true,
+      "file": "51-broken-access-control-idor-tenant-isolation.md"
+    },
+    {
+      "id": "52",
+      "doc_id": "BLOG-52",
+      "title": "Security Misconfiguration Secure Coding: CORS·Debug·기본 계정·보안 Header",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A02를 기준으로 Spring Boot 3의 CORS Allowlist, 오류 응답, Actuator, 기본 계정, 보안 Header와 배포 설정 검증 방법을 설명합니다.",
+      "tags": [
+        "Security Misconfiguration",
+        "OWASP Top 10",
+        "CORS",
+        "Spring Security",
+        "Security Headers",
+        "Actuator",
+        "Secure Coding",
+        "Spring Boot"
+      ],
+      "url": "https://aiarchitect.tistory.com/54",
+      "published": true,
+      "file": "52-security-misconfiguration-cors-debug-default-accounts-headers.md"
+    },
+    {
+      "id": "53",
+      "doc_id": "BLOG-53",
+      "title": "Software Supply Chain Secure Coding: 의존성·SBOM·서명·배포 Gate",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A03를 기준으로 Java 21·Spring Boot 3 프로젝트의 Maven·Gradle 의존성 고정, SBOM, Artifact 서명, Provenance와 배포 Gate를 연결하는 방법을 설명합니다.",
+      "tags": [
+        "Software Supply Chain",
+        "OWASP Top 10",
+        "SBOM",
+        "SLSA",
+        "Sigstore",
+        "Maven",
+        "Gradle",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/55",
+      "published": true,
+      "file": "53-software-supply-chain-dependencies-sbom-signing-release-gate.md"
+    },
+    {
+      "id": "54",
+      "doc_id": "BLOG-54",
+      "title": "Cryptographic Failures Secure Coding: Password Hash·Token·Key 관리",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A04를 기준으로 Java 21·Spring Boot 3의 Password Hash, JWT·Refresh Token 검증, AES-GCM, Envelope Encryption과 Key Rotation을 설명합니다.",
+      "tags": [
+        "Cryptographic Failures",
+        "OWASP Top 10",
+        "Password Hash",
+        "JWT",
+        "AES-GCM",
+        "Key Rotation",
+        "Spring Security",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/56",
+      "published": true,
+      "file": "54-cryptographic-failures-password-hash-token-key-management.md"
+    },
+    {
+      "id": "55",
+      "doc_id": "BLOG-55",
+      "title": "Injection Secure Coding 심화: SQL·NoSQL·Command·Template Injection",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A05를 기준으로 Java 21·Spring Boot 3에서 SQL·NoSQL·OS Command·Template Injection을 Source와 Sink 관점으로 차단하는 방법을 설명합니다.",
+      "tags": [
+        "Injection",
+        "OWASP Top 10",
+        "SQL Injection",
+        "NoSQL Injection",
+        "Command Injection",
+        "Template Injection",
+        "Spring Boot",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/57",
+      "published": true,
+      "file": "55-injection-sql-nosql-command-template.md"
+    },
+    {
+      "id": "56",
+      "doc_id": "BLOG-56",
+      "title": "Insecure Design Secure Coding: Abuse Case·Rate Limit·업무 흐름 우회",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A06을 기준으로 Java 21·Spring Boot 3에서 Abuse Case, 상태 전이, 동시성, Idempotency, Feature Rate Limit과 자원 Budget을 설계하는 방법을 설명합니다.",
+      "tags": [
+        "Insecure Design",
+        "OWASP Top 10",
+        "Threat Modeling",
+        "Abuse Case",
+        "Business Logic",
+        "Rate Limit",
+        "Spring Boot",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/58",
+      "published": true,
+      "file": "56-insecure-design-abuse-case-rate-limit-workflow.md"
+    },
+    {
+      "id": "57",
+      "doc_id": "BLOG-57",
+      "title": "Authentication Failures Secure Coding: Brute Force·MFA·Session",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A07을 기준으로 Java 21·Spring Boot 3에서 Brute Force, Credential Stuffing, MFA, 계정 복구와 Session 수명주기를 안전하게 설계하는 방법을 설명합니다.",
+      "tags": [
+        "Authentication Failures",
+        "OWASP Top 10",
+        "Credential Stuffing",
+        "MFA",
+        "Passkey",
+        "Session Security",
+        "Spring Security",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/59",
+      "published": true,
+      "file": "57-authentication-failures-brute-force-mfa-session.md"
+    },
+    {
+      "id": "58",
+      "doc_id": "BLOG-58",
+      "title": "Software or Data Integrity Secure Coding: 역직렬화·Update·Artifact 무결성",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A08을 기준으로 Java 21·Spring Boot 3에서 안전하지 않은 역직렬화, 서명된 Update, Artifact 검증과 CycloneDX SBOM을 설계하는 방법을 설명합니다.",
+      "tags": [
+        "Software Integrity",
+        "Data Integrity",
+        "OWASP Top 10",
+        "Insecure Deserialization",
+        "CycloneDX",
+        "SBOM",
+        "Digital Signature",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/60",
+      "published": true,
+      "file": "58-software-data-integrity-deserialization-update-artifact.md"
+    },
+    {
+      "id": "59",
+      "doc_id": "BLOG-59",
+      "title": "Security Logging & Alerting Secure Coding: Log Forging·민감정보·탐지",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A09를 기준으로 Java 21·Spring Boot 3에서 Log Forging, 민감정보 유출, 구조화 Security Event, Alert와 Incident Playbook을 설계하는 방법을 설명합니다.",
+      "tags": [
+        "Security Logging",
+        "Alerting",
+        "OWASP Top 10",
+        "Log Forging",
+        "Sensitive Data",
+        "Incident Response",
+        "Spring Boot",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/61",
+      "published": true,
+      "file": "59-security-logging-alerting-log-forging-sensitive-data-playbook.md"
+    },
+    {
+      "id": "60",
+      "doc_id": "BLOG-60",
+      "title": "Exceptional Conditions Secure Coding: Fail Closed·Rollback·안전한 오류 응답",
+      "category": "보안",
+      "description": "OWASP Top 10:2025 A10을 기준으로 Java 21·Spring Boot 3에서 Fail Closed, Transaction Rollback, Partial Failure, Timeout, Resource 정리와 RFC 9457 오류 응답을 설계하는 방법을 설명합니다.",
+      "tags": [
+        "Exceptional Conditions",
+        "Fail Closed",
+        "Transaction Rollback",
+        "Error Handling",
+        "OWASP Top 10",
+        "Problem Details",
+        "Spring Boot",
+        "Secure Coding"
+      ],
+      "url": "https://aiarchitect.tistory.com/62",
+      "published": true,
+      "file": "60-exceptional-conditions-fail-closed-rollback-error-response.md"
+    },
+    {
+      "id": "61",
+      "doc_id": "BLOG-61",
+      "title": "내 블로그를 MCP 서버로 만들기: 공개 콘텐츠를 AI 도구로 노출하고 출처 링크로 유입을 유도하기",
+      "category": "AI Agent · MCP",
+      "description": "내 공개 블로그(또는 문서·FAQ·릴리스 노트) 코퍼스를 읽기 전용 MCP 서버로 만들어, AI 에이전트가 직접 검색·열람하게 하는 방법. 작은 도구 표면(목록·검색·본문) 설계, 헤더 여러 변형을 흡수하는 코퍼스 파서, 임베딩 없이 시작하는 결정적 검색, 본문을 패키지에 번들해 원본 저장소 없이 동작시키는 빌드, 응답에 원문 URL을 실어 추천 유입을 유도하는 설계, 로컬 stdio 검증과 원격 공개 배포로 넘어가기 전의 보안·필터링·테스트까지 실제 구현으로 정리합니다.",
+      "tags": [
+        "MCP",
+        "AI Agent",
+        "fastmcp",
+        "출처 링크",
+        "콘텐츠 배포",
+        "읽기 전용 도구",
+        "Python"
+      ],
+      "url": "https://aiarchitect.tistory.com/63",
+      "published": true,
+      "file": "61-blog-to-mcp-server-public-content-backlink.md"
+    },
+    {
+      "id": "62",
+      "doc_id": "BLOG-62",
+      "title": "콘텐츠를 검색엔진과 AI 에이전트 양쪽에 노출하기: Search Console·사이트맵부터 MCP 서버까지",
+      "category": "기술 인사이트",
+      "description": "이제 콘텐츠는 검색엔진과 생성형 AI라는 두 핵심 발견 경로로 노출됩니다. 소유·측정(구글 Search Console·네이버 서치어드바이저 등록과 메타 태그 소유확인), 크롤·URL 발견(사이트맵·robots·재크롤 요청과 전체 URL 함정), 인용 친화 구조(GEO), 그리고 콘텐츠를 읽기 전용 MCP 서버로 만들어 연결된 에이전트에 제공하는 선택적 통합까지, 실제 블로그 설정 경험을 네 트랙으로 정리합니다. 등록이 색인의 필수조건이 아니라는 점 등 흔한 오해도 함께 짚습니다.",
+      "tags": [
+        "검색엔진 최적화",
+        "SEO",
+        "Search Console",
+        "사이트맵",
+        "GEO",
+        "AI 검색",
+        "MCP"
+      ],
+      "url": "https://aiarchitect.tistory.com/64",
+      "published": true,
+      "file": "62-content-discovery-search-engines-and-ai-agents.md"
+    },
+    {
+      "id": "63",
+      "doc_id": "BLOG-63",
+      "title": "기업 AI Agent 도입 로드맵: 업무 발굴부터 PoC·운영 전환까지 6단계",
+      "category": "기술 인사이트",
+      "description": "기업 AI Agent 도입을 모델 선정부터 시작하지 않고 업무 후보 발굴, Agent 적합성 판단, 데이터·API·권한 준비도 진단, 성공 기준과 PoC, 제한된 Pilot, 운영 전환과 확산의 6단계로 설계하는 방법을 정리합니다.",
+      "tags": [
+        "기업 AI Agent",
+        "AI 도입",
+        "AI PoC",
+        "Agentic AI",
+        "RAG",
+        "MCP",
+        "AI 거버넌스",
+        "Production Readiness"
+      ],
+      "url": "https://aiarchitect.tistory.com/65",
+      "published": true,
+      "file": "63-enterprise-ai-agent-adoption-roadmap.md"
+    },
+    {
+      "id": "64",
+      "doc_id": "BLOG-64",
+      "title": "이 업무에 AI Agent가 맞는가: 자동화 적합도를 판정하는 기술 기준",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "업무에 AI Agent를 도입할지를 가치·ROI가 아니라 시스템 속성으로 판정하는 기술 기준(저자 제안 모델). 결정성과 자율성, 성공 관측성, 액션의 부작용·영향도, 상태·멱등성, 예외 분기 폭, 데이터·권한 경계로 업무를 평가하고, 규칙 워크플로우·LLM 파이프라인·제한된 Agent·사람 주도라는 base_pattern과 무인·감독·승인·제안이라는 execution_mode의 조합으로 매핑합니다. 적합도를 점수 합산이 아니라 선결·강등·차단으로 처리하는 gate로 다룹니다.",
+      "tags": [
+        "기업 AI Agent",
+        "AI 도입",
+        "자동화 설계",
+        "Agentic AI",
+        "아키텍처 결정",
+        "엔터프라이즈 아키텍처",
+        "AI 적합성"
+      ],
+      "url": "https://aiarchitect.tistory.com/70",
+      "published": true,
+      "file": "64-ai-agent-fitness-technical-criteria.md"
+    },
+    {
+      "id": "65",
+      "doc_id": "BLOG-65",
+      "title": "AI Agent 도입 아키텍처 진화: PoC에서 운영까지 무엇을 바꾸는가",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "AI Agent를 PoC에서 운영으로 옮길 때 아키텍처가 어떻게 바뀌는지를 실패 모드 중심으로 정리합니다. 동기에서 비동기 작업 큐로, 인메모리에서 영속 체크포인트로, at-least-once 재시도 위에서 멱등성·dedup·아웃박스로 중복 효과를 조건부로 억제하고, 광범위 권한에서 최소 권한·승인 바인딩으로, 단일 모델에서 폴백·서킷 브레이커로, 로그에서 추적·평가·감사 관측성으로, 수동 배포에서 버전·롤백·섀도우로. 공개 운영 패턴을 조합한 교육용 가상 시나리오이며 특정 고객·성과 수치는 없습니다.",
+      "tags": [
+        "기업 AI Agent",
+        "AI 도입",
+        "운영 전환",
+        "아키텍처",
+        "비동기 처리",
+        "관측성",
+        "엔터프라이즈 아키텍처"
+      ],
+      "url": "https://aiarchitect.tistory.com/71",
+      "published": true,
+      "file": "65-ai-agent-adoption-architecture-evolution.md"
+    },
+    {
+      "id": "66",
+      "doc_id": "BLOG-66",
+      "title": "AI Agent 도입 준비도 진단: 데이터·API·권한·보안·인수를 검증 가능한 스펙으로 만들기",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "기업 AI Agent 도입 준비도를 서류 체크리스트가 아니라 검증기와 증거로 판정하는 스펙으로 만드는 방법. 데이터·연동·권한·보안·인수 다섯 축을 데이터 계약, 멱등성·타임아웃·재시도 계약, 정책·결정·승인·실행·감사를 연결한 인가 체인, 시크릿 핸들과 Egress 통제, 증거 봉투에 바인딩된 Readiness Predicate, 준비 안 됨을 걸러내는 네거티브 테스트로 정리하고 READY·NOT_READY·EVIDENCE_MISSING·GATE_INVALID로 판정하는 준비도 게이트를 설계합니다.",
+      "tags": [
+        "기업 AI Agent",
+        "AI 도입",
+        "Production Readiness",
+        "데이터 계약",
+        "API 설계",
+        "AI 거버넌스",
+        "엔터프라이즈 아키텍처"
+      ],
+      "url": "https://aiarchitect.tistory.com/69",
+      "published": true,
+      "file": "66-ai-agent-adoption-readiness-verifiable-spec.md"
+    },
+    {
+      "id": "67",
+      "doc_id": "BLOG-67",
+      "title": "기업 데이터 파이프라인 참조 아키텍처: 데이터웨어하우스에서 AI 모델과 고객 충성도까지 한눈에",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "데이터웨어하우스·데이터마트·ETL·빅데이터 분석·머신러닝·딥러닝·AI 모델 학습과 서빙으로 이어지는 기업 데이터 파이프라인을 업계 표준 참조 아키텍처로 개관하고, 그 인사이트가 마케팅 데이터 활용·고객 세분화·CLV·고객 충성도로 연결되는 구조를 정리합니다. 모델 학습은 참조 주제로, 필자의 실제 운영 경험(임베딩·벡터DB·RAG·LLM 추론/서빙)은 별도 라벨로 정직하게 구분합니다.",
+      "tags": [
+        "데이터 파이프라인",
+        "데이터웨어하우스",
+        "빅데이터",
+        "머신러닝",
+        "딥러닝",
+        "마케팅 데이터",
+        "고객 충성도",
+        "참조 아키텍처"
+      ],
+      "url": "https://aiarchitect.tistory.com/66",
+      "published": true,
+      "file": "67-enterprise-data-pipeline-reference-architecture.md"
+    },
+    {
+      "id": "68",
+      "doc_id": "BLOG-68",
+      "title": "음성에서 인사이트까지: 실시간 STT·RAG로 만드는 실제 데이터 파이프라인",
+      "category": "RAG · LLM 시스템",
+      "description": "음성·미디어 수집부터 실시간·배치 STT, 화자 분리·정제, 임베딩·벡터 데이터베이스 인덱싱(RAG), 요약·추출·검색 인사이트까지 실제 운영하는 AI 파이프라인을 개관합니다. 이 인사이트를 마케팅·고객 충성도에 어떻게 응용할 수 있는지는 실제 구축·납품 사례가 아닌 설계 예시로 구분해 다룹니다.",
+      "tags": [
+        "RAG",
+        "STT",
+        "Faster-Whisper",
+        "Vector Database",
+        "ChromaDB",
+        "Embedding",
+        "데이터 파이프라인"
+      ],
+      "url": "https://aiarchitect.tistory.com/67",
+      "published": true,
+      "file": "68-real-ai-stack-data-to-customer-insight-pipeline.md"
+    },
+    {
+      "id": "69",
+      "doc_id": "BLOG-69",
+      "title": "블로그 MCP 서버 공개 배포기: PyPI 패키징·하드닝·익명성 게이트",
+      "category": "AI Agent · MCP",
+      "description": "블로그 MCP 서버를 PyPI에 공개하며 확인한 hatchling 패키징, 입력 검증과 ToolAnnotations, wheel·sdist·Git 이력의 익명성 검토, 그리고 배포본 재검증 과정을 정리합니다.",
+      "tags": [
+        "MCP",
+        "AI Agent",
+        "PyPI",
+        "fastmcp",
+        "공개 배포",
+        "읽기 전용 도구",
+        "Python",
+        "패키징"
+      ],
+      "url": "https://aiarchitect.tistory.com/68",
+      "published": true,
+      "file": "69-publish-blog-mcp-server-hardening-anonymity-gate.md"
     }
   ]
 }
