@@ -13,6 +13,11 @@ AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/L
 > 각 도구에 `readOnlyHint`가 선언돼 있고, `limit`/`offset` 등 입력은 범위 밖 값·잘못된 타입을
 > 방어적으로 클램프합니다.
 
+설계와 공개 배포 과정은 다음 글에 정리했습니다.
+
+- [내 블로그를 MCP 서버로 공개하기: AI Agent 검색·출처 링크·PyPI 배포까지](https://aiarchitect.tistory.com/63)
+- [블로그 MCP 서버 공개 배포기: PyPI 패키징·하드닝·익명성 게이트](https://aiarchitect.tistory.com/68)
+
 ## 🔧 제공 도구
 
 | 도구 | 설명 |

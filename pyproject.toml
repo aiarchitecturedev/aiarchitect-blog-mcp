@@ -22,6 +22,8 @@ aiarchitect-blog-mcp = "aiarchitect_blog_mcp:main"
 
 [project.urls]
 Homepage = "https://aiarchitect.tistory.com/"
+Documentation = "https://aiarchitect.tistory.com/63"
+"Deployment Guide" = "https://aiarchitect.tistory.com/68"
 Source = "https://github.com/aiarchitecturedev/aiarchitect-blog-mcp"
 Issues = "https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/issues"
 
