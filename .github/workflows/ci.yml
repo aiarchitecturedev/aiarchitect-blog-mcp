@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+# 같은 브랜치에 연속 푸시가 나면 앞선 실행은 취소한다(태그 실행은 유지).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # requires-python = ">=3.10" 의 하한과 최신 안정 버전을 함께 본다.
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # --locked: uv.lock 이 pyproject.toml 과 어긋나면 실패시킨다.
+      # (버전만 올리고 lock 갱신을 잊는 실수를 여기서 잡는다)
+      - name: Install dependencies
+        run: uv sync --locked --python ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: uv run --python ${{ matrix.python-version }} pytest -q
+
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      # 서빙 코드가 멀쩡해도 데이터 번들이 빠진 wheel 은 설치한 쪽에서만 깨진다.
+      # 그래서 소스 트리가 아니라 아티팩트 안쪽을 본다.
+      - name: Verify artifact contents
+        run: uv run python scripts/verify_dist.py dist/
+
+      # 소스 트리 없이 wheel 만으로 동작하는지 확인한다. 반드시 저장소 밖에서 실행해야
+      # `src/` 가 임포트되는 착시 없이 self-contained 여부를 검사할 수 있다.
+      - name: Verify wheel installs standalone
+        run: |
+          uv venv /tmp/isolated
+          uv pip install --python /tmp/isolated/bin/python dist/*.whl
+          cp scripts/verify_dist.py /tmp/verify_dist.py
+          cd /tmp && /tmp/isolated/bin/python /tmp/verify_dist.py --installed
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
