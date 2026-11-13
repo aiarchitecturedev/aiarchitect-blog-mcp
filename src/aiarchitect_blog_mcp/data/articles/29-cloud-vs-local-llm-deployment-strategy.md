@@ -1,5 +1,49 @@
 # 클라우드 API vs 로컬 LLM: 망 분리·비용·프라이버시로 정하는 배치 기준
 
+온프레미스 LLM 구축과 클라우드 API 중 무엇이 맞는지는 모델 성능 비교로 정해지지 않습니다. 데이터 분류와 망분리 요건, 지연·처리량, 총소유비용이 먼저 선택지를 좁힙니다. 이 글은 두 배치를 나누는 기준과 하이브리드 라우팅·장애 복구 원칙을 정리하고, Gemma 3/4·Qwen3 모델 선택, 양자화, vLLM 서빙, DGX Spark 모델 크기 산정, 망분리 재배치까지 다룹니다.
+
+![워크로드 요청을 공통 오케스트레이션 코어가 분류해 허용된 요청은 Cloud LLM으로, 민감 요청은 조직 경계 안의 Local GPU LLM으로 배치하는 하이브리드 엔터프라이즈 아키텍처](assets/blog-29-cloud-local-llm-deployment-hero.png)
+
+<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
+<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
+<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
+<li><a href="#ai-section-1" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">배치 결정을 품질보다 제약에서 시작한다</a></li>
+<li><a href="#ai-section-2" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">클라우드 API의 강점과 한계를 구분한다</a></li>
+<li><a href="#ai-section-3" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">로컬 LLM의 강점과 한계를 구분한다</a></li>
+<li><a href="#ai-section-4" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">데이터 주권과 규제를 먼저 통과한다</a></li>
+<li><a href="#ai-section-5" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">망분리와 Air-gap의 차이를 반영한다</a></li>
+<li><a href="#ai-section-6" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">개인정보·기밀의 반출 가능성을 판단한다</a></li>
+<li><a href="#ai-section-7" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">TTFT와 TPOT로 지연을 나눠 본다</a></li>
+<li><a href="#ai-section-8" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">처리량과 유효 용량 구간을 계산한다</a></li>
+<li><a href="#ai-section-9" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">클라우드 비용과 로컬 TCO를 비교한다</a></li>
+<li><a href="#ai-section-10" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Gemma 3·4 후보와 라이선스를 확인한다</a></li>
+<li><a href="#ai-section-11" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Qwen 계열의 세대와 구조를 확인한다</a></li>
+<li><a href="#ai-section-12" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">작업에 맞는 모델 크기를 고른다</a></li>
+<li><a href="#ai-section-13" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">한국어 품질을 조직 데이터로 평가한다</a></li>
+<li><a href="#ai-section-14" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">컨텍스트 길이의 비용과 품질을 함께 본다</a></li>
+<li><a href="#ai-section-15" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">양자화의 메모리 절감과 손실을 검증한다</a></li>
+<li><a href="#ai-section-16" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">GPTQ·AWQ를 런타임과 함께 선택한다</a></li>
+<li><a href="#ai-section-17" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">DGX Spark의 가용 메모리를 산정한다</a></li>
+<li><a href="#ai-section-18" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">vLLM의 KV 캐시 관리를 이해한다</a></li>
+<li><a href="#ai-section-19" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">배치와 스트리밍 서빙을 분리한다</a></li>
+<li><a href="#ai-section-20" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">DGX Spark 분산 실행과 HA를 구분한다</a></li>
+<li><a href="#ai-section-21" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">분류 기반 하이브리드 라우팅을 설계한다</a></li>
+<li><a href="#ai-section-22" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">데이터 분류별 fallback 범위를 제한한다</a></li>
+<li><a href="#ai-section-23" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Checkpoint와 멱등성으로 재개를 통제한다</a></li>
+<li><a href="#ai-section-24" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">온프레미스·망분리로 코어를 재배치한다</a></li>
+<li><a href="#ai-section-25" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">로컬 MCP와 라우팅 감사를 남긴다</a></li>
+<li><a href="#ai-section-26" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">벡터 저장소도 조직 경계 안에 둔다</a></li>
+<li><a href="#ai-section-27" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">지연·용량·fallback을 함께 관측한다</a></li>
+<li><a href="#ai-section-28" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">구축 체크리스트</a></li>
+<li><a href="#ai-section-29" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">흔한 함정과 회피법</a></li>
+<li><a href="#ai-section-30" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">정리</a></li>
+<li><a href="#ai-section-31" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
+</ol>
+</blockquote>
+
+
+*그림 1. Cloud와 Local을 경쟁 선택지가 아니라 하나의 코어 뒤에 둔 워크로드별 배치 구조*
+
 AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니다. 키를 발급받고, SDK를 붙이고, 프롬프트를 넣으면 최신 모델이 응답합니다. 서버도, GPU도, 모델 파일도 필요 없습니다.
 
 그런데 그 시스템을 실제 조직에 넣으려는 순간, 기술과는 무관한 질문이 먼저 들어옵니다.
@@ -29,7 +73,7 @@ AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니�
 
 핵심 논지는 하나입니다. **클라우드냐 로컬이냐는 이분법이 아니라, 워크로드별 배치 결정의 집합입니다.** 어떤 요청은 로컬로, 어떤 요청은 클라우드로 보내고, 로컬이 죽으면 정책이 허용하는 범위에서 클라우드로 넘기는 하이브리드 (Hybrid) 설계가 현실적인 목표입니다.
 
-## 1. 이 결정을 "품질"이 아니라 "제약"에서 시작한다
+<h2 id="ai-section-1" style="scroll-margin-top: 96px;">1. 배치 결정을 "품질"이 아니라 "제약"에서 시작한다</h2>
 
 가장 흔한 실수는 "어떤 모델이 제일 똑똑한가"부터 묻는 것입니다. 엔터프라이즈에서는 순서가 반대입니다. 먼저 **넘을 수 없는 제약 (Hard Constraint)** 을 확정하고, 그 안에서 품질을 최적화합니다.
 
@@ -44,14 +88,11 @@ AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니�
 
 품질은 대체로 이 제약들을 통과한 뒤에 비교하는 항목입니다. 다만 "품질은 항상 제약 다음"이라고 절대화하면 안 됩니다. 의료·금융·안전처럼 정확도·안전성 자체가 배포 가능 여부를 가르는 Hard Constraint가 되는 영역이 있습니다. 이때 품질은 후순위 최적화 대상이 아니라 넘을 수 없는 제약입니다. 그런 영역이 아니라면, 제약을 무시하고 벤치마크 1위 모델을 골랐다가 배치 단계에서 "그 API는 우리 망에서 못 씁니다"라는 한마디로 프로젝트가 멈추는 경우를 자주 봅니다.
 
-```text
-[Step 1] 제약 확정 → 후보 배치 형태 결정(클라우드 가능? 로컬 필수?)
-[Step 2] 후보 모델 선정 → 제약을 통과하는 것만
-[Step 3] 품질·비용·지연 비교 → 워크로드별 배치 결정
-[Step 4] 하이브리드 라우팅·Fallback 정책 확정
-```
+![워크로드 요청이 규제·망·데이터 주권·안전성 Hard Constraint Gate를 통과한 뒤 로컬 필수, 조건부 품질·TCO·TTFT 비교, 클라우드 허용 경로로 나뉘어 워크로드별 배치 결정으로 합류하는 흐름](assets/blog-29-deployment-decision-gates.png)
 
-## 2. 클라우드 API의 강점과 한계를 정직하게 본다
+*그림 2. 넘을 수 없는 제약을 먼저 적용하고 남은 후보만 품질·비용·지연으로 비교하는 배치 결정 게이트*
+
+<h2 id="ai-section-2" style="scroll-margin-top: 96px;">2. 클라우드 API의 강점과 한계를 정직하게 본다</h2>
 
 클라우드 API를 열등한 선택지로 취급하면 안 됩니다. 많은 워크로드에서 여전히 최적입니다.
 
@@ -71,7 +112,7 @@ AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니�
 
 즉 클라우드 API는 **가변 수요, 비민감 데이터, 최고 품질이 필요한 워크로드**에서 강하고, **상시 대량 처리, 민감 데이터, 망분리 구간**에서 약합니다.
 
-## 3. 로컬 LLM의 강점과 한계를 정직하게 본다
+<h2 id="ai-section-3" style="scroll-margin-top: 96px;">3. 로컬 LLM의 강점과 한계를 정직하게 본다</h2>
 
 로컬 오픈 웨이트 모델은 반대의 프로파일을 가집니다.
 
@@ -91,7 +132,7 @@ AI Agent를 처음 만들 때 대부분은 클라우드 LLM API로 시작합니�
 
 로컬은 **민감 데이터, 망분리, 상시 대량, 예측 가능한 비용**에서 강하고, **최고 난이도 추론, 가변·희소 수요**에서 상대적으로 약합니다.
 
-## 4. 데이터 주권과 규제: 가장 먼저 걸러지는 조건
+<h2 id="ai-section-4" style="scroll-margin-top: 96px;">4. 데이터 주권과 규제: 가장 먼저 걸러지는 조건</h2>
 
 데이터 주권은 "데이터가 물리적·법적으로 어느 관할권 안에 있어야 하는가"의 문제입니다. 특정 산업·국가·계약은 다음을 요구합니다.
 
@@ -116,7 +157,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 한 가지 더 짚을 점은, 로컬 배치가 데이터 주권을 **자동으로** 충족해 주지는 않는다는 것입니다. 처리·저장이 경계 안이라도 원격 관리 채널·텔레메트리·백업·관리자 계정·모델 업데이트 경로를 통해 데이터나 통제권이 밖으로 나갈 수 있습니다. 데이터 주권 요건은 배치 위치뿐 아니라 이 경로들까지 함께 통제해야 실제로 충족됩니다.
 
-## 5. 망분리와 Air-gap: 로컬이 선택이 아니라 전제가 되는 지점
+<h2 id="ai-section-5" style="scroll-margin-top: 96px;">5. 망분리와 Air-gap: 로컬이 선택이 아니라 전제가 되는 지점</h2>
 
 먼저 용어를 구분해야 합니다. 흔히 "망분리"와 "Air-gap"을 같은 말처럼 쓰지만, 둘은 동의어가 아닙니다.
 
@@ -148,7 +189,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 망분리에서는 "인터넷에서 pip install" 같은 습관이 전부 막힙니다. 사내 미러(오프라인 패키지 저장소)와 반입 절차를 설계 초기에 확정해야 배치 단계에서 막히지 않습니다.
 
-## 6. 개인정보·기밀: 마스킹으로 해결되는가, 근본적으로 못 나가는가
+<h2 id="ai-section-6" style="scroll-margin-top: 96px;">6. 개인정보·기밀: 마스킹으로 해결되는가, 근본적으로 못 나가는가</h2>
 
 개인정보·기밀 데이터는 두 가지로 나눠 다뤄야 합니다.
 
@@ -159,7 +200,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 여기서 감사 로그(Audit Log)의 PII 마스킹은 별도 주제입니다. 요청 자체의 라우팅 결정과, 로그에 무엇을 남길지는 다른 계층에서 다룹니다. 관련 상세는 감사·추적 관련 동반 글의 범위입니다.
 
-## 7. 지연(Latency)과 TTFT: 사용자 경험을 결정하는 축
+<h2 id="ai-section-7" style="scroll-margin-top: 96px;">7. 지연(Latency)과 TTFT: 사용자 경험을 결정하는 축</h2>
 
 지연은 두 지표로 나눠 봐야 합니다.
 
@@ -177,7 +218,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 지연에 민감한 대화형·실시간 워크로드는 로컬 서빙이 네트워크 왕복과 외부 대기열을 제거해 **내부에서 측정·통제하기가 상대적으로 쉽다**는 점에서 유리할 수 있습니다. 다만 로컬은 GPU 용량이 곧 한계이므로, 동시성 급증 시에는 대기열이 길어질 수 있습니다. 구체 수치는 하드웨어·모델·양자화·동시성에 따라 크게 달라지므로, 반드시 자체 환경에서 측정해야 합니다.
 
-## 8. 처리량(Throughput): 상시 대량 워크로드의 손익분기
+<h2 id="ai-section-8" style="scroll-margin-top: 96px;">8. 처리량(Throughput): 상시 대량 워크로드의 손익분기</h2>
 
 처리량은 초당 처리 토큰·요청 수입니다. 상시 대량 워크로드(예: 대량 문서 요약·분류·임베딩)에서는 처리량이 곧 비용입니다.
 
@@ -186,7 +227,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 즉, **호출량이 적으면 클라우드가, 호출량이 손익분기점을 넘으면 로컬이** 총비용에서 유리해지는 교차 지점이 존재할 수 있습니다. 다만 이 교차점이 항상 유효 용량 구간 안에 있는 것은 아닙니다. 로컬 최대 처리량을 넘으면 GPU를 추가 구매해야 해서 비용이 계단식으로 뛰고, 낮은 이용률에서는 로컬이 감가상각 기간 내내 더 비쌀 수도 있습니다. 그래서 교차점은 "존재할 수 있으며, 유효 용량 구간별로 계산한다"로 보는 편이 안전합니다. 이 교차점은 조직마다 다르므로 9절의 TCO 모형으로 계산해야 합니다.
 
-## 9. TCO: 초기 투자 vs 월 API 비용을 같은 표에 놓는다
+<h2 id="ai-section-9" style="scroll-margin-top: 96px;">9. TCO: 초기 투자 vs 월 API 비용을 같은 표에 놓는다</h2>
 
 로컬과 클라우드를 비교할 때 자주 저지르는 실수는 "GPU 구매가"만 로컬 비용으로 보는 것입니다. 실제 TCO는 훨씬 넓습니다.
 
@@ -217,7 +258,7 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 주의: 이 글은 조직별 비용·성능 벤치마크 수치를 제시하지 않습니다(하드웨어 공개 정가나 파라미터·메모리 같은 공개 스펙은 참고용으로 인용합니다). 단가·처리량·전력비는 계약·지역·시점에 따라 달라지므로, 위 모형에 조직의 실제 값을 대입해 스스로 계산해야 합니다.
 
-## 10. 로컬 모델 후보: Gemma 3 / Gemma 4 개요
+<h2 id="ai-section-10" style="scroll-margin-top: 96px;">10. 로컬 모델 후보: Gemma 3 / Gemma 4 개요</h2>
 
 로컬 후보로 필자가 상용 운영 중인 첫 계열은 Google의 오픈 웨이트 모델 Gemma입니다.
 
@@ -240,11 +281,11 @@ Restricted   → 로컬 전용(클라우드 금지)
 - Hugging Face·Kaggle·Ollama·Google AI Studio를 통해 제공.
 - 라이선스: Gemma 4는 Gemma 3과 달리 Apache-2.0으로 제공됩니다. 같은 Gemma 계열이라도 세대별 라이선스가 다르므로 묶어서 다루면 안 됩니다.
 
-이후 Google은 2026년 6월 3일 **Gemma 4 12B**를 추가했습니다. 12B는 E4B와 26B MoE 사이를 잇는 중간 크기의 멀티모달 모델로, 네이티브 오디오 입력을 지원하며 Apache-2.0 라이선스로 공개되었습니다. 따라서 2026년 7월 30일 현재 후보군을 검토할 때는 최초 공개군뿐 아니라 12B도 함께 비교해야 합니다.
+이후 Google은 2026년 6월 3일 **Gemma 4 12B**를 추가했습니다. 12B는 E4B와 26B MoE 사이를 잇는 중간 크기의 멀티모달 모델로, 네이티브 오디오 입력을 지원하며 Apache-2.0 라이선스로 공개되었습니다. 따라서 2026년 8월 17일 현재 후보군을 검토할 때는 최초 공개군뿐 아니라 12B도 함께 비교해야 합니다.
 
 크기 표기의 `E2B`/`E4B`에서 앞의 `E`는 Effective, 즉 단순 총 파라미터 수라기보다 추론 시 유효하게 활성화되는 파라미터 footprint를 가리키는 효율 지향 소형 구성을 뜻합니다. 상위 구성인 26B와 31B는 성격이 다릅니다. **26B는 토큰당 약 3.8B만 활성화하는 MoE**로 총 파라미터 대비 연산 비용이 낮고, **31B는 전 파라미터를 매 토큰 사용하는 Dense** 구조입니다. 모델 선정 시 "26B < 31B"라는 크기 대소가 아니라, MoE(연산 효율·메모리는 총 파라미터 기준)와 Dense(전체 파라미터를 매 토큰 사용)의 성격 차이로 판단해야 합니다. 실무에서는 소형(경량·저지연)과 대형(고품질) 사이에서 워크로드에 맞춰 선택합니다.
 
-## 11. 로컬 모델 후보: Qwen 계열 개요
+<h2 id="ai-section-11" style="scroll-margin-top: 96px;">11. 로컬 모델 후보: Qwen 계열 개요</h2>
 
 두 번째로 필자가 상용 운영 중인 계열은 Alibaba Cloud의 오픈 웨이트 모델 **Qwen3**입니다(2025년 4월 29일 공개, Apache-2.0 라이선스). 필자의 상용 운영 세대는 Qwen3이며, 이후 세대가 더 나왔다는 점은 아래에서 별도로 짚습니다.
 
@@ -255,9 +296,9 @@ Restricted   → 로컬 전용(클라우드 금지)
 
 MoE 모델은 총 파라미터는 크지만 토큰당 활성 파라미터가 작아, 대형 품질을 상대적으로 낮은 연산 비용으로 낼 수 있는 구조입니다. 다만 산정의 일반적 기본값으로는 **총 파라미터 전체를 메모리에 올려야 하므로 요구 메모리를 총 파라미터 기준으로 잡는다**는 점을 놓치면 안 됩니다. 이는 절대 명제는 아니며, 전문가 병렬화(Expert Parallelism)·샤딩·오프로딩을 쓰면 노드별 실제 메모리 배치가 달라질 수 있습니다.
 
-> **시점 주의(2026-07-30 확인 기준).** Qwen3는 필자의 상용 운영 세대일 뿐, 이 시점 기준 "최신 세대"는 아닙니다. 이후 2026년 4월 16일 `Qwen3.6-35B-A3B`(Apache-2.0, MoE 총 35B·활성 3B, 멀티모달)가 Qwen3.6 계열의 첫 공개 모델 중 하나로 공개되었습니다(같은 계열에 27B 등 다른 구성도 있습니다). 모델 세대는 빠르게 갱신되므로, 실제 채택 시 현재 최신 세대와 필자 운영 세대를 구분해 확인해야 합니다.
+> **시점 주의(2026-08-17 확인 기준).** Qwen3는 필자의 상용 운영 세대일 뿐, 이 시점 기준 "최신 세대"는 아닙니다. 이후 2026년 4월 16일 `Qwen3.6-35B-A3B`(Apache-2.0, MoE 총 35B·활성 3B, 멀티모달)가 Qwen3.6 계열의 첫 공개 모델 중 하나로 공개되었습니다(같은 계열에 27B 등 다른 구성도 있습니다). 모델 세대는 빠르게 갱신되므로, 실제 채택 시 현재 최신 세대와 필자 운영 세대를 구분해 확인해야 합니다.
 
-## 12. 크기별 용도: 소형·중형·대형을 어디에 쓰나
+<h2 id="ai-section-12" style="scroll-margin-top: 96px;">12. 크기별 용도: 소형·중형·대형을 어디에 쓰나</h2>
 
 동일 계열 안에서도 크기 선택은 워크로드가 결정합니다.
 
@@ -269,7 +310,7 @@ MoE 모델은 총 파라미터는 크지만 토큰당 활성 파라미터가 작
 
 실무 패턴은 **작업을 잘게 쪼개 크기별로 배치**하는 것입니다. 예를 들어 라우팅·PII 탐지·분류는 소형 모델이, 최종 요약·종합은 중·대형 모델이 담당하면 전체 처리량과 비용이 개선됩니다. 모든 요청을 대형 모델 하나로 처리하는 구조는 대부분 비효율적입니다.
 
-## 13. 한국어·멀티링구얼 품질을 어떻게 검증하나
+<h2 id="ai-section-13" style="scroll-margin-top: 96px;">13. 한국어·멀티링구얼 품질을 어떻게 검증하나</h2>
 
 한국어 워크로드에서 "다국어 지원"이라는 스펙만 믿으면 안 됩니다. 지원 언어 수와 실제 한국어 품질은 다른 문제입니다. Gemma 3의 140개 언어, Qwen3의 119개 언어·방언 같은 공개 스펙은 후보 자격의 출발점일 뿐입니다.
 
@@ -282,7 +323,7 @@ MoE 모델은 총 파라미터는 크지만 토큰당 활성 파라미터가 작
 
 이 검증은 고정 평가 세트(Golden Set)로 만들어 모델 교체 때마다 재실행해야 합니다. "체감상 A가 낫다" 수준의 판단은 배치 결정 근거가 될 수 없습니다.
 
-## 14. 컨텍스트 길이와 품질의 트레이드오프
+<h2 id="ai-section-14" style="scroll-margin-top: 96px;">14. 컨텍스트 길이와 품질의 트레이드오프</h2>
 
 컨텍스트 길이(128K 등)는 "넣을 수 있는 최대치"이지, "그만큼 넣으면 품질이 유지된다"는 뜻이 아닙니다. 긴 문맥에서는 다음이 발생할 수 있습니다.
 
@@ -292,7 +333,7 @@ MoE 모델은 총 파라미터는 크지만 토큰당 활성 파라미터가 작
 
 따라서 "긴 컨텍스트로 통째로 밀어넣기"보다, RAG로 관련 청크만 선별해 넣는 편이 품질·비용·지연 모두에서 유리한 경우가 많습니다. 로컬 배치에서는 컨텍스트 길이가 곧 VRAM·처리량과 직결되므로 더욱 신중해야 합니다.
 
-## 15. 양자화(Quantization) 개요: 왜 필요한가
+<h2 id="ai-section-15" style="scroll-margin-top: 96px;">15. 양자화(Quantization) 개요: 왜 필요한가</h2>
 
 양자화는 모델 가중치를 낮은 비트로 표현해 메모리와 대역폭을 줄이는 기법입니다. 로컬 배치에서 양자화는 사실상 필수라기보다는 **용량·동시성·비용 목표에 따라 중요한 선택지**입니다. 예를 들어 27B급 BF16 가중치(약 54GB)는 128GB 통합 메모리에 그대로 올릴 수 있으므로, 양자화 없이도 구동 가능한 경우가 있습니다. 다만 더 큰 모델을 올리거나 동시성·컨텍스트 여유를 확보하려면 양자화가 유력한 수단이 됩니다.
 
@@ -306,7 +347,7 @@ MoE 모델은 총 파라미터는 크지만 토큰당 활성 파라미터가 작
 
 거칠게 잡으면 **가중치 메모리 ≈ 파라미터 수 × 바이트/파라미터**이고, 여기에 KV 캐시·활성값·런타임 오버헤드와 양자화 메타데이터가 더 붙습니다. INT4로 내리면 더 큰 모델을 같은 하드웨어에 올릴 수 있지만, 품질 손실을 반드시 자체 평가 세트로 확인해야 합니다.
 
-## 16. GPTQ와 AWQ: 대표 양자화 방식
+<h2 id="ai-section-16" style="scroll-margin-top: 96px;">16. GPTQ와 AWQ: 대표 양자화 방식</h2>
 
 INT4 급 양자화의 대표적 후처리 방식은 GPTQ와 AWQ입니다.
 
@@ -321,7 +362,7 @@ INT4 급 양자화의 대표적 후처리 방식은 GPTQ와 AWQ입니다.
 
 "어느 방식이 절대적으로 낫다"는 없습니다. 모델·태스크·런타임 조합에서 자체 측정으로 결정합니다.
 
-## 17. DGX Spark 128GB에서 모델 크기 산정
+<h2 id="ai-section-17" style="scroll-margin-top: 96px;">17. DGX Spark 128GB에서 모델 크기 산정</h2>
 
 로컬 배치의 핵심 실무는 "이 하드웨어에 어떤 모델을, 어떤 양자화로 올릴 수 있는가"입니다. NVIDIA DGX Spark의 공개 스펙은 다음과 같습니다(공식 정보).
 
@@ -346,7 +387,11 @@ INT4 급 양자화의 대표적 후처리 방식은 GPTQ와 AWQ입니다.
 
 단일 유닛 200B, 이중 유닛 405B라는 공개 스펙은 최적화된 정밀도·런타임에서의 **공식 지원 상한**이지, "그 상태로 원하는 동시성·컨텍스트가 나온다"는 보장이 아닙니다. 실제 배치 크기는 상한보다 보수적으로 잡고, KV 캐시와 동시성 여유를 반드시 남겨야 합니다.
 
-## 18. vLLM 서빙: PagedAttention과 KV 캐시
+![DGX Spark 128GB 통합 메모리에 27B급 모델을 올릴 때 FP16·INT8·INT4 양자화 단계마다 가중치가 54GB·27GB·14GB로 줄고 남는 공간이 74GB·101GB·114GB로 늘어나는 메모리 예산 비교](assets/blog-29-128gb-memory-budget.png)
+
+*그림 3. 27B급 모델을 양자화 단계별로 올렸을 때 128GB 통합 메모리에서 가중치와 남는 공간이 갈리는 비율*
+
+<h2 id="ai-section-18" style="scroll-margin-top: 96px;">18. vLLM 서빙: PagedAttention과 KV 캐시</h2>
 
 로컬 GPU 서빙에서 처리량을 좌우하는 핵심은 KV 캐시 관리입니다. vLLM은 PagedAttention으로 이를 개선합니다.
 
@@ -355,7 +400,7 @@ INT4 급 양자화의 대표적 후처리 방식은 GPTQ와 AWQ입니다.
 
 vLLM은 GPTQ·AWQ·INT4·INT8·FP8 등 양자화를 지원하며, 모델 `config.json`의 양자화 설정을 감지해 커널로 분기합니다. 다만 이 자동 감지가 항상 해당 하드웨어에서 **최적** 커널을 선택한다고 보장할 수는 없으므로, 실제 서빙 전에 대상 하드웨어에서 커널·정밀도 조합을 검증해야 합니다.
 
-## 19. 배치(Batching)와 스트리밍, 동시성
+<h2 id="ai-section-19" style="scroll-margin-top: 96px;">19. 배치(Batching)와 스트리밍, 동시성</h2>
 
 로컬 서빙에서 처리량을 끌어올리는 또 다른 축은 연속 배치 (Continuous Batching)입니다.
 
@@ -371,7 +416,7 @@ vLLM은 GPTQ·AWQ·INT4·INT8·FP8 등 양자화를 지원하며, 모델 `config
 
 대량 백그라운드 처리(문서 일괄 요약)는 배치 지향으로, 실시간 대화는 스트리밍·저지연으로 나눠 서빙하는 것이 실무 패턴입니다. 하나의 서빙 설정으로 두 목표를 동시에 최적화하려 하면 양쪽 다 어중간해집니다.
 
-## 20. DGX Spark 단일/이중 구성 설계
+<h2 id="ai-section-20" style="scroll-margin-top: 96px;">20. DGX Spark 단일/이중 구성 설계</h2>
 
 DGX Spark는 단일 유닛과 이중 유닛(ConnectX 연결) 구성이 가능합니다. 배치 관점의 선택 기준은 다음과 같습니다.
 
@@ -394,7 +439,7 @@ DGX Spark는 단일 유닛과 이중 유닛(ConnectX 연결) 구성이 가능합
 
 따라서 "이중 유닛 = 이중화"가 아닙니다. 초대형 모델의 분산 실행이 목표인지, 장애 대비 HA가 목표인지를 먼저 정하고, HA가 목표라면 분산 실행 구성이 아니라 독립 복제 + 로드밸런서 구성을 설계해야 합니다. 이중화 여부는 워크로드의 가용성 목표(SLA)와 예산으로 결정할 문제입니다.
 
-## 21. 하이브리드 라우팅: 민감 데이터=로컬, 일반=클라우드
+<h2 id="ai-section-21" style="scroll-margin-top: 96px;">21. 하이브리드 라우팅: 민감 데이터=로컬, 일반=클라우드</h2>
 
 이제 앞의 제약과 후보를 하나의 라우팅 정책으로 묶습니다. 핵심 규칙은 단순합니다.
 
@@ -403,6 +448,10 @@ DGX Spark는 단일 유닛과 이중 유닛(ConnectX 연결) 구성이 가능합
 - 경계 사례 → 마스킹 후 클라우드, 또는 로컬.
 
 라우팅 결정은 **요청의 데이터 분류와 정책**으로 하고, 모델 선택이 아니라 배치 위치를 먼저 정한다는 점이 중요합니다. 이 라우팅 로직은 [멀티 LLM Agent Core](https://aiarchitect.tistory.com/13)에서 다룬 교체 가능한 Provider 추상화 위에 얹힙니다. 즉, 로컬 vLLM Provider와 클라우드 Provider가 같은 공통 계약을 구현하고, Orchestrator가 정책에 따라 둘 중 하나를 선택합니다.
+
+![요청 Prompt·RAG·Tool 결과를 클라우드 호출 직전에 다시 분류하고 Policy Gate가 Cloud Provider, Local GPU Pool 또는 거부·대기로 분기하며 허용된 경우에만 Cloud에서 Local로 fallback하고 응답·감사·Checkpoint로 합류하는 흐름](assets/blog-29-hybrid-routing-fail-closed.png)
+
+*그림 4. 누적 컨텍스트 재분류, fail-closed 정책, 경계 안 fallback과 감사를 한 흐름으로 묶은 하이브리드 라우팅*
 
 아래는 **예시용 비표준 정책**입니다(표준 규격이 아니므로 평가 의미를 함께 명시합니다). `rules`는 위에서부터 first-match로 평가하고, 한 `match` 안의 여러 필드는 모두 AND 조건입니다. 미지원 필드·미정의 분류값이 들어오면 규칙에 매칭되지 않고 `default`로 떨어집니다. 그리고 그 `default`는 **fail-closed(거부)** 입니다. `pii_masked`나 `cloud_processing_authorized` 같은 Boolean은 호출자가 임의로 지정하는 값이 아니라, 신뢰된 정책 엔진이 법무·계약 검토 결과로 산출해 주입해야 합니다.
 
@@ -469,7 +518,7 @@ DGX Spark는 단일 유닛과 이중 유닛(ConnectX 연결) 구성이 가능합
 
 한 가지 더 중요한 점은, **라우팅 결정을 최초 요청 한 번으로 끝내면 안 된다**는 것입니다. 에이전트 실행 중에는 분류가 동적으로 바뀔 수 있습니다. 최초 요청은 Public이어도, RAG 검색으로 끌어온 문서나 MCP 도구가 반환한 결과가 Confidential·Restricted일 수 있습니다. 이렇게 누적된 컨텍스트를 그대로 클라우드로 보내면, 초기 분류만 믿다가 민감 데이터를 경계 밖으로 흘리게 됩니다. 그래서 클라우드 Provider를 호출하기 **직전에** 프롬프트·검색 결과·도구 출력까지 합친 누적 컨텍스트를 다시 분류하고, 상향된 분류에 맞춰 로컬로 재라우팅하거나 거부해야 합니다. 재분류로 경계가 바뀌면 라우팅 정책을 처음부터 다시 적용하는 것이 안전합니다.
 
-## 22. Fallback: 로컬 장애 시 무엇을 어디까지 허용하나
+<h2 id="ai-section-22" style="scroll-margin-top: 96px;">22. Fallback: 로컬 장애 시 무엇을 어디까지 허용하나</h2>
 
 로컬 GPU가 죽거나 대기열이 폭주하면 어떻게 할지 미리 정해야 합니다. 그런데 fallback은 "무조건 클라우드로 넘긴다"가 아닙니다. 데이터 분류가 fallback 허용 범위를 제한합니다.
 
@@ -482,7 +531,7 @@ DGX Spark는 단일 유닛과 이중 유닛(ConnectX 연결) 구성이 가능합
 
 즉 fallback은 **양방향**입니다. 로컬 장애 시 클라우드로 못 넘기는 워크로드도 있고(Restricted), 클라우드 장애 시 로컬로 받아내는 워크로드도 있습니다(Public). 라우팅 정책의 `fallback` 필드에 이 방향과 한계를 명시해야 합니다.
 
-## 23. Checkpoint 복구: fallback 전에 부작용을 확인한다
+<h2 id="ai-section-23" style="scroll-margin-top: 96px;">23. Checkpoint 복구: fallback 전에 부작용을 확인한다</h2>
 
 모델을 도중에 바꾸는 fallback은 위험을 동반합니다. 도구 호출(Tool Call)이 이미 부작용(예: 저장·전송)을 냈는데, fallback 모델이 그 도구를 다시 호출하면 중복 실행이 됩니다. 그래서 fallback 전에 **Checkpoint(체크포인트)** 로 어디까지 진행됐는지 확인해야 합니다.
 
@@ -506,7 +555,7 @@ Checkpoint 확인:
 
 이 복구 가능한 실행(Recoverable Execution) 패턴 자체는 [복구 가능한 워크플로 설계 글](https://aiarchitect.tistory.com/7)에서 원자성 공백·멱등성·재조정을 포함해 깊게 다룹니다. 로컬/클라우드 fallback 설계에서는 **Checkpoint 없이 fallback을 붙이면 안 되고, Checkpoint만으로 충분하다고 여겨도 안 된다**는 원칙을 반드시 지켜야 합니다. 데이터 분류에 따른 fallback 허용 여부와, 멱등성·중복 제거를 포함한 재개 설계는 함께 설계해야 합니다.
 
-## 24. 온프레미스/망분리 재배치: Gateway와 Orchestrator
+<h2 id="ai-section-24" style="scroll-margin-top: 96px;">24. 온프레미스/망분리 재배치: Gateway와 Orchestrator</h2>
 
 클라우드에서 검증한 Gateway·Orchestrator 구조를 온프레미스·망분리로 옮길 때, 아키텍처는 유지하되 배치와 의존성을 바꿉니다.
 
@@ -537,7 +586,7 @@ Checkpoint 확인:
 
 이 구조 덕분에, 같은 코어를 클라우드·온프레미스·망분리에 걸쳐 재사용할 수 있습니다. 다만 "코어는 유지하고 목적지만 바꾼다"를 문자 그대로 받아들이면 안 됩니다. Provider가 바뀌면 프롬프트 템플릿, 도구 호출(Tool Call) 포맷, 멀티모달 입력 처리, 스트리밍 이벤트 형식, 오류 형식, 컨텍스트 한도가 함께 달라질 수 있습니다. 그래서 "교체 가능"의 의미는 API 모양이 같다는 수준이 아니라, 기능 행렬(Feature Matrix)과 호환성 테스트까지 통과한다는 뜻이어야 합니다. 배치 형태가 달라도 코어의 뼈대는 하나로 유지하되, Provider별 차이는 어댑터 계층에서 흡수한다고 보는 편이 정확합니다.
 
-## 25. 로컬 MCP 도구와 감사(Audit)
+<h2 id="ai-section-25" style="scroll-margin-top: 96px;">25. 로컬 MCP 도구와 감사(Audit)</h2>
 
 망분리·온프레미스에서 MCP(Model Context Protocol) 도구는 폐쇄망 내부에서 동작해야 합니다. 외부 SaaS 도구는 쓸 수 없으므로, 사내 시스템을 감싸는 로컬 MCP 서버가 필요합니다.
 
@@ -549,7 +598,7 @@ Checkpoint 확인:
 
 라우팅 결정 자체가 감사 대상이라는 점이 중요합니다. "이 민감 요청이 실제로 로컬로 갔는가"를 사후에 증명할 수 있어야 규제 대응이 됩니다. 감사 로그의 마스킹·보존 정책 상세는 감사·추적 동반 글의 범위입니다.
 
-## 26. 로컬 저장소: PostgreSQL + pgvector
+<h2 id="ai-section-26" style="scroll-margin-top: 96px;">26. 로컬 저장소: PostgreSQL + pgvector</h2>
 
 로컬·망분리 배치에서 RAG 검색용 벡터 저장소는 조직 경계 안에 있어야 합니다. PostgreSQL + pgvector는 이 요구에 적합한 조합입니다.
 
@@ -559,7 +608,9 @@ Checkpoint 확인:
 
 여기서 멀티테넌트(Multi-tenant) 격리, 중복 청크 방지, 재색인(Idempotent Indexing) 같은 RAG 인프라 상세는 별도 주제이며, 관련 동반 글들에서 다룹니다. 이 글의 범위에서는 "벡터 저장소도 로컬 경계 안에 배치한다"는 배치 원칙만 확인합니다.
 
-## 27. 운영·모니터링: 로컬 배치에서 반드시 봐야 할 지표
+RAG 구축을 외부 업체와 진행한다면 저장소 위치에 대한 설명만 듣지 말고, 실제 권한 격리·문서 변경 반영·출처 추적을 어떻게 증명하는지 확인해야 합니다. 계약 전 질문과 단계별 증빙 기준은 [RAG 구축 업체 선정: 데모와 운영을 가르는 8가지 질문](https://aiarchitect.tistory.com/94)에 정리했습니다.
+
+<h2 id="ai-section-27" style="scroll-margin-top: 96px;">27. 운영·모니터링: 로컬 배치에서 반드시 봐야 할 지표</h2>
 
 로컬 서빙은 운영 책임이 조직에 있으므로 모니터링이 필수입니다. 최소한 다음을 관측해야 합니다.
 
@@ -574,7 +625,7 @@ Checkpoint 확인:
 
 특히 **fallback 발생률**과 **라우팅 분배 비율**은 로컬/클라우드 하이브리드에서 핵심 지표입니다. fallback이 잦아지면 로컬 용량 부족 신호이고, 라우팅 비율이 정책과 어긋나면 데이터가 잘못된 경계로 흐르고 있다는 신호입니다.
 
-## 28. 구축 체크리스트
+<h2 id="ai-section-28" style="scroll-margin-top: 96px;">28. 구축 체크리스트</h2>
 
 배치·선택 결정을 실제로 내릴 때 순서대로 점검할 항목입니다.
 
@@ -614,7 +665,7 @@ Checkpoint 확인:
   ⬜ 감사 로그(PII 마스킹·라우팅 기록·보존정책)
 ```
 
-## 29. 흔한 함정과 회피법
+<h2 id="ai-section-29" style="scroll-margin-top: 96px;">29. 흔한 함정과 회피법</h2>
 
 마지막으로 배치 결정에서 반복적으로 보이는 함정을 정리합니다.
 
@@ -627,7 +678,7 @@ Checkpoint 확인:
 - **Checkpoint 없는 fallback.** 모델 교체 중 도구 부작용이 중복 실행됩니다.
 - **로컬 상한을 그대로 사용.** 200B/405B 같은 공개 상한은 "올라간다"는 뜻이지 원하는 동시성·컨텍스트를 보장하지 않습니다. 보수적으로 잡아야 합니다.
 
-## 마무리
+<h2 id="ai-section-30" style="scroll-margin-top: 96px;">30. 정리</h2>
 
 클라우드 API와 로컬 LLM 중 하나를 고르는 문제로 접근하면 대부분 틀립니다. 실제 결정은 **워크로드별 배치의 집합**입니다.
 
@@ -646,7 +697,9 @@ Checkpoint 확인:
 
 로컬 모델을 상용에 올린다는 것은 "GPU에 모델을 띄운다"가 아니라, **교체 가능한 Provider Core 위에 로컬을 하나의 Provider로 얹고, 데이터 분류·라우팅·fallback·감사·모니터링까지 함께 설계한다**는 뜻입니다. 클라우드와 로컬은 경쟁하는 선택지가 아니라, 같은 코어 뒤에서 워크로드에 따라 함께 쓰이는 두 개의 배치 형태입니다.
 
-## 참고 자료
+<h2 id="ai-section-31" style="scroll-margin-top: 96px;">31. 참고 자료</h2>
+
+접근일: `2026-08-17` (모델 세대·라이선스·하드웨어·런타임 기능은 적용 전에 현재 문서를 다시 확인).
 
 - [Google: Gemma 3 model card](https://ai.google.dev/gemma/docs/core/model_card_3)
 - [Google DeepMind: Gemma 3](https://deepmind.google/models/gemma/gemma-3/)
@@ -664,4 +717,4 @@ Checkpoint 확인:
 - [vLLM: PagedAttention (프로젝트 소개)](https://docs.vllm.ai/en/latest/)
 - [복구 가능한 워크플로 설계 (동반 글)](https://aiarchitect.tistory.com/7)
 
-> 이 글은 2026년 7월 30일 기준 Google, Alibaba Cloud(Qwen), NVIDIA와 vLLM의 공개 공식 문서, 그리고 오픈 웨이트 모델(Gemma 3·4, Qwen)을 상용 운영하고 온프레미스·망분리 환경을 설계한 공개 가능한 구현 경험을 바탕으로 작성했습니다. 모델 세대·크기·라이선스, 하드웨어 스펙과 가격, 서빙·양자화 기능은 계속 바뀔 수 있으므로 실제 적용 시 각 공식 문서와 현재 버전을 다시 확인해야 합니다. 특정 지연·처리량·비용·정확도 수치는 하드웨어·모델·설정에 따라 크게 달라지므로 반드시 자체 환경에서 측정해야 합니다.
+> 이 글은 2026년 8월 17일 기준 Google, Alibaba Cloud(Qwen), NVIDIA와 vLLM의 공개 공식 문서, 그리고 오픈 웨이트 모델(Gemma 3·4, Qwen)을 상용 운영하고 온프레미스·망분리 환경을 설계한 공개 가능한 구현 경험을 바탕으로 작성했습니다. 모델 세대·크기·라이선스, 하드웨어 스펙과 가격, 서빙·양자화 기능은 계속 바뀔 수 있으므로 실제 적용 시 각 공식 문서와 현재 버전을 다시 확인해야 합니다. 특정 지연·처리량·비용·정확도 수치는 하드웨어·모델·설정에 따라 크게 달라지므로 반드시 자체 환경에서 측정해야 합니다.

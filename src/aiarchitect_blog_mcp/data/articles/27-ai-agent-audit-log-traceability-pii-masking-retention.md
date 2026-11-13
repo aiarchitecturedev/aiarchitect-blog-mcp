@@ -1,5 +1,50 @@
 # AI Agent 감사 로그 설계: 추적성·개인정보 Masking과 보존 기간
 
+AI Agent가 업무를 실행한 뒤 "누가 무엇을 왜 했는가"에 답하려면 일반 Application Log로는 부족합니다. 요청과 정책 결정, 승인, 실제 Side Effect가 서로 연결되지 않기 때문입니다. 이 글은 이 다섯 단계를 하나의 감사 증거로 묶고, 개인정보를 최소화하면서 무결성·보존 기간·탐지와 사고 대응까지 운영하는 방법을 정리합니다.
+
+![인증된 요청과 정책 결정, Tool 실행, 개인정보 최소화, 변경 불가 감사 저장소와 탐지 흐름을 밝은 엔터프라이즈 보안 장면으로 표현한 AI Agent 감사 증거 구조](assets/blog-27-ai-agent-audit-evidence-hero.png)
+
+<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
+<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
+<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
+<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 로그의 목적을 먼저 정의한다</a></li>
+<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Application Log·Trace·Audit Event·Security Alert를 분리한다</a></li>
+<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">AI Agent 감사 위협 모델을 세운다</a></li>
+<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Event Taxonomy를 먼저 고정한다</a></li>
+<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공통 Audit Event Envelope을 정의한다</a></li>
+<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Subject·Actor·Executor·Approver를 모두 구분한다</a></li>
+<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">하나의 ID로 모든 문제를 해결하지 않는다</a></li>
+<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Trace Context에는 개인정보를 넣지 않는다</a></li>
+<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Event 시각과 관측 시각을 분리한다</a></li>
+<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결정은 결과와 근거 Version을 함께 기록한다</a></li>
+<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 증거를 실행 인자와 결속한다</a></li>
+<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool 요청·응답과 실제 Side Effect를 분리한다</a></li>
+<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">비동기 작업은 접수와 완료를 별도 Event로 남긴다</a></li>
+<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Prompt·Tool 입력은 원문 대신 Projection과 Digest를 우선한다</a></li>
+<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Model Content 기록은 기본 비활성화하고 별도 통제로 연다</a></li>
+<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Field별 데이터 처리 정책을 만든다</a></li>
+<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Masking·Tokenization·Pseudonymization을 구분한다</a></li>
+<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">수집 전에 Allowlist Redaction을 적용한다</a></li>
+<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Log Injection과 Schema Poisoning을 막는다</a></li>
+<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audit Schema와 Policy Version을 함께 관리한다</a></li>
+<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업무 Commit과 감사 Event 사이의 원자성을 설계한다</a></li>
+<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audit Pipeline 장애 정책을 작업 위험별로 정한다</a></li>
+<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 저장소를 Application과 분리하고 변조를 탐지한다</a></li>
+<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 조회·Export도 감사한다</a></li>
+<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">보존 기간은 Event 목적과 위험으로 정한다</a></li>
+<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Hot·Warm·Cold Tier와 Legal Hold를 분리한다</a></li>
+<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">중앙 수집과 정규화로 탐지 가능한 품질을 만든다</a></li>
+<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">탐지 규칙은 Decision과 Side Effect의 불일치를 본다</a></li>
+<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Alert에서 사고 대응 증거 Package까지 연결한다</a></li>
+<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 전 체크리스트와 Negative Test</a></li>
+<li><a href="#ai-section-31" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
+<li><a href="#ai-section-32" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
+</ol>
+</blockquote>
+
+
+*그림 1. 대화 원문을 쌓는 대신 정책·승인·실제 Side Effect를 최소화된 증거 사슬로 연결하는 AI Agent 감사 구조*
+
 AI Agent에게 다음과 같이 요청했다고 가정해 보겠습니다.
 
 ```text
@@ -47,7 +92,7 @@ AI Agent 감사는 “대화 내용을 모두 저장”하는 문제가 아닙�
 
 이 글은 이전 권한 설계 글의 인가 모델을 반복하기보다, **정책 결정·승인·Tool 실행·Side Effect를 조사 가능한 증거 사슬로 만들고 Masking·무결성·보존·탐지·사고 대응까지 운영하는 방법**에 집중합니다.
 
-## 1. 감사 로그의 목적을 먼저 정의한다
+<h2 id="ai-section-1" style="scroll-margin-top: 96px;">1. 감사 로그의 목적을 먼저 정의한다</h2>
 
 “나중에 필요할 수 있으니 전부 기록한다”는 요구는 범위도 끝도 없습니다.
 
@@ -68,7 +113,7 @@ AI Agent 감사는 “대화 내용을 모두 저장”하는 문제가 아닙�
 
 예를 들어 Model Latency Debug에는 상세 Trace가 유용하지만, 승인된 삭제 작업 증명에는 정책 결정·승인·대상 Revision·실제 삭제 결과가 더 중요합니다.
 
-## 2. Application Log·Trace·Audit Event·Security Alert를 분리한다
+<h2 id="ai-section-2" style="scroll-margin-top: 96px;">2. Application Log·Trace·Audit Event·Security Alert를 분리한다</h2>
 
 네 신호는 연결되지만 목적이 다릅니다.
 
@@ -87,7 +132,7 @@ Trace는 비용과 성능을 위해 Sampling될 수 있고, Span이 누락되거
 
 가장 실용적인 구조는 Audit Event에 `traceId`와 핵심 증거 ID를 넣고, 허가된 조사자가 필요한 기간 안에 상세 Trace로 이동하게 하는 것입니다.
 
-## 3. AI Agent 감사 위협 모델을 세운다
+<h2 id="ai-section-3" style="scroll-margin-top: 96px;">3. AI Agent 감사 위협 모델을 세운다</h2>
 
 감사 시스템도 공격 대상입니다.
 
@@ -117,7 +162,7 @@ Retention 변경으로 사건 직전 로그 조기 삭제
 - 격리성: Tenant·역할·목적별 조회 범위를 강제
 - 적시성: 탐지와 대응에 필요한 시간 안에 수집
 
-## 4. Event Taxonomy를 먼저 고정한다
+<h2 id="ai-section-4" style="scroll-margin-top: 96px;">4. Event Taxonomy를 먼저 고정한다</h2>
 
 자유 형식 Message만 남기면 Service마다 다른 이름을 쓰고 탐지 Query가 깨집니다.
 
@@ -156,7 +201,7 @@ agent.audit.retention_changed
 - 정책·감사 설정이 변경될 때
 - 감사 데이터 자체를 조회·Export·삭제할 때
 
-## 5. 공통 Audit Event Envelope을 정의한다
+<h2 id="ai-section-5" style="scroll-margin-top: 96px;">5. 공통 Audit Event Envelope을 정의한다</h2>
 
 Event마다 내용은 달라도 공통 Envelope이 있어야 검색과 검증이 가능합니다.
 
@@ -208,7 +253,7 @@ OpenTelemetry Logs Data Model도 Event 시각과 관측 시각, Trace ID, Span I
 
 내부 Audit Schema는 이 구조와 쉽게 Mapping할 수 있게 만들되, 책임 증명에 필요한 `subjectId`, `decisionId`, `approvalId`, `sideEffect` 같은 업무 Field를 별도로 정의합니다.
 
-## 6. Subject·Actor·Executor·Approver를 모두 구분한다
+<h2 id="ai-section-6" style="scroll-margin-top: 96px;">6. Subject·Actor·Executor·Approver를 모두 구분한다</h2>
 
 최종 API 호출자는 Service Account일 수 있지만 업무 책임의 출발점은 사용자입니다.
 
@@ -259,7 +304,7 @@ Approver
 
 반대로 사용자 ID만 남기면 어느 Agent Version과 Workload가 실제 실행했는지 알 수 없습니다.
 
-## 7. 하나의 ID로 모든 문제를 해결하지 않는다
+<h2 id="ai-section-7" style="scroll-margin-top: 96px;">7. 하나의 ID로 모든 문제를 해결하지 않는다</h2>
 
 각 ID는 다른 범위와 수명을 가집니다.
 
@@ -288,7 +333,7 @@ Alert → Event → Trace → Downstream Commit
 Approval → 실행 인자 Digest → 실제 Side Effect
 ```
 
-## 8. Trace Context에는 개인정보를 넣지 않는다
+<h2 id="ai-section-8" style="scroll-margin-top: 96px;">8. Trace Context에는 개인정보를 넣지 않는다</h2>
 
 W3C Trace Context는 분산 시스템에서 요청을 연결하기 위한 `traceparent`와 `tracestate` 형식을 정의합니다.
 
@@ -307,7 +352,7 @@ Trace ID는 불투명하고 충분히 무작위인 식별자로 생성합니다.
 
 Tenant·Subject 같은 감사 속성은 신뢰할 수 있는 Server Context에서 별도 Field로 기록하고, 외부 Trust Boundary를 넘을 때 전파 범위를 제한합니다.
 
-## 9. Event 시각과 관측 시각을 분리한다
+<h2 id="ai-section-9" style="scroll-margin-top: 96px;">9. Event 시각과 관측 시각을 분리한다</h2>
 
 비동기 시스템에서는 Event가 발생한 시각과 중앙 수집기가 본 시각이 다릅니다.
 
@@ -337,7 +382,7 @@ OpenTelemetry Logs Data Model도 `Timestamp`와 `ObservedTimestamp`를 구분합
 
 시계가 틀린 Event를 조용히 재작성하지 말고 원래 시각과 관측 시각을 함께 보존합니다.
 
-## 10. 정책 결정은 결과와 근거 Version을 함께 기록한다
+<h2 id="ai-section-10" style="scroll-margin-top: 96px;">10. 정책 결정은 결과와 근거 Version을 함께 기록한다</h2>
 
 `authorized=true` 하나만으로는 나중에 같은 판단을 설명할 수 없습니다.
 
@@ -383,7 +428,7 @@ OpenTelemetry Logs Data Model도 `Timestamp`와 `ObservedTimestamp`를 구분합
 
 정책 Engine의 Debug 원문 전체를 Audit Log에 넣기보다 재현에 필요한 최소 Projection을 사용합니다.
 
-## 11. 승인 증거를 실행 인자와 결속한다
+<h2 id="ai-section-11" style="scroll-margin-top: 96px;">11. 승인 증거를 실행 인자와 결속한다</h2>
 
 사용자가 “삭제 승인” 버튼을 눌렀다는 사실만 기록하면 어떤 대상을 승인했는지 모릅니다.
 
@@ -415,7 +460,7 @@ OpenTelemetry Logs Data Model도 `Timestamp`와 `ObservedTimestamp`를 구분합
 
 승인 후 Model이 인자를 바꾸거나 Resource가 수정됐다면 같은 Approval ID를 재사용하지 않습니다.
 
-## 12. Tool 요청·응답과 실제 Side Effect를 분리한다
+<h2 id="ai-section-12" style="scroll-margin-top: 96px;">12. Tool 요청·응답과 실제 Side Effect를 분리한다</h2>
 
 Tool이 `success=true`를 반환해도 실제 외부 상태 변경이 Commit됐다는 보장은 없습니다.
 
@@ -464,7 +509,11 @@ ALLOW Decision 없이 Side Effect 발생
 동일 Idempotency Key로 여러 Resource 생성
 ```
 
-## 13. 비동기 작업은 접수와 완료를 별도 Event로 남긴다
+![인증된 Subject와 Tenant 문맥에서 정책 결정·승인, Tool 실행과 실제 Side Effect, 개인정보 최소화 Gate, Append-only 감사 저장소를 Correlation ID로 연결하는 증거 사슬](assets/blog-27-audit-evidence-chain.png)
+
+*그림 2. 각 신뢰 경계의 실제 판단과 Commit을 연결하고 원문 개인정보는 저장소 도착 전에 최소화하는 감사 증거 사슬*
+
+<h2 id="ai-section-13" style="scroll-margin-top: 96px;">13. 비동기 작업은 접수와 완료를 별도 Event로 남긴다</h2>
 
 HTTP `202 Accepted`는 요청 접수이지 완료가 아닙니다.
 
@@ -492,7 +541,7 @@ Job 메시지에는 원문 Credential 대신 다음 재인가 Context를 넣습�
 
 오래 실행된 작업은 Side Effect 직전에 현재 권한과 승인을 다시 확인하고 새 Decision Event를 연결합니다.
 
-## 14. Prompt·Tool 입력은 원문 대신 Projection과 Digest를 우선한다
+<h2 id="ai-section-14" style="scroll-margin-top: 96px;">14. Prompt·Tool 입력은 원문 대신 Projection과 Digest를 우선한다</h2>
 
 Prompt와 Tool Argument 전체를 저장하면 조사에는 편하지만 개인정보와 기밀정보 위험이 큽니다.
 
@@ -532,7 +581,7 @@ Prompt와 Tool Argument 전체를 저장하면 조사에는 편하지만 개인�
 
 Digest는 나중에 제출된 원문이 당시 입력과 같은지 비교하는 데 도움을 주지만, 원문의 의미를 설명하거나 진위를 단독으로 증명하지는 않습니다.
 
-## 15. Model Content 기록은 기본 비활성화하고 별도 통제로 연다
+<h2 id="ai-section-15" style="scroll-margin-top: 96px;">15. Model Content 기록은 기본 비활성화하고 별도 통제로 연다</h2>
 
 OpenTelemetry GenAI 속성 지침은 Input Message, Output Message, Retrieval Query, Tool Argument와 Result가 민감정보를 포함할 수 있다고 경고합니다.
 
@@ -561,7 +610,7 @@ OpenTelemetry GenAI 속성 지침은 Input Message, Output Message, Retrieval Qu
 
 Content Capture 설정 변경 자체도 Audit Event입니다.
 
-## 16. Field별 데이터 처리 정책을 만든다
+<h2 id="ai-section-16" style="scroll-margin-top: 96px;">16. Field별 데이터 처리 정책을 만든다</h2>
 
 Masking은 `password`라는 이름의 Field만 별표로 바꾸는 작업이 아닙니다.
 
@@ -584,7 +633,7 @@ OWASP Logging Cheat Sheet는 Access Token, Password, Encryption Key, 민감한 P
 
 정책은 Event Type·Field Path·데이터 분류·목적·환경별로 Versioning합니다.
 
-## 17. Masking·Tokenization·Pseudonymization을 구분한다
+<h2 id="ai-section-17" style="scroll-margin-top: 96px;">17. Masking·Tokenization·Pseudonymization을 구분한다</h2>
 
 각 기법의 목적이 다릅니다.
 
@@ -605,7 +654,7 @@ NIST SP 800-188은 단순 Masking Tool이 충분한 De-identification 기능을 
 
 가명처리된 데이터도 다른 정보와 결합해 재식별될 수 있으므로 무조건 익명 데이터로 취급하지 않습니다.
 
-## 18. 수집 전에 Allowlist Redaction을 적용한다
+<h2 id="ai-section-18" style="scroll-margin-top: 96px;">18. 수집 전에 Allowlist Redaction을 적용한다</h2>
 
 민감정보가 중앙 Backend에 도착한 뒤 Dashboard에서 가리는 것만으로는 늦습니다.
 
@@ -633,7 +682,7 @@ Collector
 
 Collector Redaction이 Producer의 무제한 원문 Logging을 정당화하지는 않습니다.
 
-## 19. Log Injection과 Schema Poisoning을 막는다
+<h2 id="ai-section-19" style="scroll-margin-top: 96px;">19. Log Injection과 Schema Poisoning을 막는다</h2>
 
 Prompt·Tool Result·File Name은 공격자가 제어할 수 있습니다.
 
@@ -660,7 +709,7 @@ OWASP는 CR, LF와 Delimiter를 포함한 Event Data를 Sanitize하고 출력 �
 
 검증 실패 시 전체 Logging을 중단하기보다 안전한 최소 Error Event를 남기고 운영 Alert를 발생시킵니다.
 
-## 20. Audit Schema와 Policy Version을 함께 관리한다
+<h2 id="ai-section-20" style="scroll-margin-top: 96px;">20. Audit Schema와 Policy Version을 함께 관리한다</h2>
 
 Event Field가 바뀌면 저장소 Query와 탐지 Rule이 깨질 수 있습니다.
 
@@ -690,7 +739,7 @@ Event Field가 바뀌면 저장소 Query와 탐지 Rule이 깨질 수 있습니�
 
 Schema·Masking·Retention 변경도 관리자 Audit Event로 남깁니다.
 
-## 21. 업무 Commit과 감사 Event 사이의 원자성을 설계한다
+<h2 id="ai-section-21" style="scroll-margin-top: 96px;">21. 업무 Commit과 감사 Event 사이의 원자성을 설계한다</h2>
 
 다음 순서는 감사 누락을 만들 수 있습니다.
 
@@ -722,7 +771,7 @@ Outbox Publisher
 
 외부 시스템처럼 같은 Transaction을 사용할 수 없으면 `REQUESTED`, `ACCEPTED`, `COMMITTED`, `DELIVERY_CONFIRMED`를 구분하고 Reconciliation합니다.
 
-## 22. Audit Pipeline 장애 정책을 작업 위험별로 정한다
+<h2 id="ai-section-22" style="scroll-margin-top: 96px;">22. Audit Pipeline 장애 정책을 작업 위험별로 정한다</h2>
 
 Audit Backend 장애가 모든 서비스 장애로 번지면 가용성이 낮아집니다.
 
@@ -751,7 +800,7 @@ RECOVERING
 
 Queue가 가득 찼을 때 Event를 조용히 버리지 말고 Drop 수, 가장 오래된 Event Age, 예상 복구 시간과 차단된 작업을 Alert합니다.
 
-## 23. 감사 저장소를 Application과 분리하고 변조를 탐지한다
+<h2 id="ai-section-23" style="scroll-margin-top: 96px;">23. 감사 저장소를 Application과 분리하고 변조를 탐지한다</h2>
 
 Application 관리자 권한으로 감사 기록을 수정·삭제할 수 있으면 사건 증거를 신뢰하기 어렵습니다.
 
@@ -791,7 +840,7 @@ Hash Chain만으로 Event 생성자의 신뢰성과 누락을 모두 증명할 �
 
 신뢰할 수 있는 Ingestion, 순서, 외부 Checkpoint와 완전성 검사까지 함께 필요합니다.
 
-## 24. 감사 조회·Export도 감사한다
+<h2 id="ai-section-24" style="scroll-margin-top: 96px;">24. 감사 조회·Export도 감사한다</h2>
 
 Audit Store에는 사용자 행동, Resource ID, 거부 이유와 보안 탐지 정보가 모입니다.
 
@@ -827,7 +876,7 @@ Audit Administrator
 
 Export File에도 암호화, 만료, Watermark 또는 Case ID, Download 제한과 삭제 증거를 적용합니다.
 
-## 25. 보존 기간은 Event 목적과 위험으로 정한다
+<h2 id="ai-section-25" style="scroll-margin-top: 96px;">25. 보존 기간은 Event 목적과 위험으로 정한다</h2>
 
 모든 Event를 같은 기간 보존하거나 영구 보존하지 않습니다.
 
@@ -864,7 +913,7 @@ OWASP는 요구된 기간보다 일찍 삭제하지 말고, 그 기간을 넘어
 
 기간은 설명용 Fixture이며 실제 조직 정책이 아닙니다.
 
-## 26. Hot·Warm·Cold Tier와 Legal Hold를 분리한다
+<h2 id="ai-section-26" style="scroll-margin-top: 96px;">26. Hot·Warm·Cold Tier와 Legal Hold를 분리한다</h2>
 
 보존과 즉시 검색 가능성은 같은 요구가 아닙니다.
 
@@ -887,7 +936,7 @@ Cold Storage로 이동해도 다음이 가능해야 합니다.
 
 Legal Hold는 모든 Log를 무기한 보존하는 기능이 아니라 대상, 사유, 승인자, 시작·종료와 검토 주기를 가진 별도 상태입니다.
 
-## 27. 중앙 수집과 정규화로 탐지 가능한 품질을 만든다
+<h2 id="ai-section-27" style="scroll-margin-top: 96px;">27. 중앙 수집과 정규화로 탐지 가능한 품질을 만든다</h2>
 
 공동 Event Logging 지침은 구조화된 형식, 중앙 수집, 정규화, 안전한 저장과 SIEM·XDR 분석을 권고합니다.
 
@@ -911,7 +960,7 @@ OpenTelemetry Event는 Event Name, Timestamp, Trace ID, Span ID, Severity, Resou
 
 내부 도메인 Event를 표준 Signal로 내보낼 때 의미를 잃지 않도록 Mapping Contract를 Test합니다.
 
-## 28. 탐지 규칙은 Decision과 Side Effect의 불일치를 본다
+<h2 id="ai-section-28" style="scroll-margin-top: 96px;">28. 탐지 규칙은 Decision과 Side Effect의 불일치를 본다</h2>
 
 AI Agent 특화 탐지는 단순 Error Count보다 통제 간 불일치가 중요합니다.
 
@@ -946,7 +995,7 @@ Hard Rule과 Baseline을 함께 사용합니다.
 
 `ALLOW 없는 Side Effect`는 즉시 조사할 수 있지만, “평소보다 Tool 호출이 많음”은 사용자 역할·시기·업무량 Context가 필요합니다.
 
-## 29. Alert에서 사고 대응 증거 Package까지 연결한다
+<h2 id="ai-section-29" style="scroll-margin-top: 96px;">29. Alert에서 사고 대응 증거 Package까지 연결한다</h2>
 
 Alert는 결론이 아니라 조사 시작점입니다.
 
@@ -1006,7 +1055,11 @@ Evidence Package에는 다음을 포함합니다.
 
 원문 Prompt가 없어도 정책과 Side Effect를 재구성할 수 있는지를 평소에 시험합니다.
 
-## 30. 운영 전 체크리스트와 Negative Test
+![정규화된 감사 Event에서 Decision·Approval·Side Effect 불일치를 탐지하고 Alert, Evidence Package, 사고 대응, Legal Hold와 통제 개선을 거쳐 탐지 규칙으로 되먹이는 폐루프](assets/blog-27-detection-response-loop.png)
+
+*그림 3. 감사 불일치를 사건 증거로 보존하고 대응 결과를 정책·Schema·탐지 테스트에 되먹이는 운영 폐루프*
+
+<h2 id="ai-section-30" style="scroll-margin-top: 96px;">30. 운영 전 체크리스트와 Negative Test</h2>
 
 ### Event·Identity
 
@@ -1096,7 +1149,7 @@ Audit Query·Export Anomaly
 Mean Time to Scope Agent Incident
 ```
 
-## 마무리
+<h2 id="ai-section-31" style="scroll-margin-top: 96px;">31. 마무리</h2>
 
 AI Agent 감사 흐름은 다음과 같이 정리할 수 있습니다.
 
@@ -1134,7 +1187,7 @@ AI Agent 감사의 목표는 “무슨 일이 있었는지 추측할 수 있는 
 
 이 글로 AI Agent·MCP·RAG·파일 처리와 보안 운영을 연결한 27편 기술자료 로드맵의 초안 작성을 마무리합니다.
 
-## 참고 자료
+<h2 id="ai-section-32" style="scroll-margin-top: 96px;">32. 참고 자료</h2>
 
 - [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
 - [OWASP Logging Vocabulary Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Vocabulary_Cheat_Sheet.html)
@@ -1157,3 +1210,5 @@ AI Agent 감사의 목표는 “무슨 일이 있었는지 추측할 수 있는 
 ---
 
 > 이 글은 2026년 7월 29일 기준 OWASP, NIST, CISA가 공동 참여한 Event Logging 지침, OpenTelemetry, W3C와 MCP의 공식 공개 자료 및 공개 가능한 엔터프라이즈 AI Agent 감사 설계 경험을 바탕으로 작성했습니다. 예시 ID, Event, Policy, Schema, Masking 방식, Hash, Retention 기간, Detection Rule과 Incident Playbook은 설명용 Fixture이며 실제 고객·Tenant·사용자·계정·Prompt·Tool Result·내부 시스템 정보가 아닙니다. 실제 적용 시 조직의 데이터 분류, 개인정보 처리 목적과 법적 근거, Tenant 계약, Identity·Authorization·Approval 구조, SIEM·Audit Storage, Incident Response 절차, 보존·삭제·Legal Hold 의무와 운영 위험을 검토하고 필수 Event Coverage·민감정보 Canary·Audit Pipeline 장애·변조·권한 우회·보존 만료 Negative Test로 검증해야 합니다.
+
+함께 읽으면 좋은 글: [Security Logging & Alerting Secure Coding](https://aiarchitect.tistory.com/61), [AI 에이전트 시크릿 가드 설계](https://aiarchitect.tistory.com/50).

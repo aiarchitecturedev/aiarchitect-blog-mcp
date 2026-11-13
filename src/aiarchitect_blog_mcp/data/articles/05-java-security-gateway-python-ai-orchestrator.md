@@ -1,5 +1,9 @@
 # 기업용 AI 백엔드 설계: Java Security Gateway와 Python AI Orchestrator의 책임 분리
 
+AI 기능을 붙일 때 Spring Boot와 Python을 연동하는 방법보다 먼저 정할 것은 무엇을 어디서 책임지는가입니다. 인증·권한을 Python까지 끌고 가면 보안 경계가 흐려지고, 반대로 AI 실행을 Java에 넣으면 모델 교체가 어려워집니다. 이 글은 Java Security Gateway와 Python AI Orchestrator를 나누는 기준, 내부 토큰 계약, REST·SSE·파일 전달 경계와 권한 재검증 원칙을 정리합니다.
+
+![Java Security Gateway가 외부 요청을 통제하고 제한된 내부 계약으로 Python AI Orchestrator에 연결되는 신뢰 경계](assets/blog-05-java-gateway-python-orchestrator-hero-v2.png)
+
 기업용 AI 서비스를 설계할 때 자주 나오는 질문이 있습니다.
 
 > 기존 Java 백엔드 안에 AI 기능을 넣어야 할까, Python 서비스를 따로 만들어야 할까?
@@ -10,23 +14,16 @@
 
 책임을 분리한 기준 구조는 다음과 같습니다.
 
-```text
-Web · Mobile · Business Channel
-                 │
-                 ▼
-      Java Security Gateway
-  인증 · 테넌트 · 정책 · 요청 통제
-                 │
-       제한된 내부 실행 계약
-                 │
-                 ▼
-      Python AI Orchestrator
-  Agent · RAG · 모델 · 승인 · 재개
-          │        │        │
-          ▼        ▼        ▼
-     Knowledge   MCP Tool   LLM·STT
-       Search    Servers    Providers
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    C["Web · Mobile · Business Channel"] --> G["Java Security Gateway<br/>Authentication · Tenant · API Policy"]
+    G --> X["Narrow Internal Context<br/>Audience · Scope · Expiry · Trace"]
+    X --> O["Python AI Orchestrator<br/>Workflow · RAG · Model · Approval"]
+    O --> D["Downstream Systems<br/>Knowledge · MCP Tools · AI Providers"]
 ```
+
+*그림 1. 외부 요청 통제와 AI 실행 조율을 제한된 내부 계약으로 분리한 기준 구조*
 
 이 구조는 모든 기업용 AI 시스템의 정답이 아닙니다. 다만 기존 Java 서비스와 Python AI 생태계를 함께 사용하고, 여러 채널과 업무 시스템을 하나의 보안 경계로 통제해야 할 때 유용한 출발점이 됩니다.
 
@@ -71,21 +68,16 @@ Spring Cloud Gateway의 Token Relay는 인증된 사용자의 Access Token을 Do
 
 AI Orchestrator의 핵심 역할은 모델 API를 한 번 호출하는 것이 아닙니다. 사용자 요청을 여러 단계의 실행 계획으로 바꾸고, 검색·모델·Tool 호출의 상태를 연결하는 것입니다.
 
-```text
-요청 수신
-  ↓
-실행 Context 검증
-  ↓
-Workflow 생성 또는 재개
-  ↓
-RAG 검색 · 모델 호출 · Tool 후보 생성
-  ↓
-필요 시 사용자 승인 대기
-  ↓
-Tool Server 재인가 후 실행
-  ↓
-결과 구조화 · 출처 연결 · 상태 저장
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    A["Authenticate Request"] --> P["Apply Tenant and Route Policy"]
+    P --> X["Issue Signed Narrow Context"]
+    X --> W["Run AI Workflow and Approval"]
+    W --> T["Reauthorize Object and Audit Result"]
 ```
+
+*그림 2. Gateway의 요청 수준 통제와 Orchestrator·Tool Server의 실행 시점 재인가가 이어지는 흐름*
 
 Orchestrator가 담당할 항목은 다음과 같습니다.
 
@@ -331,3 +323,5 @@ Java Security Gateway와 Python AI Orchestrator의 분리는 기술 취향이 �
 - [OpenTelemetry Traces and Context Propagation](https://opentelemetry.io/docs/concepts/signals/traces/)
 
 > 이 글은 2026년 7월 29일 기준 공개된 공식 문서와 공개 가능한 개발·상용화 검증 경험을 바탕으로 작성했습니다. 실제 구현에서는 조직의 인증 체계, 데이터 보안 등급, 운영 인력과 사용 중인 Framework 버전을 함께 확인해야 합니다.
+
+함께 읽으면 좋은 글: [폴리글랏 보안 계약 검증](https://aiarchitect.tistory.com/34), [프라이빗 API를 연결하는 Java Server SDK 설계](https://aiarchitect.tistory.com/41).

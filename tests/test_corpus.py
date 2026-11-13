@@ -23,13 +23,20 @@ from aiarchitect_blog_mcp.corpus import (
     parse_metadata,
 )
 
-EXPECTED_IDS = [f"{number:02d}" for number in range(1, 70)]
+# 서빙되는 글 번호(= 티스토리 글 번호). 36·37·97·98은 원본에 글이 없고,
+# 89·90은 정식 게시 URL이 없어 fail-closed로 제외된다.
+# build_index와 독립적으로 기대값을 다시 적는다(골든 테스트).
+EXPECTED_IDS = [
+    f"{n:02d}"
+    for n in [*range(1, 36), *range(38, 89), *range(91, 97), 99, 100]
+]
+EXPECTED_COUNT = 94
 EXPECTED_CATEGORY_COUNTS = {
+    "엔터프라이즈 아키텍처": 28,
     "보안": 19,
-    "엔터프라이즈 아키텍처": 14,
+    "AI Agent · MCP": 14,
     "개발 도구 · 자동화": 11,
-    "AI Agent · MCP": 8,
-    "기술 인사이트": 6,
+    "기술 인사이트": 11,
     "프로젝트 문제 해결": 6,
     "RAG · LLM 시스템": 5,
 }
@@ -59,6 +66,68 @@ def test_extract_body_strips_header():
     body = extract_body(text)
     assert body.startswith("## 개요")
     assert "문서 ID" not in body
+
+
+def test_extract_body_drops_unknown_internal_header_keys():
+    """화이트리스트에 없는 내부 편집 bullet도 공개 본문에 남으면 안 된다.
+
+    소스 헤더 키는 글마다 제각각이라(⚠️ 유출 주의·🔴 발행 전 확인·내부 링크 대상 …)
+    헤더의 끝을 키 목록으로 정할 수 없다. 보일러플레이트 H1 다음의 실제 H1부터가 본문이다.
+    """
+    text = (
+        "# Tistory 기술자료 초안\n\n"
+        "- 문서 ID: `BLOG-77`\n"
+        "- 분류: `AI Agent · MCP`\n"
+        "- ⚠️ 유출 주의: 내부 고객사명 언급 금지\n"
+        "- 🔴 발행 전 확인: 도식 2장 재렌더\n"
+        "- 내부 링크 대상: `/admin/draft/77`\n\n"
+        "---\n\n"
+        "# 실제 공개 제목\n\n"
+        "본문 시작\n"
+    )
+    body = extract_body(text)
+    assert body.startswith("# 실제 공개 제목")
+    for leaked in ("유출 주의", "발행 전 확인", "내부 링크 대상", "/admin/draft/77", "기술자료 초안"):
+        assert leaked not in body, leaked
+
+
+def test_extract_body_leaves_already_cleaned_bundle_body_untouched():
+    """번들된 본문은 이미 실제 H1로 시작한다 — 서빙 경로에서 다시 잘리면 안 된다."""
+    text = "# 실제 공개 제목\n\n본문 첫 줄\n\n- 절 제목 끝 라벨: 본문에 있는 평범한 불릿\n\n## 1절\n"
+    assert extract_body(text) == text.strip()
+
+
+def test_published_title_key_wins_over_filename_fallback():
+    """BLOG-76~90은 `권장 제목`이 아니라 `게시 제목`을 쓴다(파일명이 제목이 되면 안 된다)."""
+    text = (
+        "# Tistory 기술자료 초안\n"
+        "- 문서 ID: `BLOG-77`\n"
+        "- 분류: `AI Agent · MCP`\n"
+        "- 게시 제목: `AI Agent 실행 계약 설계`\n\n"
+        "# AI Agent 실행 계약 설계\n\n본문"
+    )
+    rec = build_record_from_text(text, "77-ai-agent-orchestration-mcp-a2a.md")
+    assert rec["title"] == "AI Agent 실행 계약 설계"
+
+
+def test_three_digit_article_id_is_parsed_and_served():
+    text = (
+        "# Tistory 기술자료 초안\n"
+        "- 문서 ID: `BLOG-100`\n"
+        "- 분류: `기술 인사이트`\n"
+        "- 게시 제목: `세 자리 글`\n"
+        "- 공개 URL: `https://aiarchitect.tistory.com/100`\n\n"
+        "# 세 자리 글\n\n본문"
+    )
+    rec = build_record_from_text(text, "100-tistory-ua-split-crawler-view.md")
+    assert rec["id"] == "100"
+    assert rec["published"] is True
+
+
+def test_article_id_equals_tistory_post_number():
+    """id는 원문 글 번호와 같다 — 에이전트가 인용한 출처 URL과 id가 어긋나지 않도록."""
+    for record in Corpus().records:
+        assert record["id"].lstrip("0") == record["url"].rstrip("/").rsplit("/", 1)[-1], record
 
 
 def test_parse_metadata_variants():
@@ -135,27 +204,28 @@ def test_is_published_rec_strict_fail_closed():
     assert not rec_is({"url": "https://aiarchitect.tistory.com/"})                      # 홈, 플래그 없음
 
 
-# --- 코퍼스(69편 빌드 산출물) 골든 테스트 ---
+# --- 코퍼스(94편 빌드 산출물) 골든 테스트 ---
 
 
-def test_index_corpus_and_bundle_have_the_same_expected_69_articles():
+def test_index_corpus_and_bundle_have_the_same_expected_94_articles():
     index = json.loads((DATA_DIR / "articles_index.json").read_text(encoding="utf-8"))
     index_records = index["articles"]
     corpus = Corpus()
     bundle_files = sorted((DATA_DIR / "articles").glob("*.md"))
 
-    assert index["count"] == 69
-    assert len(index_records) == 69
+    assert index["count"] == EXPECTED_COUNT
+    assert len(index_records) == EXPECTED_COUNT
     assert [record["id"] for record in index_records] == EXPECTED_IDS
     assert [record["id"] for record in corpus.records] == EXPECTED_IDS
-    assert [record["file"] for record in index_records] == [path.name for path in bundle_files]
-    assert len(bundle_files) == 69
+    # 인덱스는 글 번호 숫자순, 디스크 glob은 사전순("100" < "11")이라 집합으로 비교한다.
+    assert {record["file"] for record in index_records} == {path.name for path in bundle_files}
+    assert len(bundle_files) == EXPECTED_COUNT
 
 
 def test_seven_categories_match_target_counts():
     actual = Counter(record["category"] for record in Corpus().records)
     assert actual == Counter(EXPECTED_CATEGORY_COUNTS)
-    assert sum(actual.values()) == 69
+    assert sum(actual.values()) == EXPECTED_COUNT
 
 
 def test_ids_and_official_urls_are_unique_and_complete():
@@ -164,22 +234,22 @@ def test_ids_and_official_urls_are_unique_and_complete():
     urls = [record["url"] for record in corpus.records]
 
     assert ids == EXPECTED_IDS
-    assert len(ids) == len(set(ids)) == 69
-    assert len(urls) == len(set(urls)) == 69
+    assert len(ids) == len(set(ids)) == EXPECTED_COUNT
+    assert len(urls) == len(set(urls)) == EXPECTED_COUNT
     assert all(is_published(url) for url in urls)
     assert corpus.excluded_ids == []
 
 
-def test_default_pagination_combines_50_and_19_into_69():
+def test_default_pagination_combines_50_and_44_into_94():
     corpus = Corpus()
     first_page = corpus.list_articles()
     second_page = corpus.list_articles(offset=50)
     combined_ids = [record["id"] for record in first_page + second_page]
 
     assert len(first_page) == 50
-    assert len(second_page) == 19
+    assert len(second_page) == 44
     assert combined_ids == EXPECTED_IDS
-    assert len(set(combined_ids)) == 69
+    assert len(set(combined_ids)) == EXPECTED_COUNT
 
 
 def test_every_record_has_title_category_url():
@@ -200,7 +270,7 @@ def test_fail_closed_no_home_fallback_served():
 def test_bundled_articles_start_with_h1_and_have_no_editorial_metadata():
     """번들 원본은 실제 H1로 시작하고 파서가 읽을 편집 메타데이터가 없어야 한다."""
     files = sorted((DATA_DIR / "articles").glob("*.md"))
-    assert len(files) == 69
+    assert len(files) == EXPECTED_COUNT
     for f in files:
         text = f.read_text(encoding="utf-8")
         assert text.startswith("# "), f"{f.name}: 실제 H1로 시작하지 않음"
@@ -269,9 +339,11 @@ def test_search_finds_relevant_article():
 def test_search_body_and_backlinks_for_new_corpus_articles():
     corpus = Corpus()
     queries = {
-        "50": "Log Forging",
-        "61": "출처 링크",
-        "69": "익명성 게이트",
+        "61": "Log Forging",
+        "63": "블로그 MCP 서버",
+        "68": "익명성 게이트",
+        "91": "Assurance Case",   # 94편 갱신분
+        "100": "User-Agent 크롤러",  # 세 자리 id 회귀
     }
     by_id = {record["id"]: record for record in corpus.records}
 

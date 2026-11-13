@@ -1,5 +1,9 @@
 # Prompt Injection 방어: 신뢰 경계·데이터 표식·Tool Allowlist
 
+Prompt Injection은 입력을 잘 걸러내면 끝나는 문제가 아닙니다. 문서·웹페이지·이미지처럼 우리가 통제하지 않는 데이터가 모델에 들어오는 모든 지점이 공격면이고, 완벽한 탐지는 존재하지 않습니다. 이 글은 직접·간접·멀티모달 주입을 신뢰 경계, 출처와 신뢰 표식, 원래 사용자 의도 보존, Tool Allowlist, 결과 재검증, 공격 회귀 테스트로 막는 방어 설계를 정리합니다.
+
+![비신뢰 콘텐츠를 Content Envelope로 격리하고 불변 Intent와 Policy Enforcement Point로 검증해 제한된 Tool만 실행하며 유출 경로를 차단하는 구조](assets/blog-23-prompt-injection-defense-hero.png)
+
 AI Agent에게 “이 문서는 요약만 하라”고 요청했다고 가정해 보겠습니다.
 
 문서 안에는 다음과 같은 문장이 숨어 있을 수 있습니다.
@@ -147,6 +151,10 @@ Data Plane 콘텐츠는 다음 값을 바꿀 수 없어야 합니다.
 그러나 구분 표식이 모델의 해석에만 의존한다면 강제력이 없습니다.
 
 Application은 Data Plane에서 나온 값이 Control Plane 정책을 수정하는 API로 들어가지 못하도록 별도 형식과 권한 경계를 만들어야 합니다.
+
+![비신뢰 외부 Content와 Reader Model을 불변 Intent와 Policy Allowlist로 검증하는 Policy Enforcement Point를 거쳐 제한된 Tool로 연결한 구조](assets/blog-23-prompt-injection-trust-architecture.png)
+
+*그림 1. Data Plane의 콘텐츠와 Model 제안은 실행 권한을 갖지 않고 Control Plane의 Intent·Policy와 PEP에서 합류하는 구조*
 
 ## 5. 모든 콘텐츠를 Content Envelope로 감싼다
 
@@ -362,6 +370,67 @@ Allowlist는 Run 시작 시 다음 교집합으로 계산합니다.
 
 Tool Server는 `tools/call`마다 사용자, Scope, 객체, 업무 상태와 현재 정책을 다시 검증해야 합니다.
 
+앞서 다룬 Tool Allowlist는 사용자 권한·Workflow·데이터 분류의 교집합으로 계산하는 실행 시점 정책입니다. 같은 fail-closed 원칙은 그와 별개인 **외부 대상(Audience) Allowlist**, 곧 Agent가 어느 외부 시스템의 Token을 받을 수 있는지를 정하는 설정에도 적용됩니다.
+
+여기서 특히 놓치기 쉬운 것은 **정책이 비었을 때의 해석**입니다.
+
+빈 목록을 "제한 없음"으로 해석하는 허용적 기본값을 적용하면, 설정이 비는 순간 방어가 사라집니다. 그 상태에서도 요청은 정상 처리되므로 요청 성공 여부만 보면 알아차리기 어렵습니다.
+
+다음은 허용된 대상에 대해 대상별로 설정된 Scope를 Token 교환 요청에 사용하는 경계 컴포넌트의 계약을 일반화한 예입니다. 구현 상세보다 계약과 실패 방향을 보여주는 예입니다.
+
+```java
+public interface AudienceTokenBroker {
+
+    /**
+     * 허용 목록에 없는 대상이면 외부 호출 이전에 거부한다.
+     * 허용 목록이 비어 있으면 "제한 없음"이 아니라 "전부 거부"로 해석한다.
+     */
+    ExchangedToken exchange(SubjectToken subject, AudienceRef audience);
+
+    record AudienceRef(String value) {}
+
+    record ExchangedToken(AudienceRef audience, Instant expiresAt) {}
+}
+```
+
+계약을 이렇게 정하면 세 가지가 따라옵니다.
+
+**빈 허용 목록은 전부 거부입니다.** 구성이 비어 있는 상태를 "아직 제한을 걸지 않았다"가 아니라 "이 경로를 아직 쓸 수 없다"로 취급합니다. 문서만으로는 회귀 방지가 약하므로 Test로 고정합니다. 그래야 다음 사람이 허용적인 기본값으로 되돌리지 못합니다.
+
+**거부 시점은 외부 호출 앞입니다.** 미허용 대상이라면 신원 공급자에게 Token 교환을 요청하기 전에 끝냅니다. 이 판단은 §11의 Policy Enforcement Point를 실행 경로 앞에 두라는 원칙과 같은 것입니다.
+
+**허용 여부와 권한 범위는 다른 판단입니다.** 허용 목록은 "어느 대상으로 갈 수 있는가"를, Scope 설정은 "그 요청에 어떤 권한 범위를 실을 것인가"를 다룹니다. 둘을 분리하면 대상 추가와 권한 조정을 독립적으로 검토할 수 있습니다. 하나의 축처럼 다루면 두 변경이 함께 움직여 검토가 어려워집니다.
+
+이 중계 계층은 빈 목록과 등록되지 않은 대상을 **사용자 인증 실패가 아니라 구성 오류로 분류**합니다. 인증 실패로 처리하면 대응이 사용자 권한 쪽으로 향할 수 있고, 실제 원인인 설정 문제는 인증 실패 지표에 섞일 수 있습니다. 다만 등록되지 않은 대상 요청은 호출자 오류나 공격 입력일 수도 있으므로, 분류는 이 계층의 선택으로 두고 상위에서 다시 판단하게 합니다.
+
+Test는 정책 문장을 확인하는 것이 아니라 **거부 방향**을 단정해야 합니다.
+
+```java
+@Test
+void emptyAllowlistDeniesAll() {
+    var broker = brokerWith(Set.of());              // 빈 구성
+    assertThatThrownBy(() -> broker.exchange(subject, audience("tool-a")))
+            .isInstanceOf(BrokerException.class)
+            .extracting(e -> ((BrokerException) e).code())
+            .isEqualTo(NOT_CONFIGURED);
+    verify(identityProvider, never()).exchange(any());
+}
+
+@Test
+void unlistedAudienceRejectedBeforeOutboundCall() {
+    var broker = brokerWith(Set.of("tool-a"));
+    assertThatThrownBy(() -> broker.exchange(subject, audience("unlisted-tool")))
+            .isInstanceOf(BrokerException.class)
+            .extracting(e -> ((BrokerException) e).code())
+            .isEqualTo(NOT_CONFIGURED);
+    verify(identityProvider, never()).exchange(any());
+}
+```
+
+`verify(..., never())`가 이 Test의 핵심입니다. "예외가 발생했는가"만 확인하면 외부에 요청을 보낸 뒤 응답을 보고 거부하는 구현도 통과합니다. **차단하려는 외부 호출이 발생하지 않았는가**를 함께 단정해야 판단이 경계 안에서 끝났다는 사실이 고정됩니다.
+
+Token 교환 응답을 해석할 때도 같은 태도가 필요합니다. 응답의 Token이 문자열이 아닌 값으로 오거나 만료 시간이 숫자가 아닌 값으로 오면, 강제 변환해서 진행하지 않고 일관성 오류로 처리합니다. 같은 신뢰 경계 원칙은 §14에서 Tool Result에 다시 적용합니다.
+
 ## 10. Tool 이름뿐 아니라 인자와 데이터 흐름을 제한한다
 
 `message_send`를 Allowlist에 넣었다고 모든 수신자와 모든 내용이 허용되는 것은 아닙니다.
@@ -425,6 +494,10 @@ Model Proposal
               → Execute or Deny
 ```
 
+이 순서에서 중요한 것은 각 단계가 **다음 단계가 만드는 결과 이전에** 끝난다는 점입니다. Allowlist 검사가 Tool 호출 이후에 일어나면 이미 외부에 요청이 나간 뒤이고, 권한 검사가 Token 발급 이후에 일어나면 이미 자격이 만들어진 뒤입니다. 거부가 늦으면 이미 외부 처리나 자격 발급이 발생해 통제 효과가 약해집니다.
+
+그래서 이 경계는 "예외가 발생했는가"가 아니라 "차단하려는 외부 호출이 발생하지 않았는가"로 검증해야 합니다. §9의 `verify(..., never())`가 그 형태입니다.
+
 정책 결과도 구조화해 남깁니다.
 
 ```json
@@ -448,6 +521,10 @@ Model Proposal
 - Tool Description의 `readOnly` 주장
 - 공격자가 제공한 `trustLevel`
 - 단순히 이전에 같은 Tool을 실행했다는 사실
+
+![웹과 파일, Tool Result에서 온 외부 콘텐츠의 출처와 신뢰 표식을 보존하고 원래 Intent와 Tool 인자, 외부 전송을 검증해 허용 또는 차단하는 흐름](assets/blog-23-prompt-injection-blocking-flow.png)
+
+*그림 2. 외부 콘텐츠의 표식을 보존한 채 Intent·Tool·인자·Egress를 검증하고 거부 시 Audit과 오염 범위 조사로 연결하는 흐름*
 
 ## 12. 현재 행동을 원래 의도와 비교한다
 
@@ -1092,7 +1169,7 @@ Prompt Injection을 “나쁜 문장을 찾는 문제”에서 “신뢰하지 �
 
 다음 글에서는 AI Agent의 Credential을 모델 Context에서 분리하고, Short-lived Token (단기 토큰), Credential Broker (자격 증명 중개자), Secret Manager (비밀정보 관리자)와 Log Masking (로그 가림 처리)으로 관리하는 방법을 살펴보겠습니다.
 
-## 참고 자료
+## 31. 참고 자료
 
 - [OWASP LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/)
 - [OWASP LLM Prompt Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html)
@@ -1110,3 +1187,5 @@ Prompt Injection을 “나쁜 문장을 찾는 문제”에서 “신뢰하지 �
 ---
 
 > 이 글은 2026년 7월 29일 기준 OWASP, NIST와 MCP의 공식 공개 자료 및 공개 가능한 엔터프라이즈 AI Agent 보안 설계 경험을 바탕으로 작성했습니다. 예시 ID, Domain, 정책, 시간, Hash, Signature와 한도는 설명용 Fixture이며, 실제 적용 시 조직의 Identity, 데이터 분류, Tool 권한, 업무 위험, 모델·Parser 특성과 관련 법규에 맞게 검토하고 직접·간접·멀티모달 공격 및 실제 Side Effect 검증으로 확인해야 합니다.
+
+함께 읽으면 좋은 글: [AI Agent 보안 설계](https://aiarchitect.tistory.com/8), [AI Agent 감사 로그 설계](https://aiarchitect.tistory.com/27).

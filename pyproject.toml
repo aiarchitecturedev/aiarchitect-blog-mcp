@@ -1,7 +1,7 @@
 [project]
 name = "aiarchitect-blog-mcp"
-version = "0.1.1"
-description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 69 articles — as searchable tools for AI agents."
+version = "0.1.2"
+description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 94 articles — as searchable tools for AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
 # 코드는 MIT, 번들된 글 본문은 별도 커스텀 라이선스(LicenseRef). 자세한 조건은 LICENSE / LICENSE-ARTICLES.

@@ -1,5 +1,9 @@
 # 프라이빗 망 Server SDK 운영 안정성: 인증·재시도·멱등성과 관측성
 
+SDK에 재시도를 넣는 순간 편의 기능이 아니라 신뢰 경계를 건드리게 됩니다. 멱등성 보장이 없는 요청을 재시도하면 중복 실행이 생기고, Timeout을 계층마다 따로 두면 전체 대기 시간을 예측할 수 없게 되며, 서킷 브레이커 조건을 잘못 잡으면 정상 요청까지 막습니다. 이 글은 Java Server SDK 운영에 필요한 Deadline, 인증 갱신, 멱등성, 제한적 재시도, Jitter, Circuit Breaker, Bulkhead와 관측성 설계를 정리합니다.
+
+![프라이빗 망 Java Server SDK의 인증·재시도·멱등성·관측성 흐름](assets/blog-39-java-server-sdk-resilience-hero.png)
+
 앞선 두 글에서는 프라이빗 API를 호출하는 Java Server SDK의 모듈·전송 계층과, 이를 고객사 Spring Boot 애플리케이션에 연결하는 Starter를 설계했습니다.
 
 그러나 Client Bean이 정상 생성됐다는 사실만으로 운영 안정성이 보장되지는 않습니다. 프라이빗 망에서도 DNS 지연, TLS Handshake 실패, Gateway 과부하, Token 만료, 부분 응답, 연결 종료와 배포 중 순간 장애가 발생합니다. 이때 무제한 Timeout과 무분별한 재시도는 작은 장애를 전체 시스템의 자원 고갈로 확대할 수 있습니다.
@@ -666,3 +670,5 @@ example:
 - [OpenTelemetry: Semantic Conventions for HTTP](https://opentelemetry.io/docs/specs/semconv/http/)
 - [Kubernetes: Liveness, Readiness, and Startup Probes](https://kubernetes.io/docs/concepts/workloads/pods/probes/)
 - [OWASP: Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
+
+함께 읽으면 좋은 글: [AI Agent Dependency Resilience 설계](https://aiarchitect.tistory.com/83), [고객 Mobile·Web에서 Server SDK와 Private API까지](https://aiarchitect.tistory.com/52).

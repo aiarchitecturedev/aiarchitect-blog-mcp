@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -29,18 +30,36 @@ from aiarchitect_blog_mcp.corpus import (  # noqa: E402
 # 기본 소스는 저장소 루트의 blogs/(없으면 인자로 지정). 내부 저장소 경로를 하드코딩하지 않는다.
 DEFAULT_SRC = _ROOT / "blogs"
 OUT_DIR = _ROOT / "src" / "aiarchitect_blog_mcp" / "data"
-EXPECTED_IDS = tuple(f"{number:02d}" for number in range(1, 70))
+# 공개 소스에 존재해야 하는 글 번호(BLOG-NN) 구간. 결번(36·37·97·98)은 원본에 글이 없다.
+# 파일명·문서 ID·티스토리 글 번호가 1:1로 같다는 전제(id = 티스토리 번호).
+SOURCE_ID_RANGES = ((1, 35), (38, 96), (99, 100))
+# 정식 게시 URL이 아직 없는 초안. fail-closed로 번들(목록·검색·본문)에서 제외된다.
+EXPECTED_UNPUBLISHED_IDS = ("89", "90")
+
+
+def _format_id(number: int) -> str:
+    """글 번호 → 인덱스 id. 1~99는 2자리 0패딩, 100 이상은 그대로."""
+    return f"{number:02d}"
+
+
+EXPECTED_SOURCE_IDS = tuple(
+    _format_id(n) for lo, hi in SOURCE_ID_RANGES for n in range(lo, hi + 1)
+)
+EXPECTED_IDS = tuple(i for i in EXPECTED_SOURCE_IDS if i not in EXPECTED_UNPUBLISHED_IDS)
 EXPECTED_CATEGORY_COUNTS = {
+    "엔터프라이즈 아키텍처": 28,
     "보안": 19,
-    "엔터프라이즈 아키텍처": 14,
+    "AI Agent · MCP": 14,
     "개발 도구 · 자동화": 11,
-    "AI Agent · MCP": 8,
-    "기술 인사이트": 6,
+    "기술 인사이트": 11,
     "프로젝트 문제 해결": 6,
     "RAG · LLM 시스템": 5,
 }
 # 익명성 denylist는 비배포 로컬 파일(.private-tokens)에서 로드한다.
 # 개인 식별자 리터럴을 소스·번들·배포물에 남기지 않기 위함(release #16).
+# 소스 파일명 선두의 글 번호(1~3자리). 사전순 정렬·2자리 슬라이스 대신 이 값을 쓴다.
+_FILE_NUMBER = re.compile(r"^(\d{1,3})-")
+
 PRIVATE_TOKENS_FILE = _ROOT / ".private-tokens"
 
 
@@ -68,16 +87,20 @@ def main(src: Path, include_unpublished: bool = False) -> int:
         print(f"❌ 소스 디렉터리 없음: {src}", file=sys.stderr)
         return 1
 
-    files = sorted(p for p in src.glob("[0-9][0-9]-*.md"))
+    # 글 번호는 1~3자리(100편 이상)를 모두 받고, 사전순이 아닌 숫자순으로 정렬한다.
+    files = sorted(
+        (p for p in src.glob("[0-9]*-*.md") if _FILE_NUMBER.match(p.name)),
+        key=lambda p: int(_FILE_NUMBER.match(p.name).group(1)),
+    )
     if not files:
         print(f"❌ 마크다운 글을 찾지 못함: {src}", file=sys.stderr)
         return 1
 
-    # 정확한 69편 소스가 준비되지 않은 상태에서 기존 번들을 지우는 일을 막는다.
-    source_ids = [path.name[:2] for path in files]
-    if source_ids != list(EXPECTED_IDS):
-        missing = sorted(set(EXPECTED_IDS) - set(source_ids))
-        unexpected = sorted(set(source_ids) - set(EXPECTED_IDS))
+    # 완전한 소스가 준비되지 않은 상태에서 기존 번들을 지우는 일을 막는다.
+    source_ids = [_format_id(int(_FILE_NUMBER.match(path.name).group(1))) for path in files]
+    if source_ids != list(EXPECTED_SOURCE_IDS):
+        missing = sorted(set(EXPECTED_SOURCE_IDS) - set(source_ids))
+        unexpected = sorted(set(source_ids) - set(EXPECTED_SOURCE_IDS))
         duplicates = _duplicates(source_ids)
         print(
             "❌ 소스 ID 프리플라이트 실패: "
@@ -89,9 +112,10 @@ def main(src: Path, include_unpublished: bool = False) -> int:
     all_records = [build_record(f) for f in files]
 
     record_ids = [record["id"] for record in all_records]
-    if record_ids != list(EXPECTED_IDS):
+    if record_ids != list(EXPECTED_SOURCE_IDS):
         print(
-            f"❌ 메타데이터 ID 프리플라이트 실패: expected={list(EXPECTED_IDS)}, actual={record_ids}",
+            f"❌ 메타데이터 ID 프리플라이트 실패: expected={list(EXPECTED_SOURCE_IDS)}, "
+            f"actual={record_ids}",
             file=sys.stderr,
         )
         return 1
@@ -104,7 +128,7 @@ def main(src: Path, include_unpublished: bool = False) -> int:
     ids = [r["id"] for r in records]
     if ids != list(EXPECTED_IDS):
         print(
-            f"❌ 공개 글 프리플라이트 실패: expected=69, actual={len(records)}, "
+            f"❌ 공개 글 프리플라이트 실패: expected={len(EXPECTED_IDS)}, actual={len(records)}, "
             f"excluded={[record['id'] for record in excluded]}",
             file=sys.stderr,
         )
@@ -122,6 +146,22 @@ def main(src: Path, include_unpublished: bool = False) -> int:
     if not_published:
         print(f"❌ 정식 게시 URL 아님(서빙 불가): {not_published}", file=sys.stderr)
         return 1
+
+    # 제목·분류 메타를 못 읽어 파일명 폴백으로 떨어진 글을 배포 전에 잡는다.
+    # (소스가 새 헤더 키를 쓰기 시작하면 조용히 파일명이 제목이 되어 나간다)
+    fallback_titles = [r["id"] for r in records if r["title"] == Path(r["file"]).stem]
+    if fallback_titles:
+        print(f"❌ 제목 메타 누락(파일명 폴백): {fallback_titles}", file=sys.stderr)
+        return 1
+    # 분류는 목록·검색 필터와 분류 편수 프리플라이트가 의존하므로 비면 실패시킨다.
+    missing_category = [r["id"] for r in records if not r["category"]]
+    if missing_category:
+        print(f"❌ 분류 누락: {missing_category}", file=sys.stderr)
+        return 1
+    # 검색 설명은 스니펫 폴백에만 쓰이므로 경고만 한다(원본에 없는 글이 있다 — 예: BLOG-01).
+    missing_description = [r["id"] for r in records if not r["description"]]
+    if missing_description:
+        print(f"⚠️ 검색 설명 없음(스니펫은 본문 앞부분으로 폴백): {missing_description}", file=sys.stderr)
 
     category_counts = Counter(record["category"] for record in records)
     if category_counts != Counter(EXPECTED_CATEGORY_COUNTS):
