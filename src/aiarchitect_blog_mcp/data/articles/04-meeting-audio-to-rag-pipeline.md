@@ -1,5 +1,9 @@
 # 회의 음성에서 RAG까지: 녹취록·요약·검색·업무 연결 파이프라인
 
+회의 음성을 텍스트로 바꾸는 것과 그 회의를 검색할 수 있게 만드는 것은 다른 일입니다. 녹취록을 문장 덩어리로만 저장하면 어느 회의 어느 시점의 말인지 되짚을 수 없고, 요약만 남기면 근거가 사라집니다. 이 글은 음성 원본과 처리 작업 기록, 시간축을 보존한 STT 저장, 원본과 AI 생성 결과 분리, 주제·시간 기반 Chunking, 권한 필터가 앞에 오는 Vector Search, 출처 복귀와 업무 실행 승인까지 회의 RAG 파이프라인을 정리합니다.
+
+![회의 음성이 시간축 녹취록·구조화된 지식·Vector Search를 거쳐 검증된 업무 실행으로 이어지는 파이프라인](assets/blog-04-meeting-audio-rag-pipeline-hero-v2.png)
+
 회의를 녹음하고 AI 요약을 생성하는 것만으로 회의 데이터가 조직의 지식이 되지는 않습니다.
 
 요약 문서는 회의 직후 내용을 빠르게 파악하는 데 유용하지만, 시간이 지나면 다시 찾기 어렵습니다. “지난 분기에 인증 방식 변경을 결정한 회의가 언제였지?”, “담당자가 이번 달까지 처리하기로 한 업무는 무엇이었지?” 같은 질문에 답하려면 여러 회의의 녹취록과 결정사항을 검색할 수 있어야 합니다.
@@ -8,21 +12,16 @@
 
 회의 음성을 업무 자산으로 바꾸는 전체 흐름은 다음처럼 볼 수 있습니다.
 
-```text
-회의 음성
-   ↓
-STT·화자·시간 정보
-   ↓
-녹취록 정규화
-   ↓
-요약·결정·업무·일정 추출
-   ↓
-주제별 Chunk·Embedding·Index
-   ↓
-권한 기반 검색·출처 포함 답변
-   ↓
-승인된 업무 Tool 실행
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    A["Audio Source<br/>Tenant · Integrity · Retention"] --> T["Timed Transcript<br/>Speaker · Segment · Confidence"]
+    T --> F["Structured Facts and Chunks<br/>Decision · Action · Evidence"]
+    F --> I["Permissioned RAG Index<br/>Metadata Filter · Active Revision"]
+    I --> R["Cited Answer and Approved Action<br/>Source Link · Reauthorization"]
 ```
+
+*그림 1. 불변 원본과 시간축 녹취록을 출처·권한이 보존된 검색과 승인 실행으로 연결하는 전체 흐름*
 
 중요한 점은 이 흐름을 하나의 거대한 AI 요청으로 처리하지 않는 것입니다. 각 단계의 입력과 출력, 상태, 실패 복구 기준을 분리해야 다시 처리할 수 있고 운영 중인 데이터의 신뢰도를 확인할 수 있습니다.
 
@@ -268,23 +267,20 @@ MCP Tool 결과는 구조화된 데이터를 제공할 수 있으므로 생성�
 
 각 단계를 독립된 작업으로 구성하고 상태를 저장하는 편이 안전합니다.
 
-```text
-UPLOADED
-  → TRANSCRIBING
-  → TRANSCRIPT_READY
-  → STRUCTURING
-  → STRUCTURED
-  → INDEXING
-  → READY
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    J["Versioned Job<br/>Input · Model · Policy"] --> S["Run One Stage<br/>Transcribe · Structure · Index"]
+    S --> G{"Stage Result"}
+    G -- "Pass" --> C["Commit Derived Revision<br/>Keep Source Immutable"]
+    C --> N["Advance Active State<br/>Expose Verified Result"]
+    G -- "Fail" --> X["Record Stage Failure<br/>Retry Only This Stage"]
+    X --> S
 ```
 
-실패 상태도 전체 실패 하나로 표현하지 않습니다.
+*그림 2. 단계별 결과를 별도 Revision으로 기록하고 실패한 단계만 재시도하는 비동기 처리 흐름*
 
-```text
-TRANSCRIPTION_FAILED
-STRUCTURING_FAILED
-INDEXING_FAILED
-```
+실패 상태도 전체 실패 하나로 표현하지 않습니다. `TRANSCRIPTION_FAILED`, `STRUCTURING_FAILED`, `INDEXING_FAILED`처럼 실패 지점을 구분해야 앞 단계의 검증된 결과를 재사용할 수 있습니다.
 
 요약이 실패해도 이미 생성된 녹취록을 조회할 수 있고, Index 저장이 실패하면 STT를 다시 실행하지 않고 Index 단계만 재시도할 수 있어야 합니다.
 
@@ -348,3 +344,5 @@ INDEXING_FAILED
 - [MCP 2026-07-28 Tools 사양](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)
 
 > 이 글은 2026년 7월 29일 기준 공개된 공식 문서와 공개 가능한 상용 운영 경험을 바탕으로 작성했습니다. 실제 구현에서는 데이터 보안 등급, 사용 중인 STT·Embedding 모델, 검색 엔진과 업무 시스템의 지원 범위를 함께 확인해야 합니다.
+
+함께 읽으면 좋은 글: [음성에서 인사이트까지](https://aiarchitect.tistory.com/67), [웹 리서치 RAG](https://aiarchitect.tistory.com/33).

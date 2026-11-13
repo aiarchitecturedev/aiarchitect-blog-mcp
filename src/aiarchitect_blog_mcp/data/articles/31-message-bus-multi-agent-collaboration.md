@@ -1,5 +1,9 @@
 # 메시지 버스 기반 멀티 에이전트 협업: 에이전트별 MCP·RAG 권한 분리
 
+멀티 에이전트 오케스트레이션에서 어려운 부분은 역할을 나누는 일이 아니라 각 Agent가 무엇까지 할 수 있는지 제한하는 일입니다. 모든 Agent가 모든 MCP 서버와 RAG 컬렉션, 동료 Agent를 호출할 수 있으면 위임이 순환하고 예산이 무한히 늘고 사고 원인을 추적할 수 없습니다. 이 글은 Message Bus로 비동기 협업하면서 권한을 Allowlist로 최소화하고 위임·루프·예산·관측성을 통제하는 설계를 정리합니다.
+
+![중앙 Message Bus가 여러 전문 AI Agent의 Event를 중개하고 각 Agent의 MCP와 RAG 접근 경계를 분리하는 구조](assets/blog-31-message-bus-multi-agent-hero.png)
+
 하나의 거대한 AI Agent (AI 에이전트)에게 회의록 검색, 웹 조사, 초안 작성, 사실 검증, 최종 편집을 모두 시키면 초기 개발은 빠릅니다.
 
 문제는 이 에이전트에게 붙는 권한이 시간이 지날수록 계속 늘어난다는 점입니다.
@@ -153,6 +157,10 @@ Topic: run.terminated            (실행 종료·중단)
 ```
 
 여기서 발행자는 대상 역할(`researcher`)은 지정하되, 그 역할을 담당하는 구체적 인스턴스는 몰라도 됩니다. 버스가 대상 역할 구독 정보에 따라 전달합니다. 다만 에이전트 협업에서는 이 느슨함이 곧 위험이 되므로, 다음 절부터의 권한 분리가 반드시 함께 가야 합니다.
+
+![Orchestrator의 모든 위임을 Message Bus에서 추적하고 Researcher, Writer, Verifier마다 별도 MCP와 RAG Allowlist를 적용하는 구조](assets/blog-31-message-bus-agent-boundaries.png)
+
+*그림 1. 중앙 Message Bus를 공통 통제 지점으로 삼되 역할별 Tool·KB 권한은 서로 합치지 않는 협업 경계*
 
 ## 6. 에이전트별 권한 분리 1: 왜 Allowlist인가
 
@@ -455,6 +463,10 @@ on_message(env, payload):
 
 여기서 순서 역전 폐기는 Run 전체의 단일 generation이 아니라, `step_id`/`branch_id` 단위의 `expected_state_version`으로 비교합니다. Run 전체 하나의 카운터로 비교하면 병렬 분기가 서로의 버전을 덮어써 정상 결과까지 stale로 오판할 수 있기 때문입니다. 이 필드들도 봉투에 실려 신뢰된 런타임이 부여합니다. 또한 Run이 종료·취소된 뒤 도착한 늦은 결과가 상태를 덮어쓰지 못하도록, 소비 시점에 해당 step의 version을 함께 검증합니다. 이 규칙들이 없으면 "메시지 버스로 협업한다"는 설계는 규모가 커질수록 조용히 어긋납니다.
 
+![Task Envelope를 Dedup과 예산 Gate에서 검사하고 실행 결과를 Result Event 또는 DLQ로 보내는 메시지 전달 안전 흐름](assets/blog-31-message-delivery-safety-flow.png)
+
+*그림 2. ID·Deadline·Dedup을 담은 Envelope와 Hop·Token·Time·Retry Gate로 중복·폭주·실패를 제한하는 전달 흐름*
+
 ## 14. 오케스트레이션 상태 1: SSE로 위임·도구 호출 실시간 표시
 
 필자가 구현한 오케스트레이터는 FastAPI (파이썬 웹 프레임워크)와 SSE (Server-Sent Events, 서버 전송 이벤트)로, 위임과 도구 호출 흐름을 실시간 UI에 표시합니다.
@@ -541,6 +553,10 @@ Trace는 디버깅과 관측을 위한 것이며, 규제·책임 재구성을 �
 - 각 에이전트는 자신의 Allowlist 안에서만 도구를 호출했는가?
 - 최종 산출물의 각 주장은 어느 근거·출처에서 왔는가?
 - 어디서 재시도·실패·중단이 발생했는가?
+
+![위임 1건이 PENDING·RUNNING·SUCCEEDED·FAILED·RETRYING·GAVE_UP 상태를 오가며 멱등일 때만 재시도되고 SSE·Trace·감사 로그 세 증거가 서로의 대체물이 아니게 쌓이는 경로](assets/blog-31-delegation-state-evidence.png)
+
+*그림 3. 위임 1건이 PENDING에서 GAVE_UP까지 오가는 동안 멱등일 때만 재시도되고 SSE·Trace·감사 로그가 서로의 대체물이 아니게 쌓이는 경로*
 
 ## 17. 지식베이스 분리 1: 회의 KB vs 웹 KB 도메인 분리
 

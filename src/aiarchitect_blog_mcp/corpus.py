@@ -51,10 +51,18 @@ def _clamp_int(value, default: int, lo: int, hi: int) -> int:
 # 헤더 블록에 등장하는 알려진 필드명(본문 bullet과 구분하기 위한 화이트리스트)
 _META_KEYS = {
     "문서 ID", "상태", "Tistory 상태", "분류", "공개일", "공개 URL",
-    "제목", "권장 제목", "검색 설명", "태그", "권장 태그",
+    "제목", "권장 제목", "게시 제목", "검색 설명", "태그", "권장 태그",
     "권장 대표 이미지", "도식 정책", "작성 기준", "Tistory 글 번호",
 }
 _BULLET = re.compile(r"^-\s*([^:：]+?)\s*[:：]\s*(.*)$")
+# 소스 파일명 선두의 글 번호(1~3자리) — 문서 ID가 없을 때의 폴백.
+_FILE_NUMBER = re.compile(r"^(\d{1,3})-")
+
+
+def _id_sort_key(article_id: str) -> tuple[int, str]:
+    """id 동점 정렬 키. 숫자 id는 숫자 크기순(…"11" < "100"), 그 외는 사전순 뒤쪽."""
+    s = str(article_id)
+    return (int(s), "") if s.isdigit() else (1 << 30, s)
 
 
 def _strip_ticks(s: str) -> str:
@@ -74,9 +82,43 @@ def parse_metadata(text: str) -> dict[str, str]:
     return fields
 
 
+# 내부 헤더 블록이 끝나는 지점(실제 H1)을 찾을 때 훑는 범위. 실측 15~25행.
+_HEADER_WINDOW = 40
+
+
+def _internal_header_end(lines: list[str]) -> int:
+    """내부 헤더 블록 다음에 오는 실제 본문 H1의 줄 번호. 없으면 -1.
+
+    소스 글은 `보일러플레이트 H1` + 편집용 메타 bullet + `---` + 실제 H1 구조다.
+    메타 bullet 키는 글마다 제각각이라 화이트리스트로 헤더의 끝을 정하면 모르는 키가
+    공개 본문으로 샌다. 그래서 끝은 **구조**로 정한다 — 보일러플레이트 H1 다음에
+    오는 두 번째 H1부터가 공개 본문이다. 화이트리스트는 "편집용 헤더가 존재한다"는
+    신호로만 쓴다(일반 본문 오탐 방지).
+    """
+    if not lines or not lines[0].startswith("# "):
+        return -1
+    for i, ln in enumerate(lines[1:_HEADER_WINDOW], start=1):
+        if ln.startswith("# "):
+            head = lines[1:i]
+            has_meta = any(
+                (m := _BULLET.match(x)) and _strip_ticks(m.group(1)) in _META_KEYS
+                for x in head
+            )
+            return i if has_meta else -1
+    return -1
+
+
 def extract_body(text: str) -> str:
-    """헤더 블록(H1 + 메타 bullet) 이후의 본문만 반환한다."""
+    """헤더 블록(H1 + 메타 bullet) 이후의 본문만 반환한다.
+
+    번들된 글은 이미 정제돼 실제 H1로 시작하므로 그대로 돌려준다(서빙 경로 무변경).
+    """
     lines = text.splitlines()
+    start = _internal_header_end(lines)
+    if start >= 0:
+        return "\n".join(lines[start:]).strip()
+
+    # 내부 헤더 구조가 아닌 경우(정제된 번들 본문·변형 헤더): 알려진 메타 bullet까지만 잘라낸다.
     last_meta = -1
     for i, ln in enumerate(lines[:30]):
         m = _BULLET.match(ln)
@@ -95,10 +137,15 @@ def build_record(path: Path) -> dict:
     f = parse_metadata(text)
 
     doc_id = _strip_ticks(f.get("문서 ID", ""))
-    m = re.search(r"BLOG-(\d+)", doc_id)
-    num = m.group(1) if m else path.name[:2]
+    m = re.search(r"BLOG-(\d+)", doc_id) or _FILE_NUMBER.match(path.name)
+    # id는 티스토리 글 번호와 같다. 소스 표기(BLOG-7 / 07-...)에 상관없이 2자리로 정규화해
+    # Corpus._norm_id의 조회 키와 일치시킨다(100 이상은 그대로).
+    num = f"{int(m.group(1)):02d}" if m else path.stem
 
-    title = _strip_ticks(f.get("권장 제목") or f.get("제목") or path.stem)
+    # 제목 키는 글마다 다르다(게시 제목 = 실제 게시본, 권장 제목 = 초안 권장안).
+    title = _strip_ticks(
+        f.get("게시 제목") or f.get("권장 제목") or f.get("제목") or path.stem
+    )
     category = _strip_ticks(f.get("분류", ""))
     description = _strip_ticks(f.get("검색 설명", ""))
     tags_raw = f.get("권장 태그") or f.get("태그") or ""
@@ -212,7 +259,7 @@ class Corpus:
                 score += title.count(t) * 5 + tags.count(t) * 4 + desc.count(t) * 3 + body.count(t)
             if score > 0:
                 scored.append((score, r))
-        scored.sort(key=lambda x: (-x[0], x[1]["id"]))
+        scored.sort(key=lambda x: (-x[0], _id_sort_key(x[1]["id"])))
         out = []
         for score, r in scored[:limit]:
             item = self._summary(r)

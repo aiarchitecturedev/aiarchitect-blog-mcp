@@ -1,6 +1,10 @@
 # MCP란 무엇인가? AI Agent와 기업 시스템을 연결하는 표준 구조
 
+MCP(Model Context Protocol)는 AI 모델과 사내 문서·업무 시스템을 잇는 연결 규격을 표준화한 공개 프로토콜입니다. 연결 대상마다 전용 통합을 만들면 인증과 오류 처리, 도구 설명을 시스템마다 다시 구현해야 하지만, MCP는 Host·Client·Server로 역할을 나눠 같은 규격으로 붙입니다. 이 글은 MCP 서버가 제공하는 Tools·Resources·Prompts의 차이와 요청 처리 흐름, REST API와 무엇이 다른지, 사내 도입에서 반드시 정해야 하는 최소 권한·조회와 변경 분리·조직 경계·감사 설계를 정리합니다.
+
 생성형 AI가 문장을 잘 만드는 것과 실제 업무를 처리하는 것은 다른 문제입니다.
+
+![AI Host가 표준 MCP 연결 허브를 통해 문서·데이터베이스·일정·업무 시스템에 연결되는 구조](assets/blog-02-mcp-enterprise-standard-hero.png)
 
 AI 모델만으로는 사내 문서의 최신 내용을 확인하거나, 업무 시스템에서 회의록을 조회하거나, 승인된 사용자의 일정과 이슈를 변경할 수 없습니다. 이런 작업에는 외부 데이터와 기능을 안전하게 연결하는 통합 계층이 필요합니다.
 
@@ -8,7 +12,24 @@ MCP(Model Context Protocol)는 바로 이 연결 방식을 표준화한 공개 �
 
 흔히 MCP를 ‘AI 애플리케이션을 위한 USB-C’에 비유합니다. 연결 대상마다 전용 어댑터를 새로 설계하는 대신, 공통 규격으로 데이터와 도구를 연결한다는 의미입니다.
 
-## MCP가 해결하려는 문제
+<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
+<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
+<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
+<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP가 해결하려는 문제</a></li>
+<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Host, Client, Server의 역할</a></li>
+<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tools, Resources, Prompts</a></li>
+<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP 요청은 어떻게 처리되는가</a></li>
+<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">REST API와 MCP는 무엇이 다른가</a></li>
+<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기업용 MCP에서 더 중요한 것</a></li>
+<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP가 적합한 경우와 그렇지 않은 경우</a></li>
+<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
+<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
+</ol>
+</blockquote>
+
+<a id="ai-section-1"></a>
+
+## 1. MCP가 해결하려는 문제
 
 MCP가 없다고 해서 AI와 업무 시스템을 연결할 수 없는 것은 아닙니다. 기존 REST API나 SDK를 직접 연동해도 됩니다. 문제는 AI 애플리케이션과 외부 시스템이 늘어날수록 통합 조합이 빠르게 복잡해진다는 점입니다.
 
@@ -16,20 +37,40 @@ MCP가 없다고 해서 AI와 업무 시스템을 연결할 수 없는 것은 �
 
 MCP는 이 사이에 공통 계약을 둡니다.
 
-```text
-[사용자]
-    │
-    ▼
-[MCP Host: AI 애플리케이션]
-    │
-    ├─ [MCP Client] ─ [문서 MCP Server] ─ 문서 저장소
-    ├─ [MCP Client] ─ [이슈 MCP Server] ─ 이슈 관리 API
-    └─ [MCP Client] ─ [회의 MCP Server] ─ 회의록 시스템
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, sans-serif","fontSize":"24px","lineColor":"#52637a","clusterBkg":"#f8fbff","clusterBorder":"#8eb6dc"},"themeCSS":".flowchart-link{stroke:#52637a!important;stroke-width:2px!important}.marker{fill:#52637a!important;stroke:none!important}.arrowMarkerPath{fill:#52637a!important;stroke:none!important;stroke-width:0!important}"}}%%
+flowchart LR
+    U[사용자 요청] --> O
+
+    subgraph HOST[MCP Host · AI Application]
+        direction TB
+        O[Model · Orchestration<br/>Consent · Security Policy]
+        O --> C1[MCP Client A<br/>Server A 전용]
+        O --> C2[MCP Client B<br/>Server B 전용]
+    end
+
+    C1 -->|1:1 대상| S1[MCP Server A<br/>Tools · Resources · Prompts]
+    C2 -->|1:1 대상| S2[MCP Server B<br/>Tools · Resources · Prompts]
+    S1 --> E1[문서 · 이슈 시스템<br/>기존 API · 데이터]
+    S2 --> E2[회의 · 일정 시스템<br/>기존 API · 데이터]
+
+    classDef user fill:#f4efff,stroke:#7352b5,color:#2d2050,stroke-width:2px;
+    classDef client fill:#eaf3ff,stroke:#2878c8,color:#15324b,stroke-width:2px;
+    classDef server fill:#eaf8f1,stroke:#25855a,color:#163a2b,stroke-width:2px;
+    classDef system fill:#fff3cd,stroke:#a46b00,color:#3c2b00,stroke-width:2px;
+    class U user;
+    class O,C1,C2 client;
+    class S1,S2 server;
+    class E1,E2 system;
 ```
+
+*그림 1. Host가 Server별 전용 Client를 격리해 여러 기업 시스템을 연결하는 기본 구조*
 
 외부 시스템이 MCP Server로 기능을 제공하면, MCP를 지원하는 여러 AI 애플리케이션에서 같은 방식으로 연결할 수 있습니다. 다만 MCP가 기존 API를 없애는 것은 아닙니다. 대부분의 기업 환경에서는 기존 API와 업무 로직을 유지하고, 그 앞에 AI가 이해할 수 있는 MCP 인터페이스를 추가하게 됩니다.
 
-## Host, Client, Server의 역할
+<a id="ai-section-2"></a>
+
+## 2. Host, Client, Server의 역할
 
 MCP는 크게 세 구성요소로 이해하면 쉽습니다.
 
@@ -47,7 +88,9 @@ Host 내부에서 특정 MCP Server와 연결을 담당하는 구성요소입니
 
 여기서 중요한 점은 MCP Server가 AI 모델 자체가 아니라는 것입니다. Server는 자신이 담당하는 데이터와 기능을 명확한 계약으로 제공하고, 실제 추론과 전체 작업 조정은 Host가 담당합니다.
 
-## Tools, Resources, Prompts
+<a id="ai-section-3"></a>
+
+## 3. Tools, Resources, Prompts
 
 MCP Server가 제공하는 핵심 요소는 세 가지입니다.
 
@@ -88,11 +131,13 @@ Resource는 파일, 문서, 레코드처럼 모델이 읽고 판단에 사용할
 
 Prompt는 특정 업무를 일관된 순서와 형식으로 수행하도록 돕는 템플릿입니다. 조직의 분석 절차나 결과 형식을 재사용 가능한 형태로 제공할 때 유용합니다.
 
-## MCP 요청은 어떻게 처리되는가
+<a id="ai-section-4"></a>
+
+## 4. MCP 요청은 어떻게 처리되는가
 
 최신 `2026-07-28` 사양을 기준으로 보면 기본 흐름은 다음과 같습니다.
 
-1. Client가 `server/discover`로 Server의 버전과 지원 기능을 확인합니다.
+1. 필요한 경우 Client가 `server/discover`로 Server의 버전과 지원 기능을 먼저 확인합니다.
 2. Client가 `tools/list`, `resources/list`, `prompts/list` 등으로 사용 가능한 기능을 조회합니다.
 3. 사용자의 요청을 받은 Host가 적절한 Tool 또는 Resource를 선택합니다.
 4. 필요한 경우 Host가 사용자에게 실행 여부나 추가 입력을 확인합니다.
@@ -100,11 +145,46 @@ Prompt는 특정 업무를 일관된 순서와 형식으로 수행하도록 돕�
 6. Server가 권한과 입력값을 검증하고 내부 API 또는 데이터 저장소를 호출합니다.
 7. 결과가 Host로 돌아오면 모델이 이를 해석해 사용자에게 응답합니다.
 
+```mermaid
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"Arial, sans-serif","fontSize":"24px","lineColor":"#52637a","clusterBkg":"#ffffff","clusterBorder":"#cbd5e1"},"themeCSS":".flowchart-link{stroke:#52637a!important;stroke-width:2px!important}.marker{fill:#52637a!important;stroke:none!important}.arrowMarkerPath{fill:#52637a!important;stroke:none!important;stroke-width:0!important}"}}%%
+flowchart TB
+    subgraph PREP[기능 확인과 실행 선택]
+        direction LR
+        D[선택적 server/discover<br/>Version · Capabilities]
+        L[Catalog 조회<br/>tools/list · resources/list · prompts/list]
+        G[Host 선택<br/>User Intent · Consent · Arguments]
+        D --> L --> G
+    end
+
+    subgraph EXEC[2026-07-28 자체 완결 요청과 실행]
+        direction LR
+        Q[Client 요청<br/>Protocol Version · Client Info · Capabilities]
+        V[Server 검증<br/>Authorization · Schema · Policy]
+        R[실행과 반환<br/>Structured Result · Provenance]
+        Q --> V --> R
+    end
+
+    PREP -->|선택된 기능 · 인자| EXEC
+
+    classDef discover fill:#f4efff,stroke:#7352b5,color:#2d2050,stroke-width:2px;
+    classDef select fill:#eaf3ff,stroke:#2878c8,color:#15324b,stroke-width:2px;
+    classDef request fill:#fff3cd,stroke:#a46b00,color:#3c2b00,stroke-width:2px;
+    classDef result fill:#eaf8f1,stroke:#25855a,color:#163a2b,stroke-width:2px;
+    class D,L discover;
+    class G select;
+    class Q,V request;
+    class R result;
+```
+
+*그림 2. 선택적 기능 발견과 Catalog 조회부터 자체 완결 요청, Server 검증과 구조화된 결과 반환까지의 흐름*
+
 MCP의 데이터 계층은 JSON-RPC 2.0을 사용합니다. 전송 방식은 로컬 프로세스 연결에 적합한 `stdio`와 원격 연결에 적합한 `Streamable HTTP`가 대표적입니다.
 
 > 참고: `2025-11-25` 이전 방식에 익숙하다면 주의해야 합니다. `2026-07-28` 사양에서는 `initialize` 핸드셰이크와 `Mcp-Session-Id` 기반 프로토콜 세션이 제거됐습니다. 요청마다 필요한 버전과 기능 정보를 전달하는 stateless 구조가 도입되어 일반적인 HTTP 인프라에서 수평 확장이 쉬워졌습니다.
 
-## REST API와 MCP는 무엇이 다른가
+<a id="ai-section-5"></a>
+
+## 5. REST API와 MCP는 무엇이 다른가
 
 REST API와 MCP는 경쟁 관계가 아닙니다.
 
@@ -132,7 +212,9 @@ MCP Host / Client
 
 기존 업무 API가 잘 설계돼 있다면 다시 만들 필요가 없습니다. MCP Server는 기존 API를 호출하면서 AI가 사용할 수 있는 도구 이름, 입력 스키마, 권한 경계, 결과 형식을 제공하면 됩니다.
 
-## 기업용 MCP에서 더 중요한 것
+<a id="ai-section-6"></a>
+
+## 6. 기업용 MCP에서 더 중요한 것
 
 간단한 데모는 Tool 하나를 연결하는 것만으로 완성할 수 있습니다. 하지만 운영 시스템에서는 ‘연결된다’보다 ‘통제할 수 있다’가 더 중요합니다.
 
@@ -152,6 +234,14 @@ MCP Host / Client
 
 액세스 토큰을 그대로 하위 시스템에 전달하는 token passthrough는 피해야 합니다. Server는 자신을 대상으로 발급된 토큰인지 검증하고, 내부 시스템용 자격증명은 별도의 안전한 저장소에서 관리해야 합니다. 인증 헤더, 토큰, 인가 코드가 로그에 남지 않도록 마스킹도 필요합니다.
 
+필자가 원격 MCP Server를 운영하면서 확인한 것은, **검증 키의 조회 시점과 실패 처리도 인증 설계에 포함된다**는 점입니다. 사용 중인 토큰 검증기는 공개키 묶음의 캐시 유효기간이 지나면 요청 경로에서 다시 조회했고, 조회 실패를 HTTP 인증 실패로 처리했습니다. 당시 서명키는 바뀌지 않았고 토큰도 유효했지만, 검증에 필요한 키를 가져오지 못해 인증이 거부됐습니다.
+
+필자는 조회 실패 시 직전에 성공한 키를 제한적으로 사용하는 정책을 골랐습니다. 재조회 예산은 줄이고, 이 상태는 경고로 구분해 남기도록 정했습니다. 새 키 조회에 성공하면 캐시를 교체해 키 회전을 반영하도록 했습니다.
+
+📌 정리하면 인증 실패 신호에는 **자격이 없는 경우와 자격을 판정할 재료를 가져오지 못한 경우**가 섞일 수 있습니다. 외부 응답을 같게 유지하더라도 내부 경고와 관측 신호에서는 두 원인을 구분해야 합니다.
+
+토큰 만료에서도 비슷한 문제를 만났습니다. 상위 서비스는 만료를 상태 코드가 아니라 **HTTP 성공 응답의 본문**으로 알렸고, 프로세스 메모리에는 만료된 토큰이 계속 남았습니다. 필자는 토큰과 만료 시각을 함께 관리하고, 성공 응답의 본문이 만료를 알리면 한 번 갱신한 뒤 재시도하는 정책을 정했습니다. 다만 생성·수정 요청에는 아래의 멱등성 조건을 함께 적용해야 합니다.
+
 ### 감사와 관측성
 
 누가 어떤 Tool을 어떤 인자로 호출했고, 승인 여부와 결과가 무엇이었는지 추적할 수 있어야 합니다. 단, 감사 로그에도 개인정보와 비밀정보가 과도하게 저장되지 않도록 데이터 분류와 보존 정책을 함께 설계해야 합니다.
@@ -160,7 +250,17 @@ MCP Host / Client
 
 모델이 생성한 인자도 신뢰할 수 없는 외부 입력으로 취급해야 합니다. 스키마 검증뿐 아니라 업무 규칙 검증이 필요합니다. 재시도될 수 있는 생성·수정 작업은 중복 처리를 막기 위한 멱등성 키나 업무 식별자를 고려해야 합니다.
 
-## MCP가 적합한 경우와 그렇지 않은 경우
+### 모델 식별자를 어디에 고정할 것인가
+
+운영 중 요약 기능이 실패한 적이 있습니다. 원인은 코드나 권한이 아니라, **운영 환경에 모델 식별자가 명시되지 않아 은퇴한 코드 기본값이 그대로 사용된 것**이었습니다.
+
+대응 범위도 한곳에 그치지 않았습니다. 기본값과 예시, 관련 도구의 fallback, 문서를 함께 맞춰야 했습니다.
+
+📌 이 경험에서 얻은 운영 원칙은 **모델 식별자를 운영 설정에 명시하고 코드 기본값에만 의존하지 않는 것**입니다. 모델 식별자는 우리가 통제하지 않는 외부 값이며, 공급자가 변경하거나 은퇴시킬 수 있습니다. 이번에는 그 값을 쓰던 요약 기능이 멈췄습니다.
+
+<a id="ai-section-7"></a>
+
+## 7. MCP가 적합한 경우와 그렇지 않은 경우
 
 MCP는 다음 상황에서 특히 효과적입니다.
 
@@ -173,7 +273,9 @@ MCP는 다음 상황에서 특히 효과적입니다.
 
 MCP를 도입하는 목적은 유행하는 기술을 하나 더 추가하는 데 있지 않습니다. AI와 업무 시스템 사이의 계약을 표준화하고, 연결 기능을 재사용 가능한 통합 자산으로 만드는 데 있습니다.
 
-## 마무리
+<a id="ai-section-8"></a>
+
+## 8. 마무리
 
 MCP는 AI 모델의 성능을 높이는 기술이라기보다 AI가 실제 시스템과 협업하는 방식을 정리하는 프로토콜입니다.
 
@@ -187,7 +289,9 @@ MCP는 AI 모델의 성능을 높이는 기술이라기보다 AI가 실제 시�
 
 ---
 
-## 참고 자료
+<a id="ai-section-9"></a>
+
+## 9. 참고 자료
 
 - [MCP 공식 소개](https://modelcontextprotocol.io/docs/getting-started/intro)
 - [MCP 아키텍처 개요](https://modelcontextprotocol.io/docs/learn/architecture)
@@ -195,3 +299,5 @@ MCP는 AI 모델의 성능을 높이는 기술이라기보다 AI가 실제 시�
 - [MCP 2026-07-28 사양 릴리스 안내](https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/)
 
 > 이 글은 2026년 7월 29일 기준 공식 문서와 MCP `2026-07-28` 사양을 바탕으로 작성했습니다. 프로토콜과 SDK 지원 상태는 이후 변경될 수 있으므로 실제 구현 시 사용 중인 Client와 SDK의 지원 버전을 함께 확인해야 합니다.
+
+함께 읽으면 좋은 글: [MCP와 A2A를 함께 쓰는 엔터프라이즈 Agent 통합 아키텍처](https://aiarchitect.tistory.com/75), [내 블로그를 MCP 서버로 공개하기](https://aiarchitect.tistory.com/63).

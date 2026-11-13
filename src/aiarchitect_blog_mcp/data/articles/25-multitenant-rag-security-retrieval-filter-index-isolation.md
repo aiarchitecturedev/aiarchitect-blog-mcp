@@ -1,5 +1,9 @@
 # 멀티테넌트 RAG 보안: 수집 권한·Retrieval Filter·Index 격리
 
+멀티테넌트 RAG에서 테넌트 데이터가 섞이는 사고는 검색 단계가 아니라 수집 단계에서 이미 시작됩니다. 원본 문서의 ACL을 Chunk와 Vector까지 전파하지 않으면 Retrieval Filter로는 되돌릴 수 없습니다. 이 글은 수집 시 권한 전파, 인증된 Tenant Context 기반 Retrieval Filter 강제, Index와 Cache 격리, Citation 노출 범위, 삭제 전파까지 멀티테넌트 RAG의 권한 경계를 정리합니다.
+
+![여러 Tenant의 문서 흐름이 각자의 Identity와 ACL 보안 Gate를 거쳐 격리된 Vector Index에서 안전하게 검색되는 구조](assets/blog-25-multitenant-rag-security-hero.png)
+
 RAG (Retrieval-Augmented Generation, 검색 증강 생성)는 사용자의 질문과 관련된 문서를 찾아 모델 Context에 넣습니다.
 
 이 과정에서 검색 품질만 생각하면 다음 흐름을 만들기 쉽습니다.
@@ -333,6 +337,10 @@ Chunk가 원본보다 넓은 권한을 가지면 안 됩니다.
 
 공개 가능한 파생물을 만들려면 별도의 Declassification (보안 등급 해제) 승인과 검증이 필요합니다.
 
+![원본 ACL이 Security Envelope와 Chunk를 거쳐 격리 Index, Citation, Cache까지 이어지는 권한 전파 구조](assets/blog-25-multitenant-rag-acl-propagation.png)
+
+*그림 1. 원본 권한을 Security Envelope에 고정하고 Chunk·Index·Citation·Cache까지 같은 보안 문맥을 유지하는 흐름*
+
 ## 9. Embedding Model 경계도 Tenant 정책에 포함한다
 
 Embedding을 만들기 위해 외부 Model API에 원문 Chunk를 보낼 수 있습니다.
@@ -435,6 +443,10 @@ Retrieval Contract (검색 계약)를 구조화합니다.
 Model이 `tenantId`, Group, Clearance와 정책 Version을 생성하거나 수정할 수 없습니다.
 
 Retrieval Service가 인증된 Server Context에서 값을 주입합니다.
+
+![인증된 Tenant와 Role로 Retrieval 범위를 고정하고 ACL 사전 필터와 객체 재인가를 거쳐 허용 Chunk만 모델에 전달하는 흐름](assets/blog-25-multitenant-rag-retrieval-gate.png)
+
+*그림 2. 후보 검색 전에 권한 범위를 좁히고 결과 객체를 다시 인가해 허용된 최소 Context만 전달하는 검색 Gate*
 
 ## 13. Retrieval Filter는 후보 검색 전에 권한 범위를 고정한다
 
@@ -1026,7 +1038,7 @@ Multi-tenant RAG 보안은 정상 질문의 답변 품질만으로 검증할 수
 - [ ] 모든 경로에서 Cross-tenant Result 목표를 0으로 둔다.
 - [ ] Search·Authorization 장애 시 Filter 없는 Fallback을 금지한다.
 
-## 마무리
+## 31. 마무리
 
 멀티테넌트 RAG의 보안 흐름은 다음과 같이 정리할 수 있습니다.
 
@@ -1061,7 +1073,7 @@ RAG 보안의 목적은 다른 Tenant의 내용이 최종 답변에 우연히 �
 
 다음 글에서는 File Upload (파일 업로드) 경로를 Presigned URL (사전 서명 URL), Quarantine (검역), 형식·크기 검증, Malware Scan (악성코드 검사)과 Decompression Bomb (압축 폭탄) 방어로 구성하는 방법을 살펴보겠습니다.
 
-## 참고 자료
+## 32. 참고 자료
 
 - [OWASP RAG Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/RAG_Security_Cheat_Sheet.html)
 - [OWASP LLM08:2025 Vector and Embedding Weaknesses](https://genai.owasp.org/llmrisk/llm082025-vector-and-embedding-weaknesses/)
@@ -1081,3 +1093,5 @@ RAG 보안의 목적은 다른 Tenant의 내용이 최종 답변에 우연히 �
 ---
 
 > 이 글은 2026년 7월 29일 기준 OWASP, NIST, pgvector, PostgreSQL, OpenSearch, Azure AI Search와 Elasticsearch의 공식 공개 자료 및 공개 가능한 엔터프라이즈 RAG 보안 설계 경험을 바탕으로 작성했습니다. 예시 ID, Domain, ACL, Role, Classification, Version, Hash, 수명과 정책은 설명용 Fixture이며 실제 고객·Tenant·계정·내부 시스템 정보가 아닙니다. 실제 적용 시 Source 권한 모델, Vector Engine의 Filter 의미, 데이터 분류, Embedding Provider, Cache·Backup, 삭제 의무, 관련 법규와 Tenant별 계약을 검토하고 Cross-tenant Negative Test와 권한 철회·삭제 전파 시험으로 검증해야 합니다.
+
+함께 읽으면 좋은 글: [AI Agent 보안 설계](https://aiarchitect.tistory.com/8), [AI Agent 감사 로그 설계](https://aiarchitect.tistory.com/27).

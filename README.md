@@ -1,13 +1,13 @@
 # AI아키텍트 블로그 MCP 서버
 
-[aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **69편 규모**)를
+[aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **94편 규모**)를
 **MCP(Model Context Protocol) 도구**로 노출합니다. Claude·Cursor 등 MCP 클라이언트에 붙이면
 AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/LLM 주제의 한국어 장문 기술 글을
 바로 검색·열람할 수 있습니다.
 
 > 💡 목록·검색·본문 응답에 **원문(정식 게시글) URL**이 실려, 에이전트의 답변에 출처 링크가 남을
 > 가능성을 높입니다(추천 유입). ※ 정식 게시 URL이 없는 글은 **fail-closed로 목록·검색·본문에서
-> 제외**되어, 홈 URL 폴백이 오도성 출처 링크로 노출되지 않습니다(현재 번들 69편 전부 정식 게시글).
+> 제외**되어, 홈 URL 폴백이 오도성 출처 링크로 노출되지 않습니다(현재 번들 94편 전부 정식 게시글).
 
 > 🔒 **읽기 전용 서버**: 5개 도구 모두 로컬 번들 코퍼스만 읽습니다(쓰기·외부 호출·부작용 없음).
 > 각 도구에 `readOnlyHint`가 선언돼 있고, `limit`/`offset` 등 입력은 범위 밖 값·잘못된 타입을
@@ -58,13 +58,16 @@ uv run pytest -q                     # 파서·검색 골든 테스트
 uv run aiarchitect-blog-mcp          # stdio 서버 실행
 ```
 
-`build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`)를 인자로 받습니다:
-`uv run python scripts/build_index.py /path/to/blogs`.
+`build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`, 글 번호 1~3자리)를
+인자로 받습니다: `uv run python scripts/build_index.py /path/to/blogs`.
+글의 `article_id`는 원문 글 번호와 같습니다(`get_article("100")` → `.../100`).
 
 ## 📚 다루는 주제
 
 MCP 설계·OAuth 2.1·원격 MCP · AI Agent 보안/감사 · RAG·STT·화자분리 · 멀티플랫폼 SDK 아키텍처 ·
-골든 테스트·시크릿 가드 등. 전체 목록은 [블로그](https://aiarchitect.tistory.com/)에서 확인하세요.
+골든 테스트·시크릿 가드 · AI Agent 관측성·평가·컨트롤 플레인 · A2A 오케스트레이션·위임 인가 ·
+SRE/FinOps·용량 산정·릴리스 거버넌스·Assurance Case 등.
+전체 목록은 [블로그](https://aiarchitect.tistory.com/)에서 확인하세요.
 
 ## 📄 라이선스
 

@@ -1,5 +1,38 @@
 # STT 정확도 보정과 도메인 적응: 용어 사전·교정 규칙·피드백 루프
 
+STT 정확도는 하나의 숫자가 아니라 계층입니다. 용어 사전(hotwords)만 늘리면 오히려 오인식이 늘 수 있고, 파인튜닝이 항상 정답도 아닙니다. 이 글은 인식 후 교정을 중심으로 한국어 정규화와 고유명사 치환, 디코딩 힌트의 효과와 한계, 파라미터 튜닝과 파인튜닝의 판단 기준, 사람 교정 피드백 루프, 원본과 교정본을 버전으로 분리하는 데이터 설계를 정리합니다.
+
+![노이즈가 섞인 STT 파형과 불완전한 토큰이 계층형 교정 엔진을 통과해 정돈된 도메인 용어 자막으로 바뀌고 검토 신호가 다시 교정 계층으로 돌아오는 운영 구조](assets/blog-28-stt-correction-domain-adaptation-hero.png)
+
+<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
+<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
+<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
+<li><a href="#ai-section-1" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">정확도는 하나의 숫자가 아니라 계층이다</a></li>
+<li><a href="#ai-section-2" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">rawText는 재처리 기준, displayText는 표현이다</a></li>
+<li><a href="#ai-section-3" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">인식 후 교정 계층의 순서</a></li>
+<li><a href="#ai-section-4" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">한국어 정규화: 띄어쓰기·숫자·날짜</a></li>
+<li><a href="#ai-section-5" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">고유명사·약어 표기 통일</a></li>
+<li><a href="#ai-section-6" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">동음이의어·문맥 기반 교정</a></li>
+<li><a href="#ai-section-7" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">용어 사전(1): Hotwords와 initial_prompt는 무엇인가</a></li>
+<li><a href="#ai-section-8" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">용어 사전(2): 확률 조정 vs 학습, 그리고 한계</a></li>
+<li><a href="#ai-section-9" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">파라미터 튜닝 vs 파인튜닝: 의사결정 트리</a></li>
+<li><a href="#ai-section-10" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">사람 교정 피드백 루프(Human-in-the-loop)</a></li>
+<li><a href="#ai-section-11" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">오류 카탈로그: 개선의 회계 장부</a></li>
+<li><a href="#ai-section-12" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">원본 vs 교정본 관리: 버전·감사·다운스트림</a></li>
+<li><a href="#ai-section-13" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">도메인 적응 사이클(전체 그림)</a></li>
+<li><a href="#ai-section-14" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">Baseline과 회귀 방지: 평가 세트를 분리하지 않으면 개선도 착시다</a></li>
+<li><a href="#ai-section-15" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">교정 규칙 거버넌스: 규칙도 코드처럼 관리한다</a></li>
+<li><a href="#ai-section-16" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">개인정보와 보안 경계</a></li>
+<li><a href="#ai-section-17" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">실전 안티패턴</a></li>
+<li><a href="#ai-section-18" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">운영 전 점검 체크리스트</a></li>
+<li><a href="#ai-section-19" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
+<li><a href="#ai-section-20" style="color: inherit; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
+</ol>
+</blockquote>
+
+
+*그림 1. 더 큰 모델 하나가 아니라 추적 가능한 교정 계층과 피드백 루프로 정확도를 개선하는 STT 운영 구조*
+
 STT(Speech-to-Text, 음성 인식)를 실서비스에 붙이면 가장 먼저 나오는 요구는 대개 하나입니다.
 
 > “우리 회사 용어를 잘 못 알아들어요. 정확도를 올려 주세요.”
@@ -27,7 +60,7 @@ Audio → VAD → Whisper Inference → FINAL  ──▶  rawText 확정
                                               → 버전 추적 · 감사 · RAG/다운스트림 소비
 ```
 
-## 1. 정확도는 하나의 숫자가 아니라 계층이다
+<h2 id="ai-section-1" style="scroll-margin-top: 96px;">1. 정확도는 하나의 숫자가 아니라 계층이다</h2>
 
 “정확도를 올려 주세요”라는 요청을 받으면, 먼저 오류를 **어느 계층에서 고칠 수 있는지** 분해해야 합니다. 같은 “틀린 자막”이라도 원인과 처방이 다릅니다.
 
@@ -49,7 +82,7 @@ Audio → VAD → Whisper Inference → FINAL  ──▶  rawText 확정
 5) 그래도 남는 체계적 오류에 한해 파인튜닝 검토
 ```
 
-## 2. rawText는 재처리 기준, displayText는 표현이다
+<h2 id="ai-section-2" style="scroll-margin-top: 96px;">2. rawText는 재처리 기준, displayText는 표현이다</h2>
 
 이 글의 모든 논의는 하나의 데이터 규칙 위에 서 있습니다. **원본 STT 결과(rawText)와 사람이 읽는 교정본(displayText)과 AI 요약은 서로 다른 계층이며, 절대 서로 덮어쓰지 않는다.** 이 분리는 companion 글(회의 음성 → RAG)에서 이미 세운 원칙이며, 여기서는 교정 관점으로 확장합니다.
 
@@ -89,7 +122,7 @@ Audio → VAD → Whisper Inference → FINAL  ──▶  rawText 확정
 
 rawText가 살아 있으면 교정 규칙이 틀렸을 때 언제든 되돌릴 수 있습니다. rawText를 지우고 displayText만 남기면, 잘못된 치환을 발견해도 모델이 원래 무엇으로 인식했는지 복구할 수 없습니다. 이 한 가지 실수가 이후 모든 감사와 재처리를 막습니다. 물론 “원래 무엇이라 말했는가”의 최종 확인은 rawText가 아니라 원본 오디오로 돌아가야 한다는 점도 잊지 않습니다.
 
-## 3. 인식 후 교정 계층의 순서
+<h2 id="ai-section-3" style="scroll-margin-top: 96px;">3. 인식 후 교정 계층의 순서</h2>
 
 교정은 순서가 중요합니다. 뒤 단계가 앞 단계의 출력을 전제로 하기 때문입니다. 권장 파이프라인은 다음과 같습니다.
 
@@ -104,11 +137,15 @@ rawText
   → displayText
 ```
 
+![FINAL 오디오 세그먼트에서 불변 rawText를 보존한 채 정규화·용어 규칙·문맥 후보를 적용해 버전형 displayText를 만들고 모든 변경을 Correction Event Ledger에 기록하는 계보](assets/blog-28-stt-correction-lineage.png)
+
+*그림 2. rawText를 덮어쓰지 않고 교정본과 변경 증거를 별도 계층으로 남기는 STT 교정 계보*
+
 각 단계는 **무엇을 바꿨는지(from/to)와 어떤 규칙(ruleId)으로 바꿨는지**를 `corrections[]`에 남깁니다. 교정은 “보이지 않게 잘 고치는 것”이 목표가 아니라 “**추적 가능하게** 고치는 것”이 목표입니다.
 
 주의할 점은 companion 글에서 이미 다룬 것과의 경계입니다. 실시간 Partial 자막에는 과도한 문장부호·띄어쓰기 후처리를 하지 않고, 이 교정 파이프라인은 **FINAL로 확정된 rawText에만** 적용합니다. Partial은 계속 바뀌므로 교정하면 화면이 요동칩니다.
 
-## 4. 한국어 정규화: 띄어쓰기·숫자·날짜
+<h2 id="ai-section-4" style="scroll-margin-top: 96px;">4. 한국어 정규화: 띄어쓰기·숫자·날짜</h2>
 
 한국어 STT 교정에서 가장 자주, 그리고 가장 안전하게 얻는 개선은 **정규화**입니다. 발음은 맞게 인식됐지만 표기 규칙이 흔들리는 경우입니다.
 
@@ -149,7 +186,7 @@ STT는 “이천이십육년 칠월”처럼 읽은 대로 뱉는 경우가 많�
 - 자동 교정기의 버전을 `normalizationVersion`으로 남긴다.
 - 자동 교정이 의미를 바꾸는 사례를 회귀 테스트로 관리한다.
 
-## 5. 고유명사·약어 표기 통일
+<h2 id="ai-section-5" style="scroll-margin-top: 96px;">5. 고유명사·약어 표기 통일</h2>
 
 정규화 다음으로 안전한 개선은 **표기 통일**입니다. 발음은 맞았지만 표기가 갈리는 경우입니다. 예: 한 회의 안에서 “에이씨엠이 / ACME / 에이씨엠 이”가 섞여 나오면, 사람이 읽기에도 나쁘고 검색·집계도 어긋납니다.
 
@@ -181,7 +218,7 @@ STT는 “이천이십육년 칠월”처럼 읽은 대로 뱉는 경우가 많�
 
 **단순 문자열 전역 치환은 위험합니다.** 짧은 약어를 무조건 바꾸면 일반 명사·다른 문맥까지 손상됩니다. 그래서 토큰 경계와 문맥 조건, 그리고 confidence를 둡니다. 낮은 confidence 규칙은 자동 적용하지 않고 “후보”로만 표시합니다.
 
-## 6. 동음이의어·문맥 기반 교정
+<h2 id="ai-section-6" style="scroll-margin-top: 96px;">6. 동음이의어·문맥 기반 교정</h2>
 
 가장 어려운 계층입니다. 한국어에는 발음이 같고 뜻이 다른 표현이 많습니다. “배포/배표”, “결재/결제”, “연동/연통” 같은 쌍은 오디오만으로 구분되지 않을 수 있습니다. 이때는 **문맥과 화자**를 조건으로 삼습니다.
 
@@ -234,7 +271,7 @@ def resolve_homophones(segment, rules, context):
 
 원칙은 **확신이 없으면 고치지 않는다**입니다. 잘못된 교정은 “아무것도 안 한 것”보다 나쁩니다. 원문 발음이 맞았는데 문맥 교정이 틀리면, 사람이 검토할 때 근거가 사라지기 때문입니다. 동음이의어 교정은 confidence를 낮게 두고, 처음에는 “후보 강조 표시”로만 노출한 뒤 사람 피드백이 쌓이면 승격합니다.
 
-## 7. 용어 사전(1): Hotwords와 initial_prompt는 무엇인가
+<h2 id="ai-section-7" style="scroll-margin-top: 96px;">7. 용어 사전(1): Hotwords와 initial_prompt는 무엇인가</h2>
 
 여기까지가 인식 **이후**의 교정이었다면, 용어 사전은 인식 **확률**에 개입하는 방법입니다. 다만 **라이브러리마다 제공하는 인자가 다릅니다.** faster-whisper는 `hotwords`와 `initial_prompt`를 지원하고, OpenAI Whisper는 `initial_prompt`와 `carry_initial_prompt`를 지원합니다. **이 글에서 비교하는 OpenAI Whisper와 faster-whisper 중에서는 faster-whisper만 `hotwords` 인자를 제공합니다**(다른 ASR 엔진에도 hotword·contextual biasing 기능은 있으므로, “hotwords는 오직 faster-whisper뿐”이라는 뜻은 아닙니다). 따라서 이 글에서 말하는 “hotwords 인자”는 두 구현 중 faster-whisper 통로를 전제로 읽어야 합니다.
 
@@ -259,7 +296,7 @@ segments, info = model.transcribe(
 
 즉 용어 사전은 **인식 확률을 조금 밀어 주는 힌트**이지, 모델을 **학습**시키는 것이 아닙니다. 이 차이가 다음 절의 의사결정 기준을 가릅니다.
 
-## 8. 용어 사전(2): 확률 조정 vs 학습, 그리고 한계
+<h2 id="ai-section-8" style="scroll-margin-top: 96px;">8. 용어 사전(2): 확률 조정 vs 학습, 그리고 한계</h2>
 
 용어 사전을 “정확도의 만능 손잡이”로 오해하면 곧 벽을 만납니다. 성격과 한계를 표로 정리합니다.
 
@@ -299,7 +336,7 @@ initial_prompt에 **아직 확정되지 않은 Partial 전체나 이전 오류 �
 
 정리하면, 용어 사전은 **첫 등장 고유명사 표기**를 부드럽게 유도하는 데 좋고, **체계적·반복적 오류**를 근본적으로 없애 주지는 못합니다. 후자는 사후 교정 규칙 또는 파인튜닝의 영역입니다.
 
-## 9. 파라미터 튜닝 vs 파인튜닝: 의사결정 트리
+<h2 id="ai-section-9" style="scroll-margin-top: 96px;">9. 파라미터 튜닝 vs 파인튜닝: 의사결정 트리</h2>
 
 가장 자주 받는 질문입니다. “파인튜닝을 해야 하나요?” 경험적으로는 “먼저 값싼 계층부터 확인해 보자”가 유용한 출발점입니다(항상 정답이라는 뜻은 아닙니다). 다음 트리를 따릅니다.
 
@@ -339,7 +376,7 @@ Hugging Face의 공개 가이드는 Transformers로 Whisper를 임의 언어 ASR
 
 또 하나 실무에서 놓치기 쉬운 점은 **배포 형식**입니다. faster-whisper는 추론 엔진(CTranslate2 기반)이므로, Transformers로 학습한 파인튜닝 모델을 그대로 서빙하지 못합니다. 실제 배포 때는 추론 엔진이 요구하는 형식으로 **변환**하고, 변환 후 산출물이 학습 시점과 동일하게 동작하는지 **별도 회귀 검증**을 거쳐야 합니다.
 
-## 10. 사람 교정 피드백 루프(Human-in-the-loop)
+<h2 id="ai-section-10" style="scroll-margin-top: 96px;">10. 사람 교정 피드백 루프(Human-in-the-loop)</h2>
 
 정확도를 지속적으로 올리는 엔진은 결국 **사람이 고친 결과를 다시 시스템으로 되먹이는 루프**입니다. 이때 설계를 잘못하면 개인정보가 새거나, 소수의 잘못된 수정이 규칙을 오염시킵니다.
 
@@ -470,7 +507,11 @@ def promote_to_rule(feedbacks, min_agreement=3,
 
 가중치·임계값의 구체 숫자는 데이터로 조정할 값이며, 여기서는 **개념적 순서**만 제시합니다.
 
-## 11. 오류 카탈로그: 개선의 회계 장부
+![명시적 사람 교정을 테넌트 범위 후보로 격리하고 편집자·위치 다양성을 검토한 뒤 회귀 게이트를 통과한 규칙만 활성화하며 운영 오교정 증거를 다시 후보 단계로 되돌리는 폐루프](assets/blog-28-feedback-regression-loop.png)
+
+*그림 3. 사람 교정이 테넌트 격리·다수 확인·회귀 게이트·운영 모니터링을 거쳐 안전한 규칙으로 승격되는 폐루프*
+
+<h2 id="ai-section-11" style="scroll-margin-top: 96px;">11. 오류 카탈로그: 개선의 회계 장부</h2>
 
 규칙·사전·파인튜닝 어느 쪽이든, 무엇이 개선을 만들었는지 추적하지 못하면 다음 결정을 내릴 수 없습니다. 그래서 **오류 카탈로그(error catalog)** 를 둡니다. 이는 “어떤 종류의 오류가, 어떤 빈도로, 어떤 처방으로 줄었는지”의 장부입니다.
 
@@ -498,7 +539,7 @@ def promote_to_rule(feedbacks, min_agreement=3,
 
 카탈로그에는 실제 발화 문장·사람 이름·회의 제목을 넣지 않고, **오류 클래스와 최소한의 예시**만 남깁니다. 이 예시도 완전한 익명화가 아니라 가명화 수준일 수 있으므로, 민감정보로 간주해 접근통제·보존기간을 동일하게 적용합니다.
 
-## 12. 원본 vs 교정본 관리: 버전·감사·다운스트림
+<h2 id="ai-section-12" style="scroll-margin-top: 96px;">12. 원본 vs 교정본 관리: 버전·감사·다운스트림</h2>
 
 교정과 적응을 반복하면, “지금 이 자막은 어떤 규칙·모델 버전으로 만들어졌나?”라는 질문이 반드시 나옵니다. 이 질문에 답하지 못하면 감사도, 재생성도, 롤백도 불가능합니다.
 
@@ -572,7 +613,7 @@ RAG 색인에서 주의할 점은 **버전을 `chunkId` 안에 섞어 넣지 않
 
 `displayText`는 사람이 읽는 표현, `referenceText`는 학습·평가용 정답 전사입니다. 둘은 같은 문자열일 수도 있지만 **성격이 다르며**, 학습·WER/CER 산정에는 전사 지침 검증을 통과한 `referenceText`만 사용합니다(검증을 통과했다면 displayText와 동일 문자열이어도 무방합니다).
 
-## 13. 도메인 적응 사이클(전체 그림)
+<h2 id="ai-section-13" style="scroll-margin-top: 96px;">13. 도메인 적응 사이클(전체 그림)</h2>
 
 지금까지의 계층을 하나의 반복 사이클로 묶으면 다음과 같습니다. 이것이 이 글의 결론적 프레임입니다.
 
@@ -624,7 +665,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 
 핵심은 **오교정률을 낮게 유지하면서 적용률을 올리는 것**이고, 확신이 낮은 교정은 자동 적용 대신 보류(후보)로 돌려 보류율로 관리합니다. 이 지표들도 오류 클래스별로 나눠 보면 어떤 계층의 교정이 위험한지 드러납니다.
 
-## 14. Baseline과 회귀 방지: 평가 세트를 분리하지 않으면 개선도 착시다
+<h2 id="ai-section-14" style="scroll-margin-top: 96px;">14. Baseline과 회귀 방지: 평가 세트를 분리하지 않으면 개선도 착시다</h2>
 
 “정확도가 올랐다”를 주장하려면 **변하지 않는 측정 기준**이 있어야 합니다. 흔한 실수는 규칙을 추가하며 매번 다른 예시로 확인하는 것입니다. 그러면 A를 고치며 B를 망가뜨려도 알 수 없습니다.
 
@@ -658,7 +699,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 
 또한 평가 전처리를 고정·기록하지 않으면 WER/CER 비교가 재현되지 않습니다. 같은 오디오·같은 모델이라도 문장부호를 지웠는지, 대소문자를 접었는지, 숫자를 어떻게 표기했는지에 따라 수치가 달라지기 때문입니다. 그래서 평가 세트에는 **전처리 정책 버전**을 함께 묶어 둡니다.
 
-## 15. 교정 규칙 거버넌스: 규칙도 코드처럼 관리한다
+<h2 id="ai-section-15" style="scroll-margin-top: 96px;">15. 교정 규칙 거버넌스: 규칙도 코드처럼 관리한다</h2>
 
 규칙과 용어 사전은 곧 **또 하나의 코드베이스**입니다. 방치하면 서로 충돌하고, 아무도 왜 있는지 모르는 규칙이 쌓입니다.
 
@@ -673,7 +714,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 
 특히 **Denylist(차단 문구 목록)** 는 companion 글에서 강조했듯 **최후의 방어**입니다. Denylist만으로는 새로운 환각을 못 막고 실제 발화까지 지울 수 있습니다. 이 글의 교정 규칙과 Denylist는 목적이 다릅니다. 교정 규칙은 “표기를 통일/수정”하고, Denylist는 “근거 없는 반복 문구를 제거”합니다. 둘을 섞지 않습니다.
 
-## 16. 개인정보와 보안 경계
+<h2 id="ai-section-16" style="scroll-margin-top: 96px;">16. 개인정보와 보안 경계</h2>
 
 교정·피드백·적응은 모두 **실제 발화 내용**을 다루므로 개인정보 노출 위험이 큽니다.
 
@@ -683,7 +724,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 - **삭제 전파**: 원본 삭제 시 파생된 교정본·피드백·규칙 근거도 전파 삭제 대상인지 정의합니다. 다만 “무조건 삭제”가 정답은 아닙니다. 법적 보존 의무나 비식별 집계 예외가 있을 수 있으므로, **동의·계약·법적 보존 정책에 따라 삭제하거나 연결을 해제(가명 참조 파기)**하는 방식을 함께 규정합니다.
 - **파인튜닝 데이터 동의**: 발화 데이터를 학습에 쓰려면 별도 동의·보존 정책이 필요합니다. “교정에 쓰는 것”과 “학습에 쓰는 것”은 다른 동의 범위입니다.
 
-## 17. 실전 안티패턴
+<h2 id="ai-section-17" style="scroll-margin-top: 96px;">17. 실전 안티패턴</h2>
 
 | 안티패턴 | 왜 위험한가 | 대안 |
 |---|---|---|
@@ -696,7 +737,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 | 첫 요구에 곧장 파인튜닝 | 비용·위험 과다, 근본원인 미해결 | 값싼 계층 소진 후 결정 |
 | 다운스트림별 소스 버전 미정의 | 요약·검색·감사가 어긋남 | 소비자별 소스·버전 규칙 명시 |
 
-## 18. 운영 전 점검 체크리스트
+<h2 id="ai-section-18" style="scroll-margin-top: 96px;">18. 운영 전 점검 체크리스트</h2>
 
 | 점검 영역 | 확인 질문 |
 |---|---|
@@ -720,7 +761,7 @@ WER/CER는 “전사가 얼마나 정확한가”를 보지만, **자동 교정 
 | 개인정보 | 발화 텍스트를 로그·메트릭 Label에 넣지 않는가 |
 | 삭제 전파 | 원본 삭제가 동의·법적 보존 정책에 따라 교정본·피드백·규칙 근거에 전파(삭제 또는 연결 해제)되는가 |
 
-## 마무리
+<h2 id="ai-section-19" style="scroll-margin-top: 96px;">19. 마무리</h2>
 
 STT 정확도 개선은 “더 좋은 모델을 고르는 문제”가 아니라 **오류를 계층으로 분해하고, 값싼 계층부터 추적 가능하게 처방하며, 사람의 교정을 시스템으로 되먹이는 운영 문제**입니다.
 
@@ -738,7 +779,7 @@ STT 정확도 개선은 “더 좋은 모델을 고르는 문제”가 아니라
 
 ---
 
-## 참고 자료
+<h2 id="ai-section-20" style="scroll-margin-top: 96px;">20. 참고 자료</h2>
 
 - [faster-whisper (SYSTRAN) GitHub](https://github.com/SYSTRAN/faster-whisper)
 - [faster-whisper: transcribe 옵션 정의 (hotwords, initial_prompt, beam_size, no_speech_threshold 등)](https://github.com/SYSTRAN/faster-whisper/blob/master/faster_whisper/transcribe.py)

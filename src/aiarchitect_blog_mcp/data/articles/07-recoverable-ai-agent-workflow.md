@@ -1,5 +1,9 @@
 # 운영 가능한 AI Agent 만들기: Checkpoint, Retry, Idempotency와 Outbox
 
+긴 AI Agent Workflow는 실패하는 것이 문제가 아니라 실패 후 어디서 다시 시작할지 모르는 것이 문제입니다. 재시도만 붙이면 이미 보낸 메일이 두 번 나가고, 멱등성 없이 재개하면 부작용이 중복됩니다. 이 글은 Checkpoint로 상태를 저장하고 멱등성 키로 중복 실행을 막으며, Retry 정책과 Outbox로 외부 발행을 분리하고 승인 경계를 두는 운영 설계를 정리합니다.
+
+![AI Agent Workflow가 Checkpoint·제한된 Retry·Idempotency·Outbox를 통해 장애 후에도 안전하게 재개되는 구조](assets/blog-07-recoverable-agent-workflow-hero.png)
+
 AI Agent 데모는 질문을 받고 LLM을 호출한 뒤 Tool 결과를 보여 주면 완성된 것처럼 보입니다. 운영 환경에서는 그 사이에 훨씬 많은 일이 생깁니다.
 
 - 모델 응답이 늦어집니다.
@@ -18,28 +22,17 @@ AI Agent 데모는 질문을 받고 LLM을 호출한 뒤 Tool 결과를 보여 �
 
 기준 구조는 다음과 같습니다.
 
-```text
-User Request
-     │
-     ▼
-Workflow Instance ───── Checkpoint Store
-     │                   상태 · 버전 · 재개 지점
-     ├─ LLM Node
-     ├─ Retrieval Node
-     ├─ Approval Interrupt
-     └─ Tool Execution ── Idempotency Store
-              │           실행 결과 · 요청 지문
-              ▼
-       Business Transaction
-              ├─ Domain State
-              └─ Outbox Event
-                       │
-                       ▼
-                 Event Relay
-                       │
-                       ▼
-               Downstream Consumer
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    R["Request and Workflow ID"] --> C["Durable Checkpoint<br/>State · Version · Resume Point"]
+    C --> A["Approval and Reauthorization<br/>Bound to Exact Operation"]
+    A --> I["Idempotent Tool Operation<br/>Stable operationId"]
+    I --> T["Domain Commit and Outbox<br/>State · Event · Evidence"]
+    C -. "Retry or Resume" .-> A
 ```
+
+*그림 1. Checkpoint는 실행 상태를 복구하고, 멱등성과 Outbox는 외부 효과와 후속 이벤트를 안전하게 보존한다.*
 
 Checkpoint(상태 저장), Retry(재시도), Idempotency(멱등성)와 Outbox(메시지 발행)는 각각 다른 실패를 해결합니다. 하나를 적용했다고 나머지가 자동으로 해결되는 것은 아닙니다.
 
@@ -268,11 +261,17 @@ COMMIT;
 
 Workflow가 업무 상태를 바꾼 뒤 메시지 브로커에 이벤트를 발행하는 경우를 생각해 보겠습니다.
 
-```text
-업무 DB Commit 성공
-        ↓
-Event Publish 실패
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Arial, sans-serif", "primaryColor": "#edf6ff", "primaryBorderColor": "#2378c9", "primaryTextColor": "#17324d", "lineColor": "#4d6f8f", "secondaryColor": "#edf8f5", "tertiaryColor": "#fff4de", "background": "#ffffff"}}}%%
+flowchart LR
+    P["Prepare Stable operationId"] --> K{"Idempotency Record Exists?"}
+    K -- "Yes" --> S["Return Saved Result<br/>No Duplicate Effect"]
+    K -- "No" --> E["Execute Business Change"]
+    E --> T["One Transaction<br/>Domain State + Idempotency + Outbox"]
+    T --> R["Relay Event<br/>Consumer Deduplicates by eventId"]
 ```
+
+*그림 2. 같은 업무 의도는 저장된 결과를 재사용하고, 새 변경만 업무 상태와 Outbox를 한 Transaction에 기록한다.*
 
 업무 상태는 바뀌었지만 후속 서비스는 변경 사실을 모르게 됩니다. 순서를 반대로 바꾸면 이벤트는 발행됐는데 업무 Transaction이 Rollback되는 반대 불일치가 생길 수 있습니다.
 
@@ -484,3 +483,5 @@ Checkpoint만 추가하면 Agent는 다시 움직일 수 있습니다. Idempoten
 - [OpenTelemetry Concepts](https://opentelemetry.io/docs/concepts/)
 
 > 이 글은 2026년 7월 29일 기준 공개된 공식 문서와 공개 가능한 AI Orchestration 설계·검증 경험을 바탕으로 작성했습니다. 사용 중인 Workflow Engine, Database, Message Broker와 외부 Tool의 멱등성 지원 범위에 맞춰 Transaction 경계와 복구 정책을 검증해야 합니다.
+
+함께 읽으면 좋은 글: [AI Agent 도입 준비도 진단](https://aiarchitect.tistory.com/69), [AI Agent 메모리 아키텍처](https://aiarchitect.tistory.com/73).

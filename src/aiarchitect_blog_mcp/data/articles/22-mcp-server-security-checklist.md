@@ -1,5 +1,50 @@
 # MCP Server 보안 체크리스트: OAuth·Scope·Origin·SSRF·Rate Limit
 
+원격 MCP Server를 열면 그 순간부터 사내 시스템으로 들어오는 새 입구가 하나 생깁니다. MCP 보안 사고는 대개 프로토콜이 아니라 Token Audience, Scope 범위, Origin 검증 같은 배포 설정에서 납니다. 이 글은 OAuth Token과 Audience 확인, 최소 Scope, Origin과 DNS Rebinding 차단, SSRF 방어, Tool별 Rate Limit, 상태 핸들 인가를 배포 전에 실제로 시험할 항목으로 정리합니다.
+
+![AI Client 요청이 Origin, OAuth Token, 최소 Scope, Tenant·객체 인가, Tool 입력, SSRF 안전 Egress, 실행 예산 통제를 통과해 승인된 기업 시스템으로만 연결되는 밝은 MCP Server 보안 경계](assets/blog-22-mcp-server-security-checklist-hero.png)
+
+<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
+<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
+<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
+<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기준 사양과 배포 유형을 먼저 고정한다</a></li>
+<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">먼저 신뢰 경계를 그린다</a></li>
+<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기본 정책은 Deny by Default다</a></li>
+<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">TLS와 Reverse Proxy 경계를 확인한다</a></li>
+<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Origin 검증은 CORS 설정과 다르다</a></li>
+<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Local Server는 Loopback에만 Binding한다</a></li>
+<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Protected Resource Metadata를 정확히 게시한다</a></li>
+<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Token을 매 요청 독립적으로 검증한다</a></li>
+<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audience 검증과 Token Passthrough를 분리한다</a></li>
+<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Scope는 Tool Catalog가 아니라 작업 Capability다</a></li>
+<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">401과 403을 구분하고 최소 Scope만 Challenge한다</a></li>
+<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Scope 이후에 객체·Tenant 인가를 다시 수행한다</a></li>
+<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">2026-07-28 사양에서는 암묵적 Session을 기대하지 않는다</a></li>
+<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool 입력은 JSON Schema 이후에도 검증한다</a></li>
+<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Header와 Body가 다르면 요청을 거부한다</a></li>
+<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool Output도 신뢰하지 않는 데이터다</a></li>
+<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">SSRF 진입점을 먼저 목록화한다</a></li>
+<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">URL 문자열 검사만으로 SSRF를 막지 않는다</a></li>
+<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool마다 Egress Capability를 선언한다</a></li>
+<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Rate Limit은 요청 횟수 하나가 아니다</a></li>
+<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Rate뿐 아니라 Concurrency·Queue·Budget을 제한한다</a></li>
+<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">한도 초과 응답은 재시도 폭주를 막아야 한다</a></li>
+<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Rate Limit 저장소 장애 정책을 정한다</a></li>
+<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Timeout과 취소를 자원 회수까지 연결한다</a></li>
+<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">오류 응답이 공격자에게 내부 구조를 알려주지 않게 한다</a></li>
+<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Secret을 Prompt와 Tool 인자에서 분리한다</a></li>
+<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 Log는 결정과 실행을 분리한다</a></li>
+<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">배포 설정을 기계적으로 검사할 수 있게 만든다</a></li>
+<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Negative Test Matrix를 운영 인수 조건으로 사용한다</a></li>
+<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">배포 전 체크리스트</a></li>
+<li><a href="#ai-section-31" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
+<li><a href="#ai-section-32" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
+</ol>
+</blockquote>
+
+
+*그림 1. MCP 요청이 계층별 검증을 통과한 뒤 승인된 Tool 실행 경로로만 전달되는 운영 보안 구조*
+
 MCP Server가 `tools/list`와 `tools/call`에 정상 응답한다고 운영 준비가 끝난 것은 아닙니다.
 
 원격 MCP Server는 AI Client와 기업 시스템 사이에서 다음 기능을 수행할 수 있습니다.
@@ -40,6 +85,10 @@ TLS·Origin
 ```
 
 이 글은 MCP OAuth의 전체 인증 흐름을 다시 설명하기보다, **MCP Server 운영자가 배포 전에 확인할 설정·코드·실패 시험**을 정리합니다.
+
+![MCP 요청이 Edge, Token, Policy, Tool Gate를 차례로 통과하고 실패 요청은 실행 없이 감사 증거로 남는 흐름](assets/blog-22-mcp-request-security-gates.png)
+
+*그림 2. 각 보안 경계를 독립적으로 검증하고 실패는 Downstream 미호출·무부작용 증거로 수렴시키는 MCP 요청 Gate*
 
 ## 1. 기준 사양과 배포 유형을 먼저 고정한다
 
@@ -691,6 +740,10 @@ IP만 기준으로 제한하면 여러 사용자가 같은 NAT를 공유할 때 
 - Backpressure (역압)
 - 전체 시스템 Emergency Limit
 
+![Tool Call이 URL 정책과 Redirect별 DNS·IP 검증, Egress Proxy, Rate·Concurrency·Queue·Cost 예산을 거치고 운영 증거와 Negative Test가 정책을 갱신하는 폐루프](assets/blog-22-egress-budget-evidence-loop.png)
+
+*그림 3. SSRF 목적지 검증과 고비용 Tool 실행 예산을 결합하고 감사 증거를 다음 배포 정책으로 되돌리는 운영 폐루프*
+
 OWASP API4 Unrestricted Resource Consumption (제한 없는 자원 소비)은 실행 시간, Memory, Payload, 작업 수, 호출 빈도와 외부 서비스 지출 한도를 함께 제한하도록 권고합니다.
 
 ## 22. 한도 초과 응답은 재시도 폭주를 막아야 한다
@@ -986,7 +1039,7 @@ Side Effect가 발생하지 않았는가?
 - [ ] 거부·한도·Tool 실행·Side Effect 감사 Event를 연결한다.
 - [ ] Negative Test Matrix를 배포 Gate에서 실행한다.
 
-## 마무리
+## 31. 마무리
 
 안전한 MCP Server는 OAuth Login이 한 번 성공한 Server가 아닙니다.
 
@@ -1022,7 +1075,7 @@ MCP Server 보안 체크리스트의 목적은 항목에 체크 표시를 많이
 
 다음 글에서는 Prompt Injection을 직접·간접·다중 Modal 공격으로 나누고, 신뢰 경계·데이터 표식·Tool Allowlist와 실행 전 재검증으로 방어하는 방법을 살펴보겠습니다.
 
-## 참고 자료
+## 32. 참고 자료
 
 - [MCP 2026-07-28: Authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)
 - [MCP 2026-07-28: Streamable HTTP](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)
@@ -1041,3 +1094,5 @@ MCP Server 보안 체크리스트의 목적은 항목에 체크 표시를 많이
 ---
 
 > 이 글은 2026년 7월 29일 기준 MCP 2026-07-28 사양, IETF OAuth·HTTP RFC와 OWASP의 공식 공개 자료 및 공개 가능한 엔터프라이즈 MCP Server 설계 경험을 바탕으로 작성했습니다. 예시 Domain, Scope, Handle, 정책, 한도와 시간은 설명용 Fixture이며 실제 적용 시 조직의 Identity Provider, Network, Tenant 모델, Tool 위험, 데이터 분류, SLO, 관련 법규와 보안 정책에 맞게 검토하고 침투·부하·장애 시험으로 검증해야 합니다.
+
+함께 읽으면 좋은 글: [Insecure Design Secure Coding](https://aiarchitect.tistory.com/58), [AI Agent 자격 증명 관리](https://aiarchitect.tistory.com/24).
