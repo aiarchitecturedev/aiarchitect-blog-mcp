@@ -1,5 +1,7 @@
 # AI아키텍트 블로그 MCP 서버
 
+[![CI](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml)
+
 [aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **94편 규모**)를
 **MCP(Model Context Protocol) 도구**로 노출합니다. Claude·Cursor 등 MCP 클라이언트에 붙이면
 AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/LLM 주제의 한국어 장문 기술 글을
@@ -55,12 +57,17 @@ claude mcp add aiarchitect-blog -- uvx aiarchitect-blog-mcp
 uv sync                              # 의존성 설치
 uv run python scripts/build_index.py /path/to/blogs  # 블로그 md → data/articles_index.json + 본문 번들
 uv run pytest -q                     # 파서·검색 골든 테스트
+uv build && uv run python scripts/verify_dist.py dist/   # 배포 산출물 검증
 uv run aiarchitect-blog-mcp          # stdio 서버 실행
 ```
 
 `build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`, 글 번호 1~3자리)를
 인자로 받습니다: `uv run python scripts/build_index.py /path/to/blogs`.
 글의 `article_id`는 원문 글 번호와 같습니다(`get_article("100")` → `.../100`).
+
+`verify_dist.py`는 wheel·sdist **안쪽**을 열어 본문·인덱스 편수와 정합성을 확인합니다. 서빙 코드가
+멀쩡해도 데이터 번들이 빠진 wheel은 설치한 쪽에서만 깨지기 때문입니다. `--installed`를 주면
+설치된 패키지만으로 코퍼스·검색·본문이 동작하는지 검사합니다(저장소 밖에서 실행).
 
 ## 📚 다루는 주제
 
