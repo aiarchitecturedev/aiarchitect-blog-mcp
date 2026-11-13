@@ -1,0 +1,88 @@
+name: Release
+
+# PyPI Trusted Publishing(OIDC) 전용 워크플로.
+# 🔴 PyPI의 신뢰 발행자 설정이 **이 파일명(release.yml)과 environment(pypi)**에 묶인다.
+#    파일을 옮기거나 이름을 바꾸면 게시가 거부되므로 PyPI 설정도 같이 고쳐야 한다.
+# 게시 권한을 CI(ci.yml)와 분리해, PR마다 도는 워크플로에는 발행 권한이 없도록 한다.
+
+on:
+  push:
+    tags: ["v*"]
+  # 태그를 이미 민 버전을 뒤늦게 게시할 때 쓴다(예: 신뢰 발행자 설정 전에 난 태그).
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "게시할 태그 (예: v0.1.2)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # 태그와 pyproject 버전이 어긋난 채로 올라가면 되돌릴 수 없다(PyPI는 재업로드 불가).
+      - name: Check tag matches package version
+        run: |
+          tag="${{ inputs.ref || github.ref_name }}"
+          version=$(uv version --short)
+          if [ "$tag" != "v$version" ]; then
+            echo "::error::태그($tag)와 pyproject 버전(v$version)이 다릅니다"
+            exit 1
+          fi
+          echo "✅ $tag == v$version"
+
+      - name: Run tests
+        run: uv run pytest -q
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      # 데이터 번들이 빠진 아티팩트가 PyPI로 나가는 것을 막는 마지막 관문.
+      - name: Verify artifact contents
+        run: uv run python scripts/verify_dist.py dist/
+
+      - name: Verify wheel installs standalone
+        run: |
+          uv venv /tmp/isolated
+          uv pip install --python /tmp/isolated/bin/python dist/*.whl
+          cp scripts/verify_dist.py /tmp/verify_dist.py
+          cd /tmp && /tmp/isolated/bin/python /tmp/verify_dist.py --installed
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # 🔴 PyPI 신뢰 발행자에 등록한 environment 이름과 반드시 같아야 한다.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/aiarchitect-blog-mcp
+    permissions:
+      # OIDC 토큰 발급용. 비밀 토큰을 저장소에 두지 않는 대가로 이 권한이 필요하다.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
