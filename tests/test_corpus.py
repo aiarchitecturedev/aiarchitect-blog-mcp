@@ -12,11 +12,15 @@ import pytest
 
 from aiarchitect_blog_mcp.corpus import (
     BLOG_HOME,
+    _BM25_K1,
+    _bm25_tf,
     DATA_DIR,
     MAX_LIST_LIMIT,
     MAX_SEARCH_LIMIT,
     Corpus,
     _clamp_int,
+    _idf,
+    _term_count,
     build_record,
     extract_body,
     is_published,
@@ -328,6 +332,98 @@ def test_search_clamps_limit_and_bad_query():
     assert c.search("MCP", limit=-1) == []
     assert c.search("") == []
     assert c.search("   ") == []
+
+
+def test_term_matching_requires_a_leading_boundary():
+    """한국어는 교착어라 뒤는 열고 앞은 막는다 — "로그를"은 맞고 "블로그"는 아니다."""
+    assert _term_count("로그를 남긴다", "로그") == 1      # 조사
+    assert _term_count("평가합니다", "평가") == 1          # 어미
+    assert _term_count("블로그를 운영한다", "로그") == 0    # 내부 일치
+    assert _term_count("카탈로그", "로그") == 0
+    assert _term_count("ai agent", "ai") == 1
+    assert _term_count("chain", "ai") == 0                # 영어 내부 일치
+    assert _term_count("mcp를 붙인다", "mcp") == 1
+
+
+def test_search_does_not_match_blog_when_looking_for_logs():
+    """회귀: 블로그 저장소라 '블로그'가 어디에나 있어 '로그' 검색을 오염시켰다."""
+    corpus = Corpus()
+    for result in corpus.search("로그", limit=5):
+        record = corpus._by_id[result["id"]]
+        haystack = (
+            record["title"] + " " + " ".join(record["tags"]) + " "
+            + record["description"] + " " + corpus._body(record)
+        ).lower()
+        assert _term_count(haystack, "로그") > 0, f"{result['id']}: 경계 밖 일치로 올라옴"
+
+
+def test_idf_weights_rare_terms_higher():
+    """희귀어가 흔한 단어보다 무거워야 한다. 거의 모든 글에 있는 단어는 글을 구분하지 못한다."""
+    total = 94
+    rare, common, everywhere = _idf(total, 1), _idf(total, 50), _idf(total, total)
+    assert rare > common > everywhere
+    assert everywhere < 0.05, f"모든 글에 있는 단어의 가중치가 너무 큼: {everywhere}"
+    # df가 커질수록 단조 감소해야 한다.
+    values = [_idf(total, df) for df in range(1, total + 1)]
+    assert values == sorted(values, reverse=True)
+
+
+def test_top_results_cover_every_query_term():
+    """다중어 질의의 상위 결과는 질의어를 **전부** 담고 있어야 한다.
+
+    이전 구현에서는 "RAG 청킹" 검색에 청킹이 한 번도 없는 글이 rag 빈도만으로 3위였다.
+    """
+    corpus = Corpus()
+    for query in ("RAG 청킹", "AI Agent 평가", "MCP 보안"):
+        terms = query.lower().split()
+        for result in corpus.search(query, limit=3):
+            record = corpus._by_id[result["id"]]
+            missing = [t for t in terms if corpus._weighted_tf(record, t) == 0]
+            assert not missing, f"{query} → {result['id']}: 질의어 누락 {missing}"
+
+
+def test_longer_document_scores_lower_at_equal_frequency():
+    """같은 빈도라면 짧은 글이 더 높아야 한다(길이 정규화).
+
+    긴 글은 단순히 분량 때문에 빈도가 쌓인다. 보정이 없으면 분량이 관련도로 둔갑한다.
+    """
+    avg = 20_000
+    short = _bm25_tf(10, 5_000, avg)
+    average = _bm25_tf(10, avg, avg)
+    long_doc = _bm25_tf(10, 80_000, avg)
+    assert short > average > long_doc
+
+
+def test_bm25_tf_saturates_with_frequency():
+    """빈도 항은 포화한다 — 10배 빈도가 10배 점수가 되지 않는다."""
+    avg = 20_000
+    once, ten, hundred = (_bm25_tf(n, avg, avg) for n in (1, 10, 100))
+    assert once < ten < hundred                 # 단조 증가는 유지
+    assert ten / once < 5                       # 그러나 10배는 아니다
+    assert hundred < _BM25_K1 + 1               # 상한에 수렴
+
+
+def test_term_frequency_saturates():
+    """같은 단어가 100번 나왔다고 1번의 100배가 되면 안 된다(BM25 포화).
+
+    점수 배율을 **같은 글들의 빈도 배율과 비교**한다. 상위 N개만 보면 꼬리가 잘려
+    포화가 없어도 배율이 작아 보인다(실제로 그렇게 헛돌았다).
+    """
+    corpus = Corpus()
+    results = corpus.search("MCP", limit=MAX_SEARCH_LIMIT)
+    assert len(results) > 10
+
+    scores = [r["score"] for r in results]
+    assert scores == sorted(scores, reverse=True)
+    assert all(s > 0 for s in scores)
+
+    freqs = [corpus._weighted_tf(corpus._by_id[r["id"]], "mcp") for r in results]
+    freq_ratio = max(freqs) / min(freqs)
+    score_ratio = scores[0] / scores[-1]
+    assert freq_ratio > 10, f"포화를 검사할 만큼 빈도 차이가 없음: {freq_ratio}"
+    assert score_ratio < freq_ratio / 5, (
+        f"점수가 빈도에 거의 비례함(포화 없음): 빈도 {freq_ratio:.0f}배 → 점수 {score_ratio:.1f}배"
+    )
 
 
 def test_search_finds_relevant_article():

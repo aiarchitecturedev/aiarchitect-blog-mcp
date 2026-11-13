@@ -7,8 +7,10 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 
 BLOG_HOME = "https://aiarchitect.tistory.com/"
@@ -17,6 +19,55 @@ DATA_DIR = Path(__file__).parent / "data"
 # 개별 게시글 URL 패턴(홈 폴백과 구분). 공개 배포 fail-closed 판정 기준.
 # 글 번호는 ASCII 양의 정수만 허용(`/0`·`/00`·전각·아랍 등 Unicode 숫자 거부).
 _ARTICLE_URL = re.compile(r"^https://aiarchitect\.tistory\.com/[1-9][0-9]*/?$")
+
+# 랭킹 파라미터(BM25 관례값).
+# k1: 빈도 포화 — "ai"가 249번 나온 글이 1번 나온 글의 249배가 되지 않게 한다.
+# b : 길이 정규화 강도 — 긴 글이 빈도만으로 유리해지는 것을 보정한다.
+# (글, 검색어)별 빈도 캐시 상한. 임의의 질의어가 계속 들어와도 메모리가 무한정 늘지 않게 한다.
+_TF_CACHE_MAX = 50_000
+
+_BM25_K1 = 1.2
+_BM25_B = 0.75
+
+# 검색어 일치 규칙: **선두 경계만** 요구한다.
+# 한국어는 교착어라 조사·어미가 붙는다("로그를"·"평가합니다") — 뒤는 열어 둬야 한다.
+# 반면 앞을 열어 두면 "블로그"가 "로그"에, "chain"이 "ai"에 걸린다(코퍼스의 '로그' 일치 중 28%가 이런 오탐).
+_TERM_BOUNDARY = r"(?<![0-9a-z가-힣])"
+
+
+def _idf(total: int, df: int) -> float:
+    """역문서빈도. 전체 total편 중 df편에 나오는 단어의 가중치.
+
+    흔한 단어일수록 0에 가까워진다 — 거의 모든 글에 있는 단어는 글을 구분해 주지 않는다.
+    """
+    return math.log(1 + (total - df + 0.5) / (df + 0.5))
+
+
+def _bm25_tf(tf: int, length: int, avg_len: float) -> float:
+    """BM25의 빈도 항 — 포화 + 길이 정규화.
+
+    포화(k1): 같은 단어가 100번 나왔다고 1번의 100배가 되지 않는다.
+    길이 정규화(b): 같은 빈도라면 짧은 글이 더 밀도 높게 다룬 것으로 본다.
+    """
+    norm = _BM25_K1 * (1 - _BM25_B + _BM25_B * length / (avg_len or 1.0))
+    return tf * (_BM25_K1 + 1) / (tf + norm)
+
+
+@lru_cache(maxsize=512)
+def _term_pattern(term: str) -> re.Pattern[str]:
+    return re.compile(_TERM_BOUNDARY + re.escape(term))
+
+
+def _term_count(text: str, term: str) -> int:
+    """소문자 텍스트에서 term의 출현 횟수(선두 경계 규칙 적용).
+
+    정규식은 substring 검색보다 훨씬 비싸다. 대부분의 (글, 검색어) 조합은 아예
+    일치가 없으므로, 먼저 C 레벨 substring 검색으로 걸러내고 있을 때만 정규식을 쓴다.
+    """
+    if term not in text:
+        return 0
+    return len(_term_pattern(term).findall(text))
+
 
 # 입력 검증 상한(방어적 클램프)
 MAX_LIST_LIMIT = 200
@@ -185,6 +236,9 @@ class Corpus:
         self.excluded_ids: list[str] = [r.get("id") for r in raw if not self._is_published_rec(r)]
         self._by_id = {r["id"]: r for r in self.records}
         self._body_cache: dict[str, str] = {}
+        self._lower_cache: dict[str, str] = {}
+        self._avg_len: float | None = None
+        self._tf_cache: dict[tuple[str, str], int] = {}
 
     # --- 내부 헬퍼 ---
     @staticmethod
@@ -207,6 +261,39 @@ class Corpus:
             text = (self.data_dir / "articles" / rec["file"]).read_text(encoding="utf-8")
             self._body_cache[rid] = extract_body(text)
         return self._body_cache[rid]
+
+    def _lower_body(self, rec: dict) -> str:
+        rid = rec["id"]
+        if rid not in self._lower_cache:
+            self._lower_cache[rid] = self._body(rec).lower()
+        return self._lower_cache[rid]
+
+    def _weighted_tf(self, rec: dict, term: str) -> int:
+        """필드 가중 빈도. 코퍼스가 불변이라 (글, 검색어)당 한 번만 센다.
+
+        캐시가 무한정 자라지 않게 상한을 두고, 넘으면 통째로 비운다(재계산 가능한 값).
+        """
+        key = (rec["id"], term)
+        cached = self._tf_cache.get(key)
+        if cached is not None:
+            return cached
+        tf = (
+            _term_count(rec["title"].lower(), term) * 5
+            + _term_count(" ".join(rec["tags"]).lower(), term) * 4
+            + _term_count(rec["description"].lower(), term) * 3
+            + _term_count(self._lower_body(rec), term)
+        )
+        if len(self._tf_cache) >= _TF_CACHE_MAX:
+            self._tf_cache.clear()
+        self._tf_cache[key] = tf
+        return tf
+
+    def _average_length(self) -> float:
+        """길이 정규화 기준이 되는 평균 본문 길이(최초 1회 계산 후 캐시)."""
+        if self._avg_len is None:
+            lengths = [len(self._lower_body(r)) for r in self.records]
+            self._avg_len = (sum(lengths) / len(lengths)) if lengths else 1.0
+        return self._avg_len or 1.0
 
     def _summary(self, rec: dict) -> dict:
         return {
@@ -246,24 +333,38 @@ class Corpus:
         terms = [t for t in re.split(r"\s+", str(query).lower().strip()) if t]
         if not terms or limit == 0:
             return []
-        scored: list[tuple[int, dict]] = []
-        for r in self.records:
-            if category and not (r["category"] == category or category in r["category"]):
-                continue
-            title = r["title"].lower()
-            tags = " ".join(r["tags"]).lower()
-            desc = r["description"].lower()
-            body = self._body(r).lower()
-            score = 0
+        candidates = [
+            r for r in self.records
+            if not category or r["category"] == category or category in r["category"]
+        ]
+        if not candidates:
+            return []
+
+        # 필드 가중 빈도. 제목·태그·설명은 짧고 신호가 강해 가중치를 크게 준다.
+        weighted = [{t: self._weighted_tf(r, t) for t in terms} for r in candidates]
+
+        # IDF: 흔한 단어가 희귀한 단어를 덮지 않게 한다.
+        # 이것이 없으면 "RAG 청킹"에서 청킹이 한 번도 안 나오는 글이 rag 빈도만으로 상위에 온다.
+        total = len(candidates)
+        idf = {t: _idf(total, sum(1 for tf in weighted if tf[t] > 0)) for t in terms}
+
+        avg_len = self._average_length()
+        scored: list[tuple[float, dict]] = []
+        for r, tf_map in zip(candidates, weighted):
+            length = len(self._lower_body(r)) or 1
+            score = 0.0
             for t in terms:
-                score += title.count(t) * 5 + tags.count(t) * 4 + desc.count(t) * 3 + body.count(t)
+                tf = tf_map[t]
+                if tf:
+                    score += idf[t] * _bm25_tf(tf, length, avg_len)
             if score > 0:
                 scored.append((score, r))
+
         scored.sort(key=lambda x: (-x[0], _id_sort_key(x[1]["id"])))
         out = []
         for score, r in scored[:limit]:
             item = self._summary(r)
-            item["score"] = score
+            item["score"] = round(score, 3)
             item["snippet"] = self._snippet(r, terms)
             out.append(item)
         return out

@@ -26,7 +26,7 @@ AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/L
 |------|------|
 | `list_categories()` | 분류(7종)와 각 편수 |
 | `list_articles(category?, limit?, offset?)` | 글 목록(분류 필터·페이지네이션) |
-| `search_articles(query, category?, limit?)` | 제목·설명·태그·본문 키워드 검색(랭킹·스니펫) |
+| `search_articles(query, category?, limit?)` | 제목·설명·태그·본문 키워드 검색(BM25 랭킹·스니펫) |
 | `get_article(article_id)` | 전체 본문(마크다운) + 원문 URL(출처 링크) |
 | `blog_home()` | 블로그 홈 URL·제공 편수 |
 
