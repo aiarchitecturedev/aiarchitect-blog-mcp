@@ -1,0 +1,98 @@
+name: Release
+
+# PyPI Trusted Publishing(OIDC) 전용 워크플로.
+# 🔴 PyPI의 신뢰 발행자 설정이 **이 파일명(release.yml)과 environment(pypi)**에 묶인다.
+#    파일을 옮기거나 이름을 바꾸면 게시가 거부되므로 PyPI 설정도 같이 고쳐야 한다.
+# 게시 권한을 CI(ci.yml)와 분리해, PR마다 도는 워크플로에는 발행 권한이 없도록 한다.
+
+on:
+  push:
+    tags: ["v*"]
+  # 태그를 이미 민 버전을 뒤늦게 게시할 때 쓴다(예: 신뢰 발행자 설정 전에 난 태그).
+  # ⚠️ ref를 비우고 브랜치에서 실행하는 쪽이 보통 맞다. 이 워크플로는 체크아웃한 트리의
+  #    scripts/verify_dist.py를 쓰는데, 그 스크립트보다 먼저 난 태그에는 파일이 없다.
+  #    sdist·wheel은 scripts/·.github/를 포함하지 않으므로, 브랜치에서 빌드해도
+  #    산출물 내용은 같은 버전의 태그에서 빌드한 것과 동일하다.
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "체크아웃할 ref (비우면 실행 브랜치). 보통 비워 둔다"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # 태그와 pyproject 버전이 어긋난 채로 올라가면 되돌릴 수 없다(PyPI는 재업로드 불가).
+      # 태그에서 실행할 때만 강제한다. 브랜치 실행은 pyproject 버전을 그대로 게시한다.
+      - name: Check version
+        run: |
+          ref="${{ inputs.ref || github.ref_name }}"
+          version=$(uv version --short)
+          case "$ref" in
+            v*)
+              if [ "$ref" != "v$version" ]; then
+                echo "::error::태그($ref)와 pyproject 버전(v$version)이 다릅니다"
+                exit 1
+              fi
+              echo "✅ $ref == v$version" ;;
+            *)
+              echo "::notice::태그가 아닌 ref($ref)에서 실행 — v$version 을 게시합니다" ;;
+          esac
+
+      - name: Run tests
+        run: uv run pytest -q
+
+      - name: Build wheel and sdist
+        run: uv build
+
+      # 데이터 번들이 빠진 아티팩트가 PyPI로 나가는 것을 막는 마지막 관문.
+      - name: Verify artifact contents
+        run: uv run python scripts/verify_dist.py dist/
+
+      - name: Verify wheel installs standalone
+        run: |
+          uv venv /tmp/isolated
+          uv pip install --python /tmp/isolated/bin/python dist/*.whl
+          cp scripts/verify_dist.py /tmp/verify_dist.py
+          cd /tmp && /tmp/isolated/bin/python /tmp/verify_dist.py --installed
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    # 🔴 PyPI 신뢰 발행자에 등록한 environment 이름과 반드시 같아야 한다.
+    environment:
+      name: pypi
+      url: https://pypi.org/p/aiarchitect-blog-mcp
+    permissions:
+      # OIDC 토큰 발급용. 비밀 토큰을 저장소에 두지 않는 대가로 이 권한이 필요하다.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
