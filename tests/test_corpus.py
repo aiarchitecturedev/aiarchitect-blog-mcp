@@ -5,6 +5,7 @@
 """
 
 import json
+import subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -299,23 +300,28 @@ def test_private_tokens_not_reintroduced_as_literals_in_tracked_sources():
     """externalized denylist가 tracked 소스에 리터럴로 재유입되지 않았는지 회귀 검증.
 
     개인 식별자는 오직 비추적 `.private-tokens`에만 존재해야 한다.
+
+    ⚠️ 예전에는 대상 파일 5개를 **손으로 적어** 뒀다. 그 뒤에 생긴
+    `verify_dist.py`·`server.py`·`test_docs_consistency.py`·`test_server_contract.py`는
+    목록에 없어 검사 밖이었다. 목록은 조용히 낡으므로 git에서 **열거**한다.
     """
     if not FORBIDDEN_PRIVATE_TOKENS:
         pytest.skip(".private-tokens 미존재")
     root = Path(__file__).parents[1]
-    targets = [
-        root / "scripts" / "build_index.py",
-        root / "tests" / "test_corpus.py",
-        root / "tests" / "test_build_index.py",
-        root / "pyproject.toml",
-        root / "README.md",
-    ]
+    listed = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "-z"],
+        capture_output=True, text=True, check=True,
+    ).stdout
+    targets = [root / name for name in listed.split("\0") if name]
+    assert targets, "추적 파일이 0개 — 열거가 헛돌고 있다"
+
     for f in targets:
-        if not f.exists():
+        if not f.is_file() or f.suffix in {".pyc", ".png", ".jpg"}:
             continue
-        text = f.read_text(encoding="utf-8").lower()
-        for token in FORBIDDEN_PRIVATE_TOKENS:
-            assert token not in text, f"{f.name}: denylist 토큰 리터럴 재유입 → {token}"
+        text = f.read_text(encoding="utf-8", errors="ignore").lower()
+        for i, token in enumerate(FORBIDDEN_PRIVATE_TOKENS):
+            # 토큰 내용은 메시지에 싣지 않는다 — 번호만 준다.
+            assert token not in text, f"{f.name}: denylist {i + 1}번째 항목이 리터럴로 재유입됨"
 
 
 def test_list_articles_clamps_negative_and_oversized():
