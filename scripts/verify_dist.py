@@ -131,6 +131,8 @@ def check_installed() -> int:
 
     if len(expand("observability")) < 2:
         return _fail("설치본: 동의어 사전이 비어 있음 — synonyms 모듈이 빠졌거나 사전이 비었다")
+    if expand("검색증강생성") == ("검색증강생성",):
+        return _fail("설치본: 질의 전용 표기 표가 비어 있음 — 붙여 쓴 한글 질의가 0편을 낸다")
 
     from aiarchitect_blog_mcp.server import mcp  # noqa: F401  (임포트 가능 여부 확인)
 
