@@ -51,6 +51,30 @@ claude mcp add aiarchitect-blog -- uvx aiarchitect-blog-mcp
 
 `uvx`가 없으면 [uv](https://docs.astral.sh/uv/)를 설치하거나 `pipx run aiarchitect-blog-mcp` 를 사용하세요.
 
+### 저장소 최신본으로 설치
+
+코퍼스 갱신과 검색 개선은 PyPI 릴리스보다 `main`에 먼저 들어갑니다. 아래 문서가 설명하는
+구성(번들 편수·BM25 랭킹)을 그대로 쓰려면 저장소에서 직접 설치하세요.
+
+```bash
+claude mcp add aiarchitect-blog -- \
+  uvx --from git+https://github.com/aiarchitecturedev/aiarchitect-blog-mcp aiarchitect-blog-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "aiarchitect-blog": {
+      "command": "uvx",
+      "args": [
+        "--from", "git+https://github.com/aiarchitecturedev/aiarchitect-blog-mcp",
+        "aiarchitect-blog-mcp"
+      ]
+    }
+  }
+}
+```
+
 ## 🛠️ 로컬 개발
 
 ```bash
