@@ -2,13 +2,13 @@
 
 Java·Kotlin·Swift·JavaScript SDK가 같은 API를 각자 다르게 해석하면 플랫폼마다 다른 버그가 됩니다. 공통 계약은 공통 구현이 아니라 의미를 하나로 고정하는 일입니다. 이 글은 계약 저장소와 Version을 진실의 원천으로 두고 Operation 의미·오류·상태·이벤트 모델과 타입 변환 경계를 정의한 뒤, Golden Vector 적합성 테스트로 네 플랫폼을 검증하는 방법을 정리합니다.
 
-![공통 API·오류·상태·이벤트 의미 계약이 네 플랫폼 SDK로 투영되고 적합성 매트릭스와 통합 증거로 검증되는 크로스플랫폼 SDK 아키텍처 이미지](assets/blog-45-cross-platform-sdk-contract-hero.png)
+> 🖼️ **그림**: 공통 API·오류·상태·이벤트 의미 계약이 네 플랫폼 SDK로 투영되고 적합성 매트릭스와 통합 증거로 검증되는 크로스플랫폼 SDK 아키텍처 이미지
 
 같은 서비스를 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK로 제공하면 네 개의 구현이 생깁니다. 그러나 고객에게 전달해야 할 업무 의미까지 네 개가 되어서는 안 됩니다.
 
 예를 들어 서버는 상태 코드를 정상적으로 반환했는데 Android에서는 재시도하고 iOS에서는 즉시 실패한다면, 또는 Web SDK만 큰 숫자 ID를 다른 값으로 읽는다면 각 SDK의 코드는 동작해도 제품 계약은 깨진 것입니다.
 
-![공통 Contract Repository의 API·오류·상태·이벤트 의미가 Java·Kotlin·Swift·JavaScript의 자연스러운 Public API로 투영되는 구조](assets/blog-45-semantic-contract-projections.png)
+> 🖼️ **그림**: 공통 Contract Repository의 API·오류·상태·이벤트 의미가 Java·Kotlin·Swift·JavaScript의 자연스러운 Public API로 투영되는 구조
 
 공통 계약의 목적은 모든 언어에서 똑같은 Class와 Method 이름을 강제하는 것이 아닙니다. Java에는 Java다운 API를, Kotlin에는 Coroutine과 Flow를, Swift에는 `async/await`과 `AsyncSequence`를, JavaScript에는 Promise와 구독 API를 제공하되 **입력·결과·오류·상태 변화의 의미는 같게 유지하는 것**입니다.
 
@@ -357,7 +357,7 @@ RFC 9457의 Problem Details 형식을 기반으로 안정적인 확장 필드를
 
 Wire 오류를 언어별 Exception으로 바꾸더라도 공통 정보가 사라지면 안 됩니다.
 
-![Wire Envelope의 ID·Patch·Enum·오류를 공통 의미로 정규화한 뒤 Java·Kotlin·Swift·JavaScript Type으로 투영하면서 Raw 정보를 보존하는 구조](assets/blog-45-cross-platform-value-error-contract.png)
+> 🖼️ **그림**: Wire Envelope의 ID·Patch·Enum·오류를 공통 의미로 정규화한 뒤 Java·Kotlin·Swift·JavaScript Type으로 투영하면서 Raw 정보를 보존하는 구조
 
 공통 오류 Model은 최소한 다음을 보존합니다.
 
@@ -479,7 +479,7 @@ CloudEvents의 필수 Context Attribute인 `id`, `source`, `specversion`, `type`
 
 Mobile App은 Background 진입, Network 전환과 절전 때문에 연결이 끊깁니다. Browser도 Tab 수명과 Proxy Timeout의 영향을 받습니다. 단순히 “자동 재연결”한다고 쓰는 것만으로는 충분하지 않습니다.
 
-![Snapshot의 상태·Revision·Cursor를 Event Stream과 연결하고 중복 제거·Revision Gap 탐지 후 상태 갱신 또는 Snapshot 재조회로 복구하는 흐름](assets/blog-45-state-event-recovery.png)
+> 🖼️ **그림**: Snapshot의 상태·Revision·Cursor를 Event Stream과 연결하고 중복 제거·Revision Gap 탐지 후 상태 갱신 또는 Snapshot 재조회로 복구하는 흐름
 
 안전한 재연결 흐름은 다음과 같습니다.
 
@@ -592,7 +592,7 @@ vectors/
 
 적합성 테스트의 핵심은 하나의 Runner로 네 SDK를 흉내 내는 것이 아닙니다. 각 언어의 실제 Public API와 실제 Serializer를 사용해 같은 Contract Fixture를 실행하는 것입니다.
 
-![Contract Manifest와 Provider Test Server가 같은 Schema·Scenario·Golden Vector를 Java·Kotlin·Swift·JavaScript Runner에 독립 실행하고 통합 적합성 Report를 만드는 구조](assets/blog-45-conformance-matrix.png)
+> 🖼️ **그림**: Contract Manifest와 Provider Test Server가 같은 Schema·Scenario·Golden Vector를 Java·Kotlin·Swift·JavaScript Runner에 독립 실행하고 통합 적합성 Report를 만드는 구조
 
 Test Server는 단순 Mock 응답만 제공하지 않고 계약된 실패 상황을 재현해야 합니다.
 
@@ -646,7 +646,7 @@ Consumer-driven Contract는 전체 OpenAPI의 모든 조합을 증명하지 않�
 
 계약 문서를 검토했어도 Package Release가 이를 우회하면 의미가 없습니다. 계약 변경과 SDK Release를 CI Gate로 연결합니다.
 
-![계약·SDK 변경이 Spec Lint와 호환성 Diff, Golden Vector·네 SDK Runner·Provider·Consumer·실제 Package Smoke를 거쳐 Release 또는 Block으로 분기되는 증거 Gate](assets/blog-45-contract-release-gate.png)
+> 🖼️ **그림**: 계약·SDK 변경이 Spec Lint와 호환성 Diff, Golden Vector·네 SDK Runner·Provider·Consumer·실제 Package Smoke를 거쳐 Release 또는 Block으로 분기되는 증거 Gate
 
 권장 Release Gate는 다음 순서입니다.
 

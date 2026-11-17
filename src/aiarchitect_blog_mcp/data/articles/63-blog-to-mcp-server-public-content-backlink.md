@@ -2,7 +2,7 @@
 
 기술 블로그의 공개 글 69편을 읽기 전용 MCP 서버로 묶어 AI 에이전트가 목록·검색·본문 조회를 할 수 있게 만든 과정입니다. 결정적 키워드 검색, 원문 URL 내장, 미게시 글 fail-closed 제외, self-contained wheel, uvx 실행과 PyPI v0.1.1 배포까지 실제 구현을 정리합니다.
 
-![기술 블로그 문서가 self-contained Package와 읽기 전용 MCP Gateway로 배포되고 AI Client 결과가 원문 페이지로 다시 연결되는 구조](assets/blog-63-blog-mcp-publication-hero.png)
+> 🖼️ **그림**: 기술 블로그 문서가 self-contained Package와 읽기 전용 MCP Gateway로 배포되고 AI Client 결과가 원문 페이지로 다시 연결되는 구조
 
 기술 블로그를 오래 쓰면 글은 쌓이지만, AI 에이전트가 그 글을 정확히 찾고 원문까지 연결하는 경로는 저절로 생기지 않습니다. 검색 엔진에 색인되기를 기다리는 대신, 공개 콘텐츠를 **모델 컨텍스트 프로토콜(Model Context Protocol, MCP)** 도구로 직접 제공하면 어떨까요?
 
@@ -73,7 +73,7 @@ AI아키텍트 블로그에서 MCP OAuth 관련 글을 찾아줘.
 
 다만 두 가지는 구분해야 합니다. 첫째, 웹에서 공개 열람할 수 있다는 사실이 패키지로 재배포할 권리를 자동으로 주지는 않습니다. 둘째, 공개 데이터 MCP와 고객·사내 문서를 다루는 비공개 MCP는 인증·인가·테넌트 격리 관점에서 전혀 다른 시스템입니다. 이 프로젝트는 제가 권리를 가진 공개 글만 대상으로 합니다.
 
-![Blog Markdown과 공개 URL 스냅샷을 self-contained Package와 읽기 전용 MCP로 배포하고 AI Client를 Source Link로 원문에 연결하는 구조](assets/blog-63-blog-mcp-publication-architecture.png)
+> 🖼️ **그림**: Blog Markdown과 공개 URL 스냅샷을 self-contained Package와 읽기 전용 MCP로 배포하고 AI Client를 Source Link로 원문에 연결하는 구조
 
 *그림 1. 검증된 공개 글 스냅샷을 실행 가능한 Package에 포함하고 읽기 전용 MCP 응답이 원문 URL을 유지하게 하는 배포 구조*
 
@@ -172,7 +172,7 @@ def search(self, query, category=None, limit=10):
 
 따라서 지금 규모에서는 이 방식이 합리적이지만, 글이 수백·수천 편으로 늘면 키워드 검색을 1차 후보 생성기로 두고 임베딩 재랭킹을 추가하는 방식이 자연스럽습니다. 처음부터 벡터 DB를 도입하는 것보다 실패 지점과 운영 비용이 적습니다.
 
-![list_categories와 search_articles로 후보를 찾고 Article ID로 get_article을 조회해 Source URL을 반환하며 미게시 글은 fail-closed로 제외하는 흐름](assets/blog-63-blog-mcp-deterministic-query-flow.png)
+> 🖼️ **그림**: list_categories와 search_articles로 후보를 찾고 Article ID로 get_article을 조회해 Source URL을 반환하며 미게시 글은 fail-closed로 제외하는 흐름
 
 *그림 2. 결정적 목록·검색·본문 조회를 단계적으로 좁히고 정식 URL이 없는 콘텐츠는 결과에서 제외하는 읽기 흐름*
 

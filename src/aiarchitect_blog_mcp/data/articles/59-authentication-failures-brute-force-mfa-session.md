@@ -2,7 +2,7 @@
 
 인증 실패는 비밀번호 정책만으로 막히지 않습니다. Brute Force와 Credential Stuffing은 로그인 기능이 정상 동작하는 상태에서 반복 사용으로 이뤄지고, 계정 복구와 Session 처리가 더 약한 우회로가 되기도 합니다. 이 글은 OWASP Top 10:2025 A07을 기준으로 Java 21·Spring Boot 3에서 시도 제한, MFA, 계정 복구, Session 수명주기와 폐기 설계를 정리합니다.
 
-![정상 인증은 MFA와 위험 판정, 세션 회전을 통과하고 분산 공격은 격리되는 인증 보안 구조](assets/blog-59-authentication-failures-hero.png)
+> 🖼️ **그림**: 정상 인증은 MFA와 위험 판정, 세션 회전을 통과하고 분산 공격은 격리되는 인증 보안 구조
 
 인증(Authentication)은 로그인 화면 하나가 아닙니다. 계정 등록부터 비밀번호 변경, 다중 요소 인증(Multi-Factor Authentication, MFA) 등록과 복구, 세션(Session) 생성·갱신·폐기까지 이어지는 **신원 수명주기**입니다.
 
@@ -17,7 +17,7 @@
 
 이 글은 2026년 8월 기준 OWASP(Open Worldwide Application Security Project, 오픈 월드와이드 애플리케이션 보안 프로젝트) Top 10:2025 A07 Authentication Failures와 NIST(National Institute of Standards and Technology, 미국 국립표준기술연구소) SP 800-63B-4, Spring Security 현재 Reference 문서를 바탕으로 Java 21·Spring Boot 3 환경의 합성 예제를 설명합니다. 실제 고객, 계정, 내부 Endpoint, 운영 임계값과 탐지 규칙은 사용하지 않습니다.
 
-![등록·로그인·MFA·세션·Step-up과 복구·Factor 재바인딩·전체 폐기를 연결한 인증 보증 수명주기](assets/blog-59-authentication-assurance-lifecycle.png)
+> 🖼️ **그림**: 등록·로그인·MFA·세션·Step-up과 복구·Factor 재바인딩·전체 폐기를 연결한 인증 보증 수명주기
 
 *인증 강도는 로그인 한 번이 아니라 등록·복구·세션 폐기까지 이어지는 가장 약한 경로로 결정됩니다.*
 
@@ -167,7 +167,7 @@ interface AuthenticationAttemptPolicy {
 
 Source IP는 Proxy가 전달한 값을 그대로 믿지 말고 신뢰한 Edge가 정규화한 값만 사용합니다. Device Fingerprint는 Spoofing 가능하고 개인정보 문제가 있으므로 위험 신호일 뿐 인증 Factor가 아닙니다. CAPTCHA 역시 자동화를 비싸게 만드는 보조 통제이지 유일한 방어가 아닙니다.
 
-![계정·Source·Device·Tenant와 시간 창을 Evidence Envelope로 묶어 단계적 허용·추가 인증·거부를 판정하는 Gate](assets/blog-59-multidimensional-attack-resistance.png)
+> 🖼️ **그림**: 계정·Source·Device·Tenant와 시간 창을 Evidence Envelope로 묶어 단계적 허용·추가 인증·거부를 판정하는 Gate
 
 *분산 자동화 공격은 단일 IP 임계값이 아니라 여러 위험 증거를 결합한 정책 Gate로 제한합니다.*
 
@@ -287,7 +287,7 @@ public void resetPassword(
 
 재설정 완료 후 자동 로그인하지 않고 정상 인증을 다시 요구합니다. 공격자가 Reset Link를 먼저 소비하려는 Race를 막기 위해 Token 소비, Password 변경과 Session 폐기를 하나의 일관된 업무 경계로 처리합니다.
 
-![정상 MFA 등록과 계정 복구가 모두 강한 재인증·목적 바인딩·원자적 Commit·알림·기존 세션 폐기를 거치는 보증 경계](assets/blog-59-mfa-recovery-assurance.png)
+> 🖼️ **그림**: 정상 MFA 등록과 계정 복구가 모두 강한 재인증·목적 바인딩·원자적 Commit·알림·기존 세션 폐기를 거치는 보증 경계
 
 *MFA 등록과 복구는 서로 다른 화면이어도 같은 보증·알림·폐기 계약을 사용해야 합니다.*
 
@@ -450,7 +450,7 @@ Browser Application이라면 HttpOnly Cookie와 BFF(Backend for Frontend, 프런
 - Account·기기·Token Family 단위 폐기
 - 권한 변경이 이미 발급된 Token에 반영되는 시점 정의
 
-![인증 성공 후 Session ID 회전·Idle과 Absolute Timeout·Step-up·중앙 폐기·전체 Instance 전파를 연결한 Session 수명주기](assets/blog-59-session-lifecycle-revocation.png)
+> 🖼️ **그림**: 인증 성공 후 Session ID 회전·Idle과 Absolute Timeout·Step-up·중앙 폐기·전체 Instance 전파를 연결한 Session 수명주기
 
 *Session은 생성·회전·재인증·폐기와 분산 전파까지 검증해야 하는 인증 결과입니다.*
 
@@ -530,7 +530,7 @@ Timing Test는 한 번의 Millisecond 비교로 판정하지 않습니다. 충�
 
 사용자에게 보내는 알림에도 전체 IP, 내부 Risk Score와 Token을 넣지 않습니다. 공격자가 Email을 바꾼 직후에는 이전 검증 Channel에도 변경 알림과 복구 안내를 보내는 정책을 검토합니다.
 
-![인증 Event 상관분석에서 제한된 차단·사용자 알림·강한 계정 회복·정책과 Test 개선으로 이어지는 계정 탈취 대응 폐루프](assets/blog-59-account-takeover-response-loop.png)
+> 🖼️ **그림**: 인증 Event 상관분석에서 제한된 차단·사용자 알림·강한 계정 회복·정책과 Test 개선으로 이어지는 계정 탈취 대응 폐루프
 
 *계정 탈취 대응은 의심 세션 폐기와 사용자의 안전한 회복, 재발 방지까지 하나의 폐루프로 닫습니다.*
 

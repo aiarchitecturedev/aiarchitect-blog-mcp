@@ -2,7 +2,7 @@
 
 비동기 AI 요약에서 202 Accepted를 받았다는 것과 결과를 화면에 쓸 수 있다는 것은 서로 다른 판정입니다. 작업이 끝나도 이전 결과가 남아 있거나 재생성 중이거나 실패한 상태일 수 있어서, Polling 방식만으로는 무엇을 보여줄지 결정할 수 없습니다. 이 글은 작업과 결과를 다른 Resource로 나누고 Readiness Predicate·Version·Condition과 Polling·Event 계약으로 상태를 정확히 판정하는 설계를 정리합니다.
 
-![새 AI 요약 작업이 진행되는 동안 검증된 기존 결과를 안전하게 제공하고 중앙 Readiness Gate에서 상태를 판정하는 대표 이미지](assets/blog-18-async-summary-readiness-hero.png)
+> 🖼️ **그림**: 새 AI 요약 작업이 진행되는 동안 검증된 기존 결과를 안전하게 제공하고 중앙 Readiness Gate에서 상태를 판정하는 대표 이미지
 
 *그림 1. 비동기 요약의 작업 진행 상태와 사용 가능한 결과 상태는 분리해 관찰해야 하며, 재생성 중에도 검증된 기존 결과를 유지할 수 있습니다.*
 
@@ -127,7 +127,7 @@ Result Readiness
   읽을 수 있는 결과가 존재하는가?
 ```
 
-![생성 요청이 Operation과 Worker를 거쳐 Published Result가 되고 Client가 usable current generating을 함께 판단하는 흐름](assets/blog-18-operation-result-readiness.png)
+> 🖼️ **그림**: 생성 요청이 Operation과 Worker를 거쳐 Published Result가 되고 Client가 usable current generating을 함께 판단하는 흐름
 
 *그림 2. Operation은 생성 시도의 생명주기를, Result는 검증·게시된 결과를 설명합니다. 최신 작업이 실행 중이거나 실패해도 이전 Published Result의 가용성은 별도로 판정합니다.*
 
@@ -788,7 +788,7 @@ Event는 Wake-up Signal (깨우기 신호), Operation API는 Source of Truth로 
 
 Client가 Event를 놓쳐도 Polling으로 수렴하고, Event를 받으면 불필요한 대기 없이 갱신할 수 있습니다.
 
-![상태 Commit에서 Operation API와 Event 알림을 거쳐 Client가 Result를 조회하고 Polling으로 기준 API에 복귀하는 수렴 흐름](assets/blog-18-polling-event-convergence.png)
+> 🖼️ **그림**: 상태 Commit에서 Operation API와 Event 알림을 거쳐 Client가 Result를 조회하고 Polling으로 기준 API에 복귀하는 수렴 흐름
 
 *그림 3. Event는 빠른 알림을 제공하지만 기준 데이터가 아닙니다. Client는 Event 도착 뒤에도 Operation API를 다시 조회하고, 누락 시에는 Polling·Backoff·ETag로 같은 상태에 수렴합니다.*
 

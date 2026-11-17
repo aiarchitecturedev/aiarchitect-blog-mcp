@@ -2,7 +2,7 @@
 
 IDOR 취약점은 인증이 없어서 생기는 것이 아니라 로그인한 사용자가 남의 식별자를 넣었을 때를 검사하지 않아 생깁니다. 인가를 Endpoint 단위로만 걸면 객체 단위 검사가 비어 있게 됩니다. 이 글은 OWASP Top 10:2025 A01을 기준으로 Java 21·Spring Boot 3에서 객체 단위 인가, Query Scope 강제, 수평·수직 권한 상승과 Tenant 경계, Mass Assignment 차단과 회귀 테스트를 정리합니다.
 
-![검증된 신원과 리소스 관계를 중앙 인가 정책에서 평가해 올바른 Tenant 데이터만 허용하고 교차 Tenant 시도는 거부와 감사 경로로 분리하는 Broken Access Control 보안 흐름](assets/blog-53-broken-access-control-authorization-boundary-hero.png)
+> 🖼️ **그림**: 검증된 신원과 리소스 관계를 중앙 인가 정책에서 평가해 올바른 Tenant 데이터만 허용하고 교차 Tenant 시도는 거부와 감사 경로로 분리하는 Broken Access Control 보안 흐름
 
 인증에 성공했다는 사실은 모든 데이터와 기능을 사용할 수 있다는 뜻이 아닙니다. 인증(Authentication)은 요청자가 누구인지 확인하고, 인가(Authorization)는 그 주체가 **이 리소스에 이 동작을 수행해도 되는지** 판단합니다.
 
@@ -14,7 +14,7 @@ Broken Access Control은 이 두 번째 판단이 빠지거나 서로 다른 경
 - 수정 DTO에 `role`, `ownerId`, `tenantId`를 추가했더니 보호 필드가 바뀝니다.
 - 단건 조회는 막았지만 목록, 검색, 캐시와 비동기 작업에서 범위가 새어 나갑니다.
 
-![요청이 신원 검증, Endpoint 정책, Query Scope와 Object 정책을 거쳐 허용 응답으로 이어지고 정책 판단은 Decision Event, 실패는 일관된 거부로 정확히 연결되는 서버 인가 경계](assets/blog-53-authorization-decision-boundary.png)
+> 🖼️ **그림**: 요청이 신원 검증, Endpoint 정책, Query Scope와 Object 정책을 거쳐 허용 응답으로 이어지고 정책 판단은 Decision Event, 실패는 일관된 거부로 정확히 연결되는 서버 인가 경계
 
 이 글은 Java 21과 Spring Boot 3 기반의 합성 예제로 IDOR, 수평·수직 권한 상승, Tenant 격리와 Mass Assignment 방어를 설명합니다. 실제 고객명, Endpoint, 식별자와 운영 정책을 재현하지 않습니다.
 
@@ -193,7 +193,7 @@ public class OrderPolicy {
 }
 ```
 
-![검증된 ActorContext로 Tenant 범위 Query를 수행해 동일 Tenant Row만 가져오고 Object Policy에서 소유권과 관계를 다시 확인한 뒤 허용 응답 또는 404·403으로 종료하는 IDOR 방어](assets/blog-53-idor-query-object-policy.png)
+> 🖼️ **그림**: 검증된 ActorContext로 Tenant 범위 Query를 수행해 동일 Tenant Row만 가져오고 Object Policy에서 소유권과 관계를 다시 확인한 뒤 허용 응답 또는 404·403으로 종료하는 IDOR 방어
 
 Query Scope와 객체 Policy는 중복처럼 보이지만 역할이 다릅니다.
 
@@ -210,7 +210,7 @@ Multi-tenant 서비스에서 `tenantId`는 단순 검색 조건이 아니라 보
 
 Cache와 비동기 Job 같은 파생 경로도 같은 Tenant·Actor 경계를 보존하고 실행 시 다시 검증합니다.
 
-![검증된 ActorContext의 Tenant 경계를 동기 Service·Repository·Database, Tenant와 Subject를 포함한 Cache Key, 실행 시 정책을 재검증하는 비동기 Worker까지 함께 전달하는 격리 흐름](assets/blog-53-tenant-isolation-derived-paths.png)
+> 🖼️ **그림**: 검증된 ActorContext의 Tenant 경계를 동기 Service·Repository·Database, Tenant와 Subject를 포함한 Cache Key, 실행 시 정책을 재검증하는 비동기 Worker까지 함께 전달하는 격리 흐름
 
 ### 요청에서 받은 Tenant ID를 권한 근거로 사용하지 않는다
 
@@ -443,7 +443,7 @@ public UserResponse updateProfile(UUID userId, UpdateProfileRequest request) {
 
 권한, Tenant, 소유자, 상태와 감사 필드는 별도 Command와 더 강한 정책으로만 바꿉니다.
 
-![신뢰하지 않는 JSON을 Entity에 직접 Binding해 보호 필드까지 바꾸는 취약 경로와 Allowlisted DTO, Object Policy, Domain Method를 거쳐 허용 필드만 저장하는 안전 경로 비교](assets/blog-53-mass-assignment-write-boundary.png)
+> 🖼️ **그림**: 신뢰하지 않는 JSON을 Entity에 직접 Binding해 보호 필드까지 바꾸는 취약 경로와 Allowlisted DTO, Object Policy, Domain Method를 거쳐 허용 필드만 저장하는 안전 경로 비교
 
 Blocklist보다 Allowlist DTO를 우선합니다. 새 보호 필드가 Entity에 추가될 때 Blocklist 갱신을 잊을 수 있지만 DTO는 Client가 수정할 수 있는 필드만 노출합니다.
 
@@ -525,7 +525,7 @@ Export 요청 시점뿐 아니라 실행·다운로드 시점에도 권한과 �
 
 권한 Test는 성공 사례 하나보다 **다른 권한 범위의 계정 조합**이 중요합니다.
 
-![두 명과 두 Tenant의 Fixture를 Read·List·Update·Delete·Export·Admin Action Matrix에 적용하고 상태·데이터·부작용·감사 Event 증거를 Release Gate에서 검증해 배포하거나 차단하는 흐름](assets/blog-53-authorization-test-release-gate.png)
+> 🖼️ **그림**: 두 명과 두 Tenant의 Fixture를 Read·List·Update·Delete·Export·Admin Action Matrix에 적용하고 상태·데이터·부작용·감사 Event 증거를 Release Gate에서 검증해 배포하거나 차단하는 흐름
 
 ### Repository 통합 Test
 

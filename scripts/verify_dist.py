@@ -31,6 +31,28 @@ ARTICLE_MD = re.compile(r"(?:^|/)data/articles/[^/]+\.md$")
 # 번들 본문에 남아 있으면 안 되는 게시용 목차 장치. 소스에는 있고 빌드가 걷어낸다 —
 # 옛 스크립트로 빌드한 아티팩트가 섞여 들어오면 여기서 걸린다.
 SCAFFOLDING = ("aiarchitect-toc", "ai-section-", "data-ke-", "box-sizing")
+
+# 열리지 않는 이미지 참조(상대경로 src)는 캡션으로 바뀌어 있어야 한다.
+# ⚠️ corpus.py 와 같은 판정을 **일부러 복제**한다 — 이 검사는 아티팩트만 보고 끝나야 하므로
+# 저장소 소스를 임포트하지 않는다(위 SCAFFOLDING 상수를 복제해 둔 것과 같은 이유).
+_FENCE = re.compile(r"^```.*?^```", re.S | re.M)
+_MD_IMAGE_REF = re.compile(r"!\[[^\]]*\]\(\s*([^)\s]*)[^)]*\)")
+_HTML_IMAGE_REF = re.compile(r"<img\b([^>]*?)/?>", re.I)
+_IMG_SRC = re.compile(r"""\bsrc\s*=\s*["']([^"']*)["']""", re.I)
+_LIVE_SRC = re.compile(r"^(?:https?:|data:)", re.I)
+
+
+def _dead_images(text: str) -> list[str]:
+    """코드 블록 밖에 남은, 열리지 않는 이미지 참조."""
+    outside = _FENCE.sub("", text)
+    dead = [
+        m.group(0) for m in _MD_IMAGE_REF.finditer(outside) if not _LIVE_SRC.match(m.group(1))
+    ]
+    for match in _HTML_IMAGE_REF.finditer(outside):
+        src = _IMG_SRC.search(match.group(1))
+        if not (src and _LIVE_SRC.match(src.group(1))):
+            dead.append(match.group(0))
+    return dead
 INDEX_JSON = re.compile(r"(?:^|/)data/articles_index\.json$")
 
 
@@ -78,18 +100,32 @@ def _check_archive(label: str, names: list[str], read: object) -> int:
         return _fail(f"{label}: 정식 게시 URL 없는 글이 포함됨 {home_fallback}")
 
     scaffolded = {}
+    dead_images = {}
     for name in body_names:
-        text = read(name).decode("utf-8").lower()
+        raw = read(name).decode("utf-8")
+        text = raw.lower()
         hits = [marker for marker in SCAFFOLDING if marker in text]
         if hits:
             scaffolded[Path(name).name] = hits
+        dead = _dead_images(raw)
+        if dead:
+            dead_images[Path(name).name] = dead[:2]
     if scaffolded:
         return _fail(
             f"{label}: 게시용 목차 장치가 번들에 남아 있음 {scaffolded} — "
             f"옛 스크립트로 빌드한 아티팩트다. `rm -rf dist && uv build` 다시"
         )
 
-    print(f"✅ {label}: {count}편 (인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글, 게시용 장치 0)")
+    if dead_images:
+        return _fail(
+            f"{label}: 열리지 않는 이미지 링크가 번들에 남아 있음 {dead_images} — "
+            f"옛 스크립트로 빌드한 아티팩트다. `rm -rf dist && uv build` 다시"
+        )
+
+    print(
+        f"✅ {label}: {count}편 "
+        f"(인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글, 게시용 장치 0, 죽은 이미지 0)"
+    )
     return 0
 
 

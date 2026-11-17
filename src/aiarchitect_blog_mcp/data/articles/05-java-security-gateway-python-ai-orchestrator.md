@@ -2,7 +2,7 @@
 
 AI 기능을 붙일 때 Spring Boot와 Python을 연동하는 방법보다 먼저 정할 것은 무엇을 어디서 책임지는가입니다. 인증·권한을 Python까지 끌고 가면 보안 경계가 흐려지고, 반대로 AI 실행을 Java에 넣으면 모델 교체가 어려워집니다. 이 글은 Java Security Gateway와 Python AI Orchestrator를 나누는 기준, 내부 토큰 계약, REST·SSE·파일 전달 경계와 권한 재검증 원칙을 정리합니다.
 
-![Java Security Gateway가 외부 요청을 통제하고 제한된 내부 계약으로 Python AI Orchestrator에 연결되는 신뢰 경계](assets/blog-05-java-gateway-python-orchestrator-hero-v2.png)
+> 🖼️ **그림**: Java Security Gateway가 외부 요청을 통제하고 제한된 내부 계약으로 Python AI Orchestrator에 연결되는 신뢰 경계
 
 기업용 AI 서비스를 설계할 때 자주 나오는 질문이 있습니다.
 

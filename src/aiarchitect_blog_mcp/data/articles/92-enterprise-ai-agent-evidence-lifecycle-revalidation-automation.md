@@ -2,7 +2,7 @@
 
 평가 보고서가 저장소에 남아 있다는 사실이 그 결과가 지금도 유효하다는 뜻은 아닙니다. Model과 Prompt, Tool, Policy가 바뀌면 어떤 증거는 그대로 쓸 수 있고 어떤 증거는 즉시 무효가 되는데, 이를 구분하지 못하면 전체 재평가와 무검증 배포 사이에서 매번 선택하게 됩니다. 이 글은 증거를 Release와 Claim에 바인딩하고 Freshness·Expiry·Revocation을 관리하며 변경 영향 그래프로 최소 재검증만 자동 실행하는 설계를 정리합니다.
 
-![기업 AI Agent의 Release·Model·Prompt·Tool·Dataset·Policy 증거가 시간과 변경에 따라 활성·노후·철회 상태로 전이되고 영향받은 주장만 선택적으로 재검증되는 증거 수명주기 아키텍처](assets/blog-92-ai-agent-evidence-lifecycle-revalidation-hero.png)
+> 🖼️ **그림**: 기업 AI Agent의 Release·Model·Prompt·Tool·Dataset·Policy 증거가 시간과 변경에 따라 활성·노후·철회 상태로 전이되고 영향받은 주장만 선택적으로 재검증되는 증거 수명주기 아키텍처
 
 지난주에 통과한 AI Agent 평가 보고서가 오늘도 저장소에 있습니다. 파일의 Hash와 전자서명도 정상입니다. 그렇다면 이 보고서는 오늘 배포할 Release의 승인 근거로 쓸 수 있을까요?
 
@@ -111,7 +111,7 @@ Context가 달라지면 같은 Artifact도 다른 위험을 가집니다. 사내
 
 ## 5. 상태 머신으로 증거의 사용 가능성을 관리한다
 
-<img src="assets/blog-92-evidence-state-machine.png" alt="AI Agent Evidence가 수집·격리·검증·활성화된 뒤 변경과 시간 경과에 따라 노후·만료·철회·대체되고 재검증을 통해 다시 활성화되는 상태 머신" width="450" />
+> 🖼️ **그림**: AI Agent Evidence가 수집·격리·검증·활성화된 뒤 변경과 시간 경과에 따라 노후·만료·철회·대체되고 재검증을 통해 다시 활성화되는 상태 머신
 
 이 글의 권장 상태 모델은 다음과 같습니다.
 
@@ -304,7 +304,7 @@ Evidence Lifecycle의 입력은 Git Commit만이 아닙니다.
 
 ## 11. 의존 그래프로 변경 영향 범위를 계산한다
 
-<img src="assets/blog-92-change-impact-revalidation-graph.png" alt="Prompt 변경 이벤트가 Subject Graph와 Predicate를 거쳐 금지 행동·도구 선택 Claim에만 재검증을 요구하고 데이터 보존 Claim의 기존 증거는 재사용하는 변경 영향 분석 그래프" width="470" />
+> 🖼️ **그림**: Prompt 변경 이벤트가 Subject Graph와 Predicate를 거쳐 금지 행동·도구 선택 Claim에만 재검증을 요구하고 데이터 보존 Claim의 기존 증거는 재사용하는 변경 영향 분석 그래프
 
 영향 분석은 파일 경로 목록이 아니라 의미 관계를 따라야 합니다.
 
@@ -437,7 +437,7 @@ reuse_decision:
 
 ## 15. Evidence Pipeline을 Release Gate에 연결한다
 
-<img src="assets/blog-92-continuous-evidence-pipeline.png" alt="평가·Scanner·Monitor가 만든 Evidence를 격리 검증하고 Registry와 Claim Graph에 연결한 뒤 Release Gate와 Runtime Monitor가 변경 영향과 재검증을 순환시키는 지속 증거 파이프라인" width="330" />
+> 🖼️ **그림**: 평가·Scanner·Monitor가 만든 Evidence를 격리 검증하고 Registry와 Claim Graph에 연결한 뒤 Release Gate와 Runtime Monitor가 변경 영향과 재검증을 순환시키는 지속 증거 파이프라인
 
 권장 Pipeline은 다음 책임을 분리합니다.
 

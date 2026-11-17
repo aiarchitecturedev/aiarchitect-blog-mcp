@@ -2,7 +2,7 @@
 
 Injection 방어를 입력값 검증으로만 접근하면 막지 못하는 경로가 남습니다. 문제는 값이 들어오는 곳이 아니라 값이 코드로 해석되는 지점에서 생기기 때문입니다. 이 글은 OWASP Top 10:2025 A05를 기준으로 Java 21·Spring Boot 3에서 SQL·NoSQL·OS Command·Template Injection을 Source가 아니라 Sink 관점으로 차단하는 방법을 설명합니다.
 
-![외부 데이터는 검증·형식화·구조 분리 Gate를 통과하고 문법으로 위장한 입력은 격리되는 Injection 방어 경계](assets/blog-57-injection-interpreter-boundary-hero.png)
+> 🖼️ **그림**: 외부 데이터는 검증·형식화·구조 분리 Gate를 통과하고 문법으로 위장한 입력은 격리되는 Injection 방어 경계
 
 Injection은 특수문자 몇 개를 막는 문제가 아닙니다. 외부에서 온 Data가 Database, Shell, Template Engine 같은 Interpreter의 **구조나 명령으로 재해석되는 경로**가 생기면 발생합니다.
 
@@ -14,7 +14,7 @@ Injection은 특수문자 몇 개를 막는 문제가 아닙니다. 외부에서
 - 문자열 배열로 Process를 실행해도 공격자가 Option을 추가할 수 있으면 Argument Injection이 남습니다.
 - 안전하게 저장한 고객명이 나중에 Template Source나 Expression으로 평가되면 Second-order Injection이 됩니다.
 
-![HTTP·Queue·File·저장 데이터가 Typed Contract와 구조 경계를 거쳐 SQL·NoSQL·OS Process·Template Sink로 전달되는 통제 구조](assets/blog-57-interpreter-control-boundary.png)
+> 🖼️ **그림**: HTTP·Queue·File·저장 데이터가 Typed Contract와 구조 경계를 거쳐 SQL·NoSQL·OS Process·Template Sink로 전달되는 통제 구조
 
 *Interpreter가 실행할 구조는 Server가 소유하고, 외부 값은 Typed Data로만 전달합니다.*
 
@@ -202,7 +202,7 @@ DB Dialect와 JPQL의 `ESCAPE` 절을 함께 지정하고 통합 Test로 실제 
 - Export, Count, Exists, Bulk Update와 Background Job도 같은 Scope를 사용합니다.
 - DB 계정은 필요한 Schema·Operation만 허용하고 DBA 권한으로 Application을 실행하지 않습니다.
 
-![인증된 Tenant, 검증된 검색 값, 허용된 정렬 구조만 Query Contract에서 조립해 Parameterized Query와 최소 권한 DB로 전달하는 흐름](assets/blog-57-relational-query-assembly.png)
+> 🖼️ **그림**: 인증된 Tenant, 검증된 검색 값, 허용된 정렬 구조만 Query Contract에서 조립해 Parameterized Query와 최소 권한 DB로 전달하는 흐름
 
 *Tenant와 Query 구조는 Server가 소유하고, Client 값은 Parameter로만 결합합니다.*
 
@@ -238,7 +238,7 @@ List<AccountDocument> accounts = mongoTemplate.find(
 
 검증된 업무 값과 인증된 Tenant만 Server 소유 Query Builder에서 합쳐집니다.
 
-![Client JSON을 고정 DTO와 Typed Value로 변환하고 Server Query Builder가 Operator와 Tenant를 소유하는 NoSQL 경계](assets/blog-57-nosql-operator-boundary.png)
+> 🖼️ **그림**: Client JSON을 고정 DTO와 Typed Value로 변환하고 Server Query Builder가 Operator와 Tenant를 소유하는 NoSQL 경계
 
 *Raw Filter를 API 계약에서 제거하면 새 Operator가 추가돼도 Client가 Query 문법을 선택할 수 없습니다.*
 
@@ -275,7 +275,7 @@ new ProcessBuilder(
 
 Argument List는 Shell Tokenization을 피하는 데 도움이 되지만, 공격자가 `--output=/sensitive/path` 같은 Option을 추가할 수 있으면 Argument Injection이 남습니다.
 
-![외부 Process 호출을 Trusted Library로 대체하고 불가피한 경우 고정 argv·Deadline·출력 제한·격리 Runtime을 적용하는 실행 경계](assets/blog-57-bounded-process-runner.png)
+> 🖼️ **그림**: 외부 Process 호출을 Trusted Library로 대체하고 불가피한 경우 고정 argv·Deadline·출력 제한·격리 Runtime을 적용하는 실행 경계
 
 *Shell Parser를 제거한 뒤에도 Executable·Option·Path와 자원 사용량을 Server 정책으로 제한합니다.*
 
@@ -401,7 +401,7 @@ expressionParser.parseExpression(request.expression()).getValue(context);
 
 입력이 Database에 정상 저장됐다는 사실은 신뢰 승격 근거가 아닙니다. 공격 문자열이 처음에는 일반 Data였다가 나중에 관리자 검색 Query, Batch Shell, Export Template이나 Log 분석 Expression에 들어갈 수 있습니다.
 
-![Trusted Template과 Model Data를 분리하고 저장된 사용자 값도 재사용 시 Context 경계를 다시 거치게 하는 Second-order Injection 방어 구조](assets/blog-57-template-second-order-boundary.png)
+> 🖼️ **그림**: Trusted Template과 Model Data를 분리하고 저장된 사용자 값도 재사용 시 Context 경계를 다시 거치게 하는 Second-order Injection 방어 구조
 
 *저장된 값도 다시 불러오는 순간 Model Data 경계로 보내며 Template Source나 Expression으로 평가하지 않습니다.*
 

@@ -2,7 +2,7 @@
 
 원격 MCP Server에 인증을 붙일 때 OAuth 2.1 문서만 읽고 시작하면 어디서부터 연결해야 할지 막막합니다. Client가 인증 서버를 어떻게 찾고, Token이 어느 리소스에 유효한지 정하는 단계가 빠져 있기 때문입니다. 이 글은 401 Challenge에서 Protected Resource Metadata와 Authorization Server Discovery를 거쳐 PKCE, Resource Indicator, Scope까지 이어지는 인증 구조를 정리합니다.
 
-![MCP Client가 401 Challenge와 Metadata Discovery, PKCE를 거쳐 목적지가 제한된 Token으로 Resource Server에 접근하는 구조](assets/blog-11-mcp-oauth21-hero.png)
+> 🖼️ **그림**: MCP Client가 401 Challenge와 Metadata Discovery, PKCE를 거쳐 목적지가 제한된 Token으로 Resource Server에 접근하는 구조
 
 원격 MCP Server가 사용자별 문서, 회의, 업무 시스템이나 관리자 기능에 접근한다면 “로그인 화면을 붙였다”는 것만으로 인증 설계가 끝나지 않습니다.
 
@@ -93,7 +93,7 @@ MCP Request without Token
   → 인증된 MCP Request 재시도
 ```
 
-![401 Challenge에서 Resource·Authorization Server Metadata를 발견하고 PKCE로 목적지 제한 Token을 발급받는 흐름](assets/blog-11-mcp-oauth21-discovery-flow.png)
+> 🖼️ **그림**: 401 Challenge에서 Resource·Authorization Server Metadata를 발견하고 PKCE로 목적지 제한 Token을 발급받는 흐름
 
 *그림 1. 보호 Resource의 401 응답에서 시작해 Metadata Discovery와 PKCE를 거쳐 인증된 요청으로 전환하는 흐름*
 
@@ -338,7 +338,7 @@ resource = https://mcp-b.example.net/mcp
 
 Token 검증이 성공해도 Server는 Tool 인자와 현재 업무 권한을 다시 확인해야 합니다.
 
-![Resource Server가 Token의 서명과 발급자, 만료, 대상 Resource와 Scope를 검증하고 실패 원인에 따라 401 또는 403으로 분기하는 구조](assets/blog-11-mcp-oauth21-resource-validation.png)
+> 🖼️ **그림**: Resource Server가 Token의 서명과 발급자, 만료, 대상 Resource와 Scope를 검증하고 실패 원인에 따라 401 또는 403으로 분기하는 구조
 
 *그림 2. Resource Server가 Token 유효성과 목적지·권한을 매 요청에서 검증하고 허용된 Tool만 실행하는 경계*
 

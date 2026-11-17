@@ -2,7 +2,7 @@
 
 SQL Injection 방어는 입력값 필터링이 아니라 값이 Query 구조를 바꿀 수 없게 만드는 문제입니다. Brute Force와 Log Forging도 같은 성격으로, 기능은 정상인데 반복 사용과 기록 오염을 통제하지 않아 생깁니다. 이 글은 OWASP Top 10:2025 기준으로 Java 21·Spring Boot 3의 취약 코드와 안전한 구현, 자동화 테스트, 운영 경보를 세 취약점에 걸쳐 정리합니다.
 
-![SQL Query 구조와 값의 분리, 다층 인증 시도 제한, 구조화 Security Event 보호가 하나의 애플리케이션 경계에서 작동하는 Secure Coding](assets/blog-51-owasp-secure-coding-hero.png)
+> 🖼️ **그림**: SQL Query 구조와 값의 분리, 다층 인증 시도 제한, 구조화 Security Event 보호가 하나의 애플리케이션 경계에서 작동하는 Secure Coding
 
 보안 코딩(Secure Coding)은 위험한 문자열 몇 개를 차단하는 규칙이 아닙니다. 신뢰할 수 없는 입력이 데이터베이스 Query, 인증 판단과 운영 Log로 이동할 때 **데이터가 명령으로 해석되지 않게 하고, 반복 공격을 제어하며, 남겨진 증거를 신뢰할 수 있게 만드는 개발 방식**입니다.
 
@@ -14,7 +14,7 @@ SQL Injection, Brute Force와 Log Forging은 오래 알려진 공격이지만 �
 
 세 문제는 서로 떨어져 있지 않습니다. 공격자는 Injection을 시도하고, 인증을 반복 공격하며, 그 과정에서 생성되는 Log까지 오염시킬 수 있습니다.
 
-![입력 데이터가 Query, 인증, Logging 경계에서 각각 통제되고 결과·판단 근거가 Security Event로 수렴하는 Secure Coding 구조](assets/blog-51-secure-coding-control-boundaries.png)
+> 🖼️ **그림**: 입력 데이터가 Query, 인증, Logging 경계에서 각각 통제되고 결과·판단 근거가 Security Event로 수렴하는 Secure Coding 구조
 
 이 글은 Java 21과 Spring Boot 3 기반의 합성 예제로 세 취약점을 설명합니다. 다만 **"구현에서 실제로 고른 것"으로 표시한 대목**은 제가 실제로 내린 설계·구현 선택입니다. 원본 코드와 변경 이력을 공개하지 않아 독자가 그 구현 사실을 독립적으로 확인할 수는 없습니다. 특정 고객, 제품, 실제 Endpoint와 운영 계정을 재현하지 않습니다.
 
@@ -292,7 +292,7 @@ class CustomerRepositorySecurityTest {
 
 실제 Database 종류에 따라 문법과 Driver 동작이 다를 수 있으므로 Testcontainers 같은 환경으로 운영과 같은 Database Engine을 포함해 검증하는 것이 좋습니다.
 
-![요청 입력을 검증하고 고정 Query 구조와 Value Binding으로 분리한 뒤 Tenant Scope와 최소 권한 Database에 접근하는 SQL Injection 방어](assets/blog-51-sql-command-data-boundary.png)
+> 🖼️ **그림**: 요청 입력을 검증하고 고정 Query 구조와 Value Binding으로 분리한 뒤 Tenant Scope와 최소 권한 Database에 접근하는 SQL Injection 방어
 
 요청값을 SQL 문자열에 직접 연결하는 경로는 허용하지 않습니다. 값 Binding 뒤에도 Tenant 인가 조건과 최소 권한 Database 계정이 이어져야 합니다.
 
@@ -324,7 +324,7 @@ IP 주소 하나만 차단하면 NAT 환경의 정상 사용자를 함께 막거
 
 ### 인증 경계의 계층형 방어
 
-![로그인 시도가 Network, Account, Device와 시간 Window의 원자적 예산을 예약하고 자격 증명과 Risk·MFA를 통과한 경우에만 Session을 발급하는 Brute Force 방어](assets/blog-51-authentication-attempt-defense.png)
+> 🖼️ **그림**: 로그인 시도가 Network, Account, Device와 시간 Window의 원자적 예산을 예약하고 자격 증명과 Risk·MFA를 통과한 경우에만 Session을 발급하는 Brute Force 방어
 
 시도 예약에 성공한 요청만 Password Hash 검증으로 넘어갑니다. 제한과 인증 실패는 같은 집계·Alert 체계로 연결합니다.
 
@@ -613,7 +613,7 @@ log.warn(
 
 ### Log는 생성에서 Alert까지 하나의 Control이다
 
-![외부 입력값이 고정 Security Event Schema, 중요 필드 최소화, 구분자·제어문자 정규화와 Sink Encoding을 거쳐 보호 저장소와 탐지·Alert로 이어지는 Log 무결성 흐름](assets/blog-51-security-log-integrity-lifecycle.png)
+> 🖼️ **그림**: 외부 입력값이 고정 Security Event Schema, 중요 필드 최소화, 구분자·제어문자 정규화와 Sink Encoding을 거쳐 보호 저장소와 탐지·Alert로 이어지는 Log 무결성 흐름
 
 Event 생성 결과는 Sink별 Encoding을 거쳐 중앙 저장소로 전달하고, 저장된 Event는 무결성 확인·상관 분석·Alert로 이어져야 합니다.
 
@@ -731,7 +731,7 @@ SQL Injection을 막았더라도 Tenant 인가 조건이 빠지면 다른 사용
 
 ## 9. CI/CD에서 방어를 반복 가능하게 만든다
 
-![Code Review와 SAST, 실제 DB·Redis·Log Sink 통합 Test, 경계 입력·반복 요청·구분자 Scenario Test의 증거가 Release Gate에서 배포 또는 차단으로 이어지는 Secure Coding Pipeline](assets/blog-51-secure-coding-release-gate.png)
+> 🖼️ **그림**: Code Review와 SAST, 실제 DB·Redis·Log Sink 통합 Test, 경계 입력·반복 요청·구분자 Scenario Test의 증거가 Release Gate에서 배포 또는 차단으로 이어지는 Secure Coding Pipeline
 
 Unit Test를 통과한 변경은 Security Test로, 검증 결과는 Release Gate의 증거로 전달합니다. Gate가 실패하면 기준선을 낮추지 않고 Pull Request 단계로 되돌립니다.
 

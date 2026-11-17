@@ -2,7 +2,7 @@
 
 RAG 수집을 다시 돌렸더니 같은 문서가 두 번 검색되는 문제는 Vector DB 설정이 아니라 식별자 설계에서 옵니다. 원본과 원본 버전, Chunk, Embedding의 수명이 뒤섞이면 재시도·재청킹·모델 교체마다 낡은 Chunk가 남습니다. 이 글은 원본 키와 내용 해시, 정규화 규칙 버전, 결정적 Chunk ID, 고유 제약으로 만드는 멱등 Upsert와 활성 버전 전환까지 RAG 인덱싱 운영 설계를 정리합니다.
 
-![문서 Revision이 결정적 식별자와 Chunk, Embedding을 거쳐 중복 없이 Candidate Index에 저장되고 Active Revision으로 전환되는 구조](assets/blog-09-rag-idempotent-indexing-hero.png)
+> 🖼️ **그림**: 문서 Revision이 결정적 식별자와 Chunk, Embedding을 거쳐 중복 없이 Candidate Index에 저장되고 Active Revision으로 전환되는 구조
 
 검색 증강 생성 (Retrieval-Augmented Generation, RAG) 데모에서는 문서를 읽고 검색 단위 조각 (Chunk)으로 나눈 뒤 벡터 표현 (Embedding)을 저장하면 작업이 끝난 것처럼 보입니다.
 
@@ -82,7 +82,7 @@ Vector Retrieval      → Search-time Dedup
 
 Embedding 모델만 바뀐 경우에는 Chunk를 다시 만들 필요가 없습니다. 같은 Chunk에 새 임베딩 생성 버전 (Embedding Generation)을 추가한 뒤 검색 대상을 전환할 수 있습니다.
 
-![업무 식별자인 Source Key와 정규화 규칙에서 Revision ID, 결정적 Chunk와 Embedding, 고유 제약이 있는 Candidate Index로 이어지는 파이프라인](assets/blog-09-rag-idempotent-indexing-pipeline.png)
+> 🖼️ **그림**: 업무 식별자인 Source Key와 정규화 규칙에서 Revision ID, 결정적 Chunk와 Embedding, 고유 제약이 있는 Candidate Index로 이어지는 파이프라인
 
 *그림 1. 원본·내용·분할·Embedding의 버전을 식별자에 반영해 같은 입력을 반복해도 같은 Record를 갱신하는 구조*
 
@@ -469,7 +469,7 @@ Update 건수가 `0`이면 다른 Worker가 먼저 활성 버전을 바꿨을 �
 
 검색 엔진 전체를 새 Generation으로 교체하는 대규모 재색인에서는 별도 준비 인덱스 (Shadow Index)를 만든 뒤 논리 이름 (Alias)을 전환할 수 있습니다. OpenSearch 공식 문서는 하나의 Alias Update 요청 안에서 기존 Index 제거와 새 Index 추가가 원자적으로 수행된다고 설명합니다.
 
-![Candidate Revision의 Chunk와 Embedding 정합성을 검증한 뒤 Active Revision을 원자적으로 전환하고 Reconciliation으로 누락과 중복을 복구하는 흐름](assets/blog-09-rag-active-revision-commit.png)
+> 🖼️ **그림**: Candidate Revision의 Chunk와 Embedding 정합성을 검증한 뒤 Active Revision을 원자적으로 전환하고 Reconciliation으로 누락과 중복을 복구하는 흐름
 
 *그림 2. 검증 실패 시 기존 Active Revision을 유지하고, 활성화 이후에도 Reconciliation으로 불일치를 재처리하는 Commit 흐름*
 

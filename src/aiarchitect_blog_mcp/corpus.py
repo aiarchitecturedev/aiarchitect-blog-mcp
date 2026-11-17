@@ -248,6 +248,70 @@ _MARKDOWN_TOC = re.compile(r"^>[ \t]*\*\*목차\*\*[ \t]*\n(?:^>.*\n)*", re.M)
 _SECTION_CROSSREF = re.compile(r"\[([^\]]+)\]\(#ai-section-\d+\)")
 _BLANK_RUN = re.compile(r"\n{3,}")
 
+# 본문 이미지는 전부 상대경로 `assets/...` 라 번들에서는 어느 쪽으로도 열리지 않는다.
+# 🔴 원문의 CDN 주소를 구워 넣는 길은 막혀 있다 — 서명·만료가 붙은 링크라서(실측:
+# `expires` 13일 뒤) 배포본에 넣으면 작동하는 척하다 죽는다. 지금처럼 죽은 링크보다 나쁘다.
+# 그래서 링크는 버리고 **alt 를 캡션으로 남긴다** — alt 는 도식을 한 문장으로 설명하는
+# 내용이고(실측 305개 전부 존재, 중앙값 87자) 검색어도 거기에 들어 있다.
+# ⚠️ 양식이 둘이다 — 마크다운 `![alt](src)` 299개와 HTML `<img ... />` 6개(92·93번).
+# 둘 다 단독 줄에만 쓰인다(실측 305/305, 앞뒤 빈 줄). 문장 중간의 인라인 이미지는
+# 여기서 걸리지 않으므로 `find_dead_image_refs` 프리플라이트가 따로 막는다.
+_MD_IMAGE = re.compile(
+    r"^[ \t]*!\[([^\]]*)\]\(\s*([^)\s]*)(?:\s+[\"'][^\"']*[\"'])?\s*\)[ \t]*$", re.M
+)
+_HTML_IMAGE = re.compile(r"^[ \t]*<img\b([^>]*?)/?>[ \t]*$", re.M | re.I)
+_IMG_ATTR = re.compile(r"""([\w-]+)\s*=\s*["']([^"']*)["']""")
+# 열리는 주소(절대 URL·data:)는 손대지 않는다 — 나중에 소스가 진짜 이미지를 쓰면 그대로 간다.
+_LIVE_SRC = re.compile(r"^(?:https?:|data:)", re.I)
+_ANY_MD_IMAGE = re.compile(r"!\[([^\]]*)\]\(\s*([^)\s]*)[^)]*\)")
+_ANY_HTML_IMAGE = re.compile(r"<img\b([^>]*?)/?>", re.I)
+
+
+def _caption(alt: str) -> str:
+    """alt 를 캡션 한 줄로. alt 가 비면 남길 내용이 없으므로 줄째 지운다."""
+    alt = " ".join(alt.split())
+    return f"> \U0001f5bc\ufe0f **그림**: {alt}" if alt else ""
+
+
+def _md_image_to_caption(match: re.Match[str]) -> str:
+    if _LIVE_SRC.match(match.group(2)):
+        return match.group(0)
+    return _caption(match.group(1))
+
+
+def _html_image_attrs(raw: str) -> dict[str, str]:
+    return {k.lower(): v for k, v in _IMG_ATTR.findall(raw)}
+
+
+def _html_image_to_caption(match: re.Match[str]) -> str:
+    attrs = _html_image_attrs(match.group(1))
+    if _LIVE_SRC.match(attrs.get("src", "")):
+        return match.group(0)
+    return _caption(attrs.get("alt", ""))
+
+
+def find_dead_image_refs(text: str) -> list[str]:
+    """정제 뒤에도 남은 죽은 이미지 참조(열리지 않는 src)를 전부 찾는다.
+
+    단독 줄 변환이 놓치는 형태(문장 중간의 인라인 이미지 등)를 배포 전에 잡기 위한 것이다.
+    코드 블록 안의 예시는 본문이 아니라 설명이므로 제외한다.
+    """
+    found: list[str] = []
+    pos = 0
+    segments: list[str] = []
+    for fence in _FENCED_BLOCK.finditer(text):
+        segments.append(text[pos:fence.start()])
+        pos = fence.end()
+    segments.append(text[pos:])
+    for segment in segments:
+        for match in _ANY_MD_IMAGE.finditer(segment):
+            if not _LIVE_SRC.match(match.group(2)):
+                found.append(match.group(0))
+        for match in _ANY_HTML_IMAGE.finditer(segment):
+            if not _LIVE_SRC.match(_html_image_attrs(match.group(1)).get("src", "")):
+                found.append(match.group(0))
+    return found
+
 
 def _drop_generated_toc(match: re.Match[str]) -> str:
     return "" if "#ai-section-" in match.group(0) else match.group(0)
@@ -261,6 +325,8 @@ def _strip_outside_code(segment: str) -> str:
     segment = _HTML_HEADING.sub(
         lambda m: "#" * int(m.group(1)) + " " + " ".join(m.group(2).split()), segment
     )
+    segment = _MD_IMAGE.sub(_md_image_to_caption, segment)
+    segment = _HTML_IMAGE.sub(_html_image_to_caption, segment)
     return _BLANK_RUN.sub("\n\n", segment)
 
 

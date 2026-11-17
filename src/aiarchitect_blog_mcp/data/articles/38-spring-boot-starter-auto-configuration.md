@@ -2,7 +2,7 @@
 
 고객사 Spring Boot 애플리케이션에 SDK를 연결할 때 Starter를 만드는 이유는 편의가 아니라 경계입니다. Auto-configuration이 사용자 Bean을 덮어쓰거나 Secret을 로그에 남기거나 Client 수명을 잘못 관리하면 SDK가 고객사 애플리케이션을 망가뜨립니다. 이 글은 프라이빗 API용 Java Server SDK를 Spring Boot Starter로 연결할 때의 Auto-configuration, 타입 안전 설정, 사용자 Bean 우선권, Secret 주입과 테스트 설계를 정리합니다.
 
-![외부 설정과 사용자 Bean을 조건부 Auto-configuration으로 조립하고 Java SDK Core·Private API 연결과 자동 테스트 증거를 관리하는 Spring Boot Starter 이미지](assets/blog-38-spring-boot-starter-autoconfiguration-hero.png)
+> 🖼️ **그림**: 외부 설정과 사용자 Bean을 조건부 Auto-configuration으로 조립하고 Java SDK Core·Private API 연결과 자동 테스트 증거를 관리하는 Spring Boot Starter 이미지
 
 앞선 글에서는 고객사 서버가 프라이빗 API를 안전하게 호출하도록 Java Server SDK의 공개 API, 전송 계층, 인증, 오류, 재시도와 Client 수명을 설계했습니다.
 
@@ -10,7 +10,7 @@
 
 Spring Boot Starter는 이 반복을 줄이는 **Framework Binding 계층**입니다. Java Core SDK를 다시 구현하는 계층이 아니라, 이미 검증된 Core를 Spring Boot의 설정·Bean·수명 주기에 맞게 조립하는 얇은 Adapter여야 합니다.
 
-![외부 설정과 고객 정의 Bean을 SDK Auto-configuration이 조건과 수명 정책에 따라 Java SDK Core Bean으로 조립하고 Private API에 연결하는 Spring Boot 통합 경계](assets/blog-38-starter-integration-boundary.png)
+> 🖼️ **그림**: 외부 설정과 고객 정의 Bean을 SDK Auto-configuration이 조건과 수명 정책에 따라 Java SDK Core Bean으로 조립하고 Private API에 연결하는 Spring Boot 통합 경계
 
 이 글은 이 역할을 수행하는 Starter의 모듈, 자동 설정 조건, 설정 속성, Secret 경계, 확장 지점, 종료 수명과 테스트 방법을 공개 가능한 합성 예시로 정리합니다. 예시의 Package, Endpoint와 속성 이름은 설명용이며 실제 고객사·제품·자격 증명을 포함하지 않습니다.
 
@@ -41,7 +41,7 @@ Starter가 담당할 일은 명확합니다.
 
 작은 프로젝트는 하나의 Artifact로 시작할 수 있지만, 배포와 호환성까지 고려하면 다음과 같이 역할을 나누는 편이 안전합니다.
 
-![고객 애플리케이션이 Starter 의존성 집계를 통해 Auto-configuration과 Spring 비의존 Java Core를 사용하고 Test Kit이 계약 검증만 지원하는 Artifact 경계](assets/blog-38-starter-artifact-boundaries.png)
+> 🖼️ **그림**: 고객 애플리케이션이 Starter 의존성 집계를 통해 Auto-configuration과 Spring 비의존 Java Core를 사용하고 Test Kit이 계약 검증만 지원하는 Artifact 경계
 
 ### 2.1 Java Core
 
@@ -144,7 +144,7 @@ public class ExampleSdkAutoConfiguration {
 
 고객이 `SdkClient`를 직접 정의했을 때 Starter가 두 번째 Client를 만들면 연결 풀, 인증, Metric과 종료 책임이 중복됩니다. Bean 이름만 다르게 만들어 충돌을 숨기는 것은 해결책이 아닙니다.
 
-![Core Class 존재·설정 활성화·사용자 Client 부재 조건을 순서대로 평가해 기본 SdkClient를 만들거나 안전하게 Back off 하는 자동 설정 결정 흐름](assets/blog-38-auto-configuration-backoff.png)
+> 🖼️ **그림**: Core Class 존재·설정 활성화·사용자 Client 부재 조건을 순서대로 평가해 기본 SdkClient를 만들거나 안전하게 Back off 하는 자동 설정 결정 흐름
 
 고객은 필요하면 다음처럼 완전히 직접 구성할 수 있습니다.
 
@@ -323,7 +323,7 @@ class CredentialConfiguration {
 }
 ```
 
-![외부 설정은 타입 안전한 Properties로 시작 시 검증하고 회전 가능한 Secret은 CredentialProvider로 요청 시 해석한 뒤 Auto-configuration이 Singleton Client와 종료 계약을 조립하는 수명 경계](assets/blog-38-properties-secret-lifecycle.png)
+> 🖼️ **그림**: 외부 설정은 타입 안전한 Properties로 시작 시 검증하고 회전 가능한 Secret은 CredentialProvider로 요청 시 해석한 뒤 Auto-configuration이 Singleton Client와 종료 계약을 조립하는 수명 경계
 
 배포 환경이 파일 기반 Secret을 제공한다면 Spring Boot의 `configtree:` Import로 외부 파일을 설정 트리에 연결할 수도 있습니다. 그러나 어떤 방식을 택하든 Starter는 Secret 값을 로그, 오류 메시지, Metric Tag에 넣지 않아야 합니다.
 
@@ -510,7 +510,7 @@ class ExampleSdkAutoConfigurationTests {
 
 행복 경로 하나만 테스트하면 Starter의 핵심인 Back off와 실패 동작이 보장되지 않습니다.
 
-![Test Fixture와 ApplicationContextRunner가 활성화·Back off·설정 실패·종료 동작을 검증하고 Spring Boot·Java 호환성 Matrix와 Release Gate 증거로 연결하는 자동화 흐름](assets/blog-38-contract-test-release-gate.png)
+> 🖼️ **그림**: Test Fixture와 ApplicationContextRunner가 활성화·Back off·설정 실패·종료 동작을 검증하고 Spring Boot·Java 호환성 Matrix와 Release Gate 증거로 연결하는 자동화 흐름
 
 최소한 다음 항목을 자동화합니다.
 

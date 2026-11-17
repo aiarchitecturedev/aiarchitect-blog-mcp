@@ -2,11 +2,11 @@
 
 Log Forging은 사용자 입력이 그대로 로그에 들어가 기록 자체를 위조하는 문제입니다. 로그를 많이 남기는 것과 사고를 탐지할 수 있는 것은 다르고, 반대로 민감정보를 남기면 로그가 유출 경로가 됩니다. 이 글은 OWASP Top 10:2025 A09를 기준으로 Java 21·Spring Boot 3에서 개행 주입 차단, 민감정보 마스킹, 구조화 Security Event, Alert와 Incident Playbook 설계를 정리합니다.
 
-![변조된 Event를 신뢰 경계에서 차단하고 보호 수집·탐지·대응으로 연결하는 Security Logging 구조](assets/blog-61-security-logging-alerting-hero.png)
+> 🖼️ **그림**: 변조된 Event를 신뢰 경계에서 차단하고 보호 수집·탐지·대응으로 연결하는 Security Logging 구조
 
 공격을 차단하는 코드가 있어도 우회 시도를 기록하지 않으면 다음 공격을 알아채기 어렵습니다. Log를 남겨도 아무도 보지 않거나 Alert가 담당자에게 도착하지 않으면 대응은 시작되지 않습니다. Alert가 도착해도 무엇을 확인하고 차단해야 하는지 Playbook이 없으면 중요한 시간이 다시 사라집니다.
 
-![Threat와 Abuse Case에서 Event 계약·보호 수집·탐지·경보·Playbook을 거쳐 통제 개선으로 돌아가는 폐루프](assets/blog-61-security-event-response-loop.png)
+> 🖼️ **그림**: Threat와 Abuse Case에서 Event 계약·보호 수집·탐지·경보·Playbook을 거쳐 통제 개선으로 돌아가는 폐루프
 
 *Security Logging은 파일 생성이 아니라 탐지와 대응 개선까지 이어지는 운영 계약입니다.*
 
@@ -125,7 +125,7 @@ Event의 식별·시간·실행 문맥을 먼저 고정합니다.
 
 필드 이름과 Type, 최대 길이, Null 허용 여부, 개인정보 등급을 Schema로 관리합니다. 탐지 규칙은 자연어 문장이 아니라 `eventType`, `outcome`, `reasonCode`처럼 안정된 필드를 사용합니다.
 
-![Server 신뢰 문맥·정책 결과·최소화된 외부 정보가 Event Policy Gate를 거쳐 안정된 Security Event로 생성되는 구조](assets/blog-61-structured-event-contract.png)
+> 🖼️ **그림**: Server 신뢰 문맥·정책 결과·최소화된 외부 정보가 Event Policy Gate를 거쳐 안정된 Security Event로 생성되는 구조
 
 *외부 문자열을 정리해 보안 의미를 만들지 않고, Server가 통제하는 Enum과 신뢰 문맥으로 Event를 생성합니다.*
 
@@ -198,7 +198,7 @@ CR과 LF를 제거하는 것만으로 모든 Injection이 해결되지는 않습
 
 위 함수는 Log 표시용 보조 정책입니다. 인가·탐지 판단에 사용하는 `event_type`, `outcome`, `severity`, `reason_code`는 외부 문자열을 정리해 만들지 않고 Server가 허용된 Enum과 정책 결과에서 생성해야 합니다. 양방향 텍스트 제어 문자까지 표시용 필드에서 제한해 운영자가 화면 순서를 잘못 해석할 위험도 줄입니다.
 
-![신뢰할 수 없는 Log 필드를 의미 검증·단일 행 정규화·출력 형식 인코딩·안전한 표시로 연결하는 Log Forging 방어 체인](assets/blog-61-log-forging-defense.png)
+> 🖼️ **그림**: 신뢰할 수 없는 Log 필드를 의미 검증·단일 행 정규화·출력 형식 인코딩·안전한 표시로 연결하는 Log Forging 방어 체인
 
 *CR·LF 제거만으로 끝내지 않고 Collector와 Viewer가 소비하는 최종 Format까지 방어합니다.*
 
@@ -296,7 +296,7 @@ Log는 공격자의 흔적을 담기 때문에 삭제·변조·유출·Flooding�
 - Collector 중단, Event Sequence Gap, 급격한 Volume 감소도 Alert 대상입니다.
 - Hash Chain은 보조 증거일 뿐, 공격자의 전체 삭제와 마지막 구간 절단을 단독으로 막지 못합니다.
 
-![Application Event를 제한 Buffer·중앙 Collector·Append-only 저장소로 보내고 수집 장애를 제한 저하 또는 보호 작업 거부로 분기하는 구조](assets/blog-61-protected-log-pipeline.png)
+> 🖼️ **그림**: Application Event를 제한 Buffer·중앙 Collector·Append-only 저장소로 보내고 수집 장애를 제한 저하 또는 보호 작업 거부로 분기하는 구조
 
 *Diagnostic Log와 필수 Audit는 같은 장애에서도 서로 다른 안전 결과를 가져야 합니다.*
 
@@ -384,7 +384,7 @@ False Positive를 줄이려고 Security Event를 삭제하지 않습니다. 원�
 
 NIST SP 800-61 Revision 3은 Incident Response(사고 대응)를 별도 순간 작업이 아니라 Cybersecurity Risk Management(사이버보안 위험 관리) 전반에 통합하도록 권고합니다.
 
-![공격 가설과 Sequence Rule을 Severity·Confidence로 평가하고 조사 가능한 Alert·제한된 대응·사후 개선으로 연결하는 흐름](assets/blog-61-detection-playbook-loop.png)
+> 🖼️ **그림**: 공격 가설과 Sequence Rule을 Severity·Confidence로 평가하고 조사 가능한 Alert·제한된 대응·사후 개선으로 연결하는 흐름
 
 *탐지 품질은 Alert 개수가 아니라 조사 가능성, 가역적 대응과 개선 폐루프로 평가합니다.*
 

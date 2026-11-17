@@ -22,7 +22,7 @@ Agent는 회의 목록을 조회하고, 대상 회의를 찾은 뒤 요약 작�
   → 복구 불가능할 수 있음
 ```
 
-![AI Agent가 제안한 읽기·쓰기·중요·파괴 작업이 신뢰된 정책 Gate와 사용자 승인 지점을 거쳐 보호된 업무 시스템으로 실행되는 장면](assets/blog-16-agent-action-approval-hero.png)
+> 🖼️ **그림**: AI Agent가 제안한 읽기·쓰기·중요·파괴 작업이 신뢰된 정책 Gate와 사용자 승인 지점을 거쳐 보호된 업무 시스템으로 실행되는 장면
 
 모델이 사용자의 의도를 잘 이해했다는 사실은 실행 권한을 얻었다는 뜻이 아닙니다.
 
@@ -180,7 +180,7 @@ Action Approval
 
 분류는 Tool 이름만 보고 결정하지 않습니다. `get_report`라는 이름의 Tool이 보고서를 생성하면서 외부로 전송할 수도 있고, `sync`가 수천 건을 덮어쓸 수도 있습니다.
 
-![Tool Call 의도를 신뢰된 Registry와 실제 영향으로 평가해 자동 실행, 미리보기와 승인, 제한 또는 거부로 분기하는 위험 기반 정책 결정 흐름](assets/blog-16-risk-policy-decision.png)
+> 🖼️ **그림**: Tool Call 의도를 신뢰된 Registry와 실제 영향으로 평가해 자동 실행, 미리보기와 승인, 제한 또는 거부로 분기하는 위험 기반 정책 결정 흐름
 
 ## 5. 같은 읽기 작업도 민감도에 따라 달라진다
 
@@ -497,7 +497,7 @@ Tool Name
 
 Revision이 달라지면 자동으로 최신 상태에 적용하지 말고 새 미리보기와 승인을 요청합니다.
 
-![실행 미리보기와 인증된 사용자 승인 Event를 제한된 Grant에 묶고 실행 직전 권한·대상 Revision·입력 지문·Replay를 다시 검사하는 폐루프](assets/blog-16-approval-binding-execution-loop.png)
+> 🖼️ **그림**: 실행 미리보기와 인증된 사용자 승인 Event를 제한된 Grant에 묶고 실행 직전 권한·대상 Revision·입력 지문·Replay를 다시 검사하는 폐루프
 
 ## 14. 자연어 확인은 인증된 승인 Event로 변환한다
 

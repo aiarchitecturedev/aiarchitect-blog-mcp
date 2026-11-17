@@ -2,7 +2,7 @@
 
 AI Agent에 API Key를 그대로 넘기면 그 값은 Prompt와 Log, 대화 이력에 남습니다. 모델이 자격 증명을 기억하거나 외부로 흘릴 경로가 생기는 것입니다. 이 글은 Token과 API Key를 모델 Context에서 분리하고, Credential Broker가 Downstream별 단기 자격 증명을 발급·주입·회전·폐기하며 Prompt·Tool·Log에서 Secret을 제거하는 운영 설계를 정리합니다.
 
-![신뢰 경계 밖의 AI Agent와 중앙 Credential Broker, 보호된 Secret Vault, 목적지별 단기 자격 증명이 분리된 업무 시스템으로 전달되는 밝은 엔터프라이즈 보안 구조](assets/blog-24-ai-agent-credential-broker-hero.png)
+> 🖼️ **그림**: 신뢰 경계 밖의 AI Agent와 중앙 Credential Broker, 보호된 Secret Vault, 목적지별 단기 자격 증명이 분리된 업무 시스템으로 전달되는 밝은 엔터프라이즈 보안 구조
 
 *그림 1. 모델은 작업만 제안하고 신뢰할 수 있는 실행 계층이 목적지별 단기 Credential을 발급·주입하는 AI Agent 보안 구조*
 
@@ -225,7 +225,7 @@ Broker 입력은 Credential 값이 아니라 Credential Request (자격 증명 �
 
 `maxLifetimeSeconds`는 모델이 정하는 값이 아니라 Server 정책의 상한 안에서 적용됩니다.
 
-![모델은 Secret을 보지 않고 Tool Broker와 Credential Broker가 정책을 검증한 뒤 Secret Manager에서 얻은 목적지별 단기 자격 증명을 실행 직전에 주입하는 신뢰 경로](assets/blog-24-credential-broker-trust-path.png)
+> 🖼️ **그림**: 모델은 Secret을 보지 않고 Tool Broker와 Credential Broker가 정책을 검증한 뒤 Secret Manager에서 얻은 목적지별 단기 자격 증명을 실행 직전에 주입하는 신뢰 경로
 
 *그림 2. 모델·업무 실행·Credential·Resource 영역을 분리하고 직선과 완만한 분기 화살표로 발급 대상을 명확히 한 Broker 신뢰 경로*
 
@@ -762,7 +762,7 @@ HTTP Client
 
 OWASP Logging Cheat Sheet도 Access Token, Password, Database Connection String, Encryption Key와 주요 Secret을 직접 기록하지 말고 제거·Mask·Hash·암호화하도록 안내합니다.
 
-![Tool 실행에서 Secret 원문을 기록하지 않고 Field 이름과 값 형태를 이중 검사한 뒤 안전한 Metadata만 Trace와 SIEM으로 전달하며 탐지 결과를 정책으로 되돌리는 파이프라인](assets/blog-24-secret-masking-pipeline-v2.png)
+> 🖼️ **그림**: Tool 실행에서 Secret 원문을 기록하지 않고 Field 이름과 값 형태를 이중 검사한 뒤 안전한 Metadata만 Trace와 SIEM으로 전달하며 탐지 결과를 정책으로 되돌리는 파이프라인
 
 *그림 3. Secret 원문 미기록, 이중 Detector, 안전한 감사 Event와 회귀 Test를 하나의 짧은 순환 경로로 연결한 Masking 파이프라인*
 

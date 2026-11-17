@@ -2,7 +2,7 @@
 
 Insecure Design은 구현 버그가 아니라 기능이 설계대로 동작할 때 생기는 취약점입니다. 각 요청은 정상인데 순서·횟수·동시성을 통제하지 않아 업무 흐름이 우회됩니다. 이 글은 OWASP Top 10:2025 A06을 기준으로 Java 21·Spring Boot 3에서 Abuse Case 도출, 상태 전이 검증, 동시성과 Idempotency, Feature Rate Limit과 자원 Budget 설계를 정리합니다.
 
-![명시된 업무 통제를 통과하는 정상 흐름과 차단되는 Skip·Replay·Race·대량 악용 경로를 보여주는 보안 설계 구조](assets/blog-58-insecure-design-workflow-hero.png)
+> 🖼️ **그림**: 명시된 업무 통제를 통과하는 정상 흐름과 차단되는 Skip·Replay·Race·대량 악용 경로를 보여주는 보안 설계 구조
 
 Insecure Design은 보안 Header 하나를 빠뜨리거나 조건문 하나를 잘못 작성한 문제와 다릅니다. 필요한 통제 자체가 요구사항과 설계에 없으면 코드를 정확히 구현해도 시스템은 안전하지 않습니다.
 
@@ -17,7 +17,7 @@ Insecure Design은 보안 Header 하나를 빠뜨리거나 조건문 하나를 �
 
 이 글은 2026년 8월 기준 OWASP Top 10:2025 A06 Insecure Design을 바탕으로 Java 21·Spring Boot 3 환경의 합성 예제를 설명합니다. 실제 고객, 서비스, 내부 Workflow, 금액, 계정과 운영 한도는 사용하지 않습니다.
 
-![같은 업무 기능이 숨은 가정을 거치면 예측 가능한 악용으로, 명시적 불변식을 거치면 검증 가능한 설계로 이어지는 비교](assets/blog-58-design-control-fork.png)
+> 🖼️ **그림**: 같은 업무 기능이 숨은 가정을 거치면 예측 가능한 악용으로, 명시적 불변식을 거치면 검증 가능한 설계로 이어지는 비교
 
 *필요한 통제가 설계에 없으면 정확하게 구현된 코드도 예측 가능한 악용을 막지 못합니다.*
 
@@ -93,7 +93,7 @@ Abuse Case는 공격 기법 이름을 나열하는 문서가 아니라 정상 �
 - **보고서** — 장기간·대량 조건의 자원 고갈을 Query Budget·비동기 Job과 최대 범위 Test로 제한합니다.
 - **비밀번호 재설정** — 다른 계정에 반복 알림을 보내는 악용을 계정·발신자 제한, Generic 응답과 Enumeration·DoS Test로 통제합니다.
 
-![정상 Use Case에 Skip·Replay·Race·Scale·Failure 변형을 적용하고 업무 불변식과 부정 테스트로 연결하는 구조](assets/blog-58-abuse-case-invariant-map.png)
+> 🖼️ **그림**: 정상 Use Case에 Skip·Replay·Race·Scale·Failure 변형을 적용하고 업무 불변식과 부정 테스트로 연결하는 구조
 
 좋은 Abuse Case는 `악용을 막는다`가 아니라 다음처럼 작성합니다.
 
@@ -103,7 +103,7 @@ Abuse Case는 공격 기법 이름을 나열하는 문서가 아니라 정상 �
 
 화면에서 다음 버튼을 숨기는 것은 업무 흐름 통제가 아닙니다. 공격자는 중간 API를 건너뛰고 마지막 Endpoint를 직접 호출할 수 있습니다.
 
-![초안부터 결제·승인·이행까지 허용된 Server 상태 전이는 진행하고 직접 API 호출과 순서 변경은 거부하는 Workflow](assets/blog-58-server-workflow-state-machine.png)
+> 🖼️ **그림**: 초안부터 결제·승인·이행까지 허용된 Server 상태 전이는 진행하고 직접 API 호출과 순서 변경은 거부하는 Workflow
 
 결제가 확인된 뒤에는 승인과 이행 전이만 허용합니다.
 
@@ -235,7 +235,7 @@ Lock만 추가하면 끝나는 것은 아닙니다.
 
 Network Timeout 뒤 Client가 재시도하면 Server는 이전 요청이 성공했는지 알 수 있어야 합니다. Idempotency Key를 받기만 하고 Memory Map에 결과를 넣는 방식은 다중 Instance, 재시작과 Race에서 깨집니다.
 
-![요청 의도와 Snapshot을 원자적으로 선점해 한 실행자만 Side Effect를 만들고 중복 요청은 저장 결과 또는 충돌로 처리하는 구조](assets/blog-58-atomic-single-execution.png)
+> 🖼️ **그림**: 요청 의도와 Snapshot을 원자적으로 선점해 한 실행자만 Side Effect를 만들고 중복 요청은 저장 결과 또는 충돌로 처리하는 구조
 
 ```java
 public record IdempotencyScope(
@@ -296,7 +296,7 @@ Global IP 제한 하나로는 초대, 쿠폰, 검색, Export, AI 추론과 알�
 - **AI 요청** — Tenant·Actor·Model별 Token·GPU Cost를 Budget과 Timeout 안에서 관리합니다.
 - **Password Reset** — Account·발신자·Network별 시도와 알림을 제한하고 Generic 응답·Step-up을 결합합니다.
 
-![Feature 호출을 Actor·Tenant·Resource·비용 단위로 분류하고 원자적 예약 후 실행·대기·거부하는 Budget Gate](assets/blog-58-feature-cost-budget-gate.png)
+> 🖼️ **그림**: Feature 호출을 Actor·Tenant·Resource·비용 단위로 분류하고 원자적 예약 후 실행·대기·거부하는 Budget Gate
 
 ```java
 public record FeatureCost(

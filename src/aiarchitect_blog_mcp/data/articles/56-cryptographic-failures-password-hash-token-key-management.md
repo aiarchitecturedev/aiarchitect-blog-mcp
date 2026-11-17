@@ -2,7 +2,7 @@
 
 암호를 썼는데도 안전하지 않은 상태는 Algorithm 선택보다 Key와 난수, 오류 처리에서 더 자주 생깁니다. Password를 암호화로 저장하거나 JWT Signature를 암호화로 착각하면 검증 자체가 무의미해집니다. 이 글은 OWASP Top 10:2025 A04를 기준으로 Java 21·Spring Boot 3에서 Password Hash 선택과 전환, Access·Refresh Token 수명주기와 Rotation, AES-GCM과 Envelope Encryption, Key Rotation과 폐기까지 정리합니다.
 
-![Password Hash·Token 검증·AEAD·Versioned Key Rotation을 통과한 데이터와 격리된 암호 실패를 대비한 Cryptographic Failures 방어 수명주기](assets/blog-56-cryptographic-lifecycle-hero.png)
+> 🖼️ **그림**: Password Hash·Token 검증·AEAD·Versioned Key Rotation을 통과한 데이터와 격리된 암호 실패를 대비한 Cryptographic Failures 방어 수명주기
 
 강한 Algorithm 이름을 하나 선택했다고 암호 설계가 끝나는 것은 아닙니다. Password를 AES로 암호화하거나, JWT Signature만 확인하고 Audience를 검증하지 않거나, AES-GCM에서 같은 Key와 IV를 재사용하면 표면적으로는 암호화를 사용해도 보호 목표를 달성하지 못합니다.
 
@@ -30,7 +30,7 @@ Cryptographic Failures는 다음과 같은 설계·구현·운영 실패를 함�
 - **전송 보호** — Network 도청·변조·위장을 막으며, TLS·mTLS를 사용합니다.
 - **재사용 방지** — 캡처된 Token·Nonce를 다시 쓰지 못하게 하며, Expiration·Single Use·Replay State를 사용합니다.
 
-![Password·업무 데이터·메시지와 Artifact·통신 경로를 보호 목표별 Adaptive Hash·AEAD·MAC/Signature·TLS 통제로 연결한 계약](assets/blog-56-protection-objective-contract.png)
+> 🖼️ **그림**: Password·업무 데이터·메시지와 Artifact·통신 경로를 보호 목표별 Adaptive Hash·AEAD·MAC/Signature·TLS 통제로 연결한 계약
 
 Password처럼 복구할 필요가 없는 값은 Hash하고, 업무상 원문 복구가 필요한 개인정보는 암호화합니다. JWT의 Signature는 Payload를 숨기지 않으므로 기밀정보를 넣지 않습니다. HTTPS는 전송 구간을 보호하지만 Database Dump와 Backup의 평문까지 보호하지 않습니다.
 
@@ -68,7 +68,7 @@ Salt는 사용자마다 달라야 하며 검증된 Password Encoder가 생성·�
 
 OWASP Password Storage Cheat Sheet는 신규 시스템에서 Argon2id를 우선 권고하고, 환경에 맞춰 Memory·Iteration·Parallelism을 조정하도록 안내합니다. Parameter는 문서의 최소값을 복사하는 데서 끝내지 않고 실제 인증 Server의 지연, 동시 로그인 수와 자원 고갈 위험을 측정해 정합니다.
 
-![제출된 Password를 일관된 정책과 Adaptive Hash로 검증하고 로그인 성공 시 Compare-and-set 방식으로 점진 업그레이드하는 흐름](assets/blog-56-password-hash-migration.png)
+> 🖼️ **그림**: 제출된 Password를 일관된 정책과 Adaptive Hash로 검증하고 로그인 성공 시 Compare-and-set 방식으로 점진 업그레이드하는 흐름
 
 ### Spring Security의 Versioned Password Encoder
 
@@ -179,7 +179,7 @@ Signature 검증 후에도 Endpoint별 Scope, Role, Tenant와 Resource 소유권
 
 Access Token은 짧게 유지하고, Refresh Token은 더 강하게 보호하며 한 번 사용한 값의 재사용을 탐지합니다. Browser에서는 업무 요구를 검토해 Secure·HttpOnly·SameSite Cookie 또는 적절한 BFF 구조를 사용하고, JavaScript가 접근 가능한 장기 Token 저장을 피합니다.
 
-![Access Token의 Type·Algorithm·Signature·Claim·인가 검증과 Refresh Token의 Digest 조회·원자적 소비·재사용 Family 폐기를 분리한 흐름](assets/blog-56-token-validation-rotation.png)
+> 🖼️ **그림**: Access Token의 Type·Algorithm·Signature·Claim·인가 검증과 Refresh Token의 Digest 조회·원자적 소비·재사용 Family 폐기를 분리한 흐름
 
 고Entropy의 Opaque Refresh Token은 원문 대신 Digest를 저장할 수 있습니다. Password와 달리 Server가 생성한 256-bit Random Token은 추측 공간이 충분하므로 SHA-256 Digest로 조회해도 됩니다. 이 판단을 사람이 선택한 Password에 그대로 적용하면 안 됩니다.
 
@@ -302,7 +302,7 @@ aad = canonical(
 
 Database Column을 암호화했는데 같은 Database, 같은 Backup 또는 같은 Container Image에 Key를 평문으로 저장하면 공격자가 둘을 함께 가져갈 수 있습니다.
 
-![Application Identity가 KMS/HSM에서 짧은 수명의 DEK 기능을 얻고 Unique IV·Canonical AAD로 AEAD를 수행해 Versioned Envelope를 저장하는 Key 수명주기](assets/blog-56-envelope-key-lifecycle.png)
+> 🖼️ **그림**: Application Identity가 KMS/HSM에서 짧은 수명의 DEK 기능을 얻고 Unique IV·Canonical AAD로 AEAD를 수행해 Versioned Envelope를 저장하는 Key 수명주기
 
 Envelope Encryption은 DEK(Data Encryption Key)로 데이터를 암호화하고, 그 DEK를 KEK(Key Encryption Key)로 감싸 암호문과 함께 저장하는 방식입니다. 이 설계에서는 암호화 단위마다 새 DEK를 만들고, 평문 DEK는 암·복호화에 필요한 동안만 Application Memory에 유지합니다. 앞 절의 `EncryptedValue`가 `keyId`로 외부 Key를 가리키기만 했다면, Envelope Record는 암호화된 DEK인 `wrappedDEK`를 함께 담습니다.
 
@@ -427,7 +427,7 @@ Happy Path Encryption·Decryption Test만으로는 안전성을 확인할 수 �
 
 그 다음 새 자격 증명으로 전환하고 복구 범위를 검증합니다.
 
-![Test Evidence·Release Gate·Runtime Signal·침해 범위 격리·Key 교체와 복구를 정책과 테스트로 되돌리는 폐루프](assets/blog-56-crypto-proof-response-loop.png)
+> 🖼️ **그림**: Test Evidence·Release Gate·Runtime Signal·침해 범위 격리·Key 교체와 복구를 정책과 테스트로 되돌리는 폐루프
 
 - Password Hash Database 유출: Offline Crack 위험을 평가하고 사용자 통지·Reset, Session 폐기와 Work Factor Upgrade를 진행합니다.
 - Password Pepper 유출: Database와 Pepper가 함께 노출됐는지 평가하고 사용자 재설정 전략을 실행합니다.

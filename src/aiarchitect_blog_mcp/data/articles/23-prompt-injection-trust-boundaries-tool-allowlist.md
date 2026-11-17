@@ -2,7 +2,7 @@
 
 Prompt Injection은 입력을 잘 걸러내면 끝나는 문제가 아닙니다. 문서·웹페이지·이미지처럼 우리가 통제하지 않는 데이터가 모델에 들어오는 모든 지점이 공격면이고, 완벽한 탐지는 존재하지 않습니다. 이 글은 직접·간접·멀티모달 주입을 신뢰 경계, 출처와 신뢰 표식, 원래 사용자 의도 보존, Tool Allowlist, 결과 재검증, 공격 회귀 테스트로 막는 방어 설계를 정리합니다.
 
-![비신뢰 콘텐츠를 Content Envelope로 격리하고 불변 Intent와 Policy Enforcement Point로 검증해 제한된 Tool만 실행하며 유출 경로를 차단하는 구조](assets/blog-23-prompt-injection-defense-hero.png)
+> 🖼️ **그림**: 비신뢰 콘텐츠를 Content Envelope로 격리하고 불변 Intent와 Policy Enforcement Point로 검증해 제한된 Tool만 실행하며 유출 경로를 차단하는 구조
 
 AI Agent에게 “이 문서는 요약만 하라”고 요청했다고 가정해 보겠습니다.
 
@@ -152,7 +152,7 @@ Data Plane 콘텐츠는 다음 값을 바꿀 수 없어야 합니다.
 
 Application은 Data Plane에서 나온 값이 Control Plane 정책을 수정하는 API로 들어가지 못하도록 별도 형식과 권한 경계를 만들어야 합니다.
 
-![비신뢰 외부 Content와 Reader Model을 불변 Intent와 Policy Allowlist로 검증하는 Policy Enforcement Point를 거쳐 제한된 Tool로 연결한 구조](assets/blog-23-prompt-injection-trust-architecture.png)
+> 🖼️ **그림**: 비신뢰 외부 Content와 Reader Model을 불변 Intent와 Policy Allowlist로 검증하는 Policy Enforcement Point를 거쳐 제한된 Tool로 연결한 구조
 
 *그림 1. Data Plane의 콘텐츠와 Model 제안은 실행 권한을 갖지 않고 Control Plane의 Intent·Policy와 PEP에서 합류하는 구조*
 
@@ -522,7 +522,7 @@ Model Proposal
 - 공격자가 제공한 `trustLevel`
 - 단순히 이전에 같은 Tool을 실행했다는 사실
 
-![웹과 파일, Tool Result에서 온 외부 콘텐츠의 출처와 신뢰 표식을 보존하고 원래 Intent와 Tool 인자, 외부 전송을 검증해 허용 또는 차단하는 흐름](assets/blog-23-prompt-injection-blocking-flow.png)
+> 🖼️ **그림**: 웹과 파일, Tool Result에서 온 외부 콘텐츠의 출처와 신뢰 표식을 보존하고 원래 Intent와 Tool 인자, 외부 전송을 검증해 허용 또는 차단하는 흐름
 
 *그림 2. 외부 콘텐츠의 표식을 보존한 채 Intent·Tool·인자·Egress를 검증하고 거부 시 Audit과 오염 범위 조사로 연결하는 흐름*
 

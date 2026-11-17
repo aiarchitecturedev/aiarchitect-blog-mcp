@@ -2,7 +2,7 @@
 
 공급망 보안은 오래된 Library를 올리는 일보다 넓습니다. 선언한 Version이 아니라 실제로 해결된 의존성이 배포에 들어가고, 그 Artifact가 우리가 만든 것인지 증명할 수단이 필요합니다. 이 글은 OWASP Top 10:2025 A03을 기준으로 Java 21·Spring Boot 3에서 Maven·Gradle 의존성 고정, SBOM 생성, Artifact 서명과 Provenance, 배포 Gate 연결까지 정리합니다.
 
-![해결된 의존성과 Source가 하나의 불변 Artifact로 결합되고 SBOM·Provenance·서명 증거를 갖춘 뒤 검증 Gate를 통과하며 악성 구성요소는 격리되는 Software Supply Chain 보안 흐름](assets/blog-55-software-supply-chain-evidence-hero.png)
+> 🖼️ **그림**: 해결된 의존성과 Source가 하나의 불변 Artifact로 결합되고 SBOM·Provenance·서명 증거를 갖춘 뒤 검증 Gate를 통과하며 악성 구성요소는 격리되는 Software Supply Chain 보안 흐름
 
 우리 코드가 안전해도 빌드에 들어온 라이브러리, Plugin, Base Image 또는 CI Action이 바뀌면 최종 Artifact는 달라집니다. 배포 파일이 정상적인 Source와 승인된 Build에서 만들어졌는지 확인하지 않으면, 취약한 의존성뿐 아니라 변조된 Build 과정도 운영에 들어갈 수 있습니다.
 
@@ -27,7 +27,7 @@ OWASP Top 10:2025의 A03는 2021년의 `Vulnerable and Outdated Components`를 �
 - **Provenance** — 답해야 하는 질문: 어디서 어떻게 만들어졌는가. 대표 통제: SLSA Attestation, CI Identity.
 - **Deployment Evidence** — 답해야 하는 질문: 무엇이 실제 배포됐는가. 대표 통제: Digest 배포, Admission·Release Gate.
 
-![해결된 입력을 신뢰된 Build가 불변 Artifact로 만들고 SBOM·Risk·Provenance·Signature·Test 증거를 같은 Digest로 검증해 배포하거나 격리하는 Software Supply Chain Evidence Gate](assets/blog-55-supply-chain-evidence-gate.png)
+> 🖼️ **그림**: 해결된 입력을 신뢰된 Build가 불변 Artifact로 만들고 SBOM·Risk·Provenance·Signature·Test 증거를 같은 Digest로 검증해 배포하거나 격리하는 Software Supply Chain Evidence Gate
 
 여기서 중요한 구분이 있습니다. SBOM은 구성요소 목록이지 안전성 보증서가 아닙니다. 서명은 Artifact와 Signer의 관계를 검증하지만 취약점 부재를 보장하지 않습니다. Provenance도 실제 값이 조직이 기대한 Repository, Workflow와 Builder인지 검증해야 의미가 있습니다.
 
@@ -68,7 +68,7 @@ dependencies {
 
 Release 경로에서는 정확한 Version과 해결 결과를 고정합니다. 다만 Version 고정은 업데이트 중단을 의미하지 않습니다. 자동 Update PR이 Lock과 Verification Metadata의 차이를 보여주고, Test와 Review를 거쳐 의도적으로 갱신하게 만듭니다.
 
-![의존성 Update PR에서 전체 Graph 해결, Source·Checksum·SBOM Diff, Vulnerability·License 정책과 호환성 Test, 사람 검토를 통과한 변경만 보호 Branch에 병합하는 절차](assets/blog-55-dependency-update-gate.png)
+> 🖼️ **그림**: 의존성 Update PR에서 전체 Graph 해결, Source·Checksum·SBOM Diff, Vulnerability·License 정책과 호환성 Test, 사람 검토를 통과한 변경만 보호 Branch에 병합하는 절차
 
 ### Maven: Version과 Plugin을 중앙에서 고정한다
 
@@ -229,7 +229,7 @@ CycloneDX Maven Plugin은 직접·전이 의존성을 포함한 Aggregate SBOM�
 
 이 Plugin이 SBOM을 Maven 부가 Artifact로 연결하는 것과, 최종 JAR·Image Digest를 Subject로 하는 암호학적 Attestation을 만드는 것은 별도 단계입니다. Build 후 최종 Artifact Digest를 계산하고 SBOM Attestation의 Subject와 일치시키는 작업을 CI에서 명시적으로 수행합니다.
 
-![Trusted Build가 만든 불변 Artifact와 SBOM·Risk, Provenance·Signature, Test·Approval 증거가 모두 같은 sha256 Digest를 Subject로 사용해 하나의 Release Bundle과 Gate로 연결되는 구조](assets/blog-55-digest-bound-release-bundle.png)
+> 🖼️ **그림**: Trusted Build가 만든 불변 Artifact와 SBOM·Risk, Provenance·Signature, Test·Approval 증거가 모두 같은 sha256 Digest를 Subject로 사용해 하나의 Release Bundle과 Gate로 연결되는 구조
 
 SBOM의 핵심은 파일 존재가 아니라 Artifact와의 결합입니다.
 
@@ -292,7 +292,7 @@ cosign verify \
 
 SLSA v1.2 Build Track은 Provenance가 존재하는 L1, Hosted Build Platform이 서명한 L2, Hardened Build Platform을 요구하는 L3로 보증을 높입니다. 목표 Level을 선언하는 것보다 현재 Builder가 각 Requirement를 실제로 충족하는지 평가하고 Evidence를 보존하는 것이 중요합니다.
 
-![Signature와 OIDC Issuer, Repository·Workflow·Ref, Builder·Claims를 기대값과 검증한 뒤 Trusted CI에서 한 번 만든 동일 Digest를 Registry와 Staging을 거쳐 Production으로 Promotion하는 정책](assets/blog-55-identity-promotion-policy.png)
+> 🖼️ **그림**: Signature와 OIDC Issuer, Repository·Workflow·Ref, Builder·Claims를 기대값과 검증한 뒤 Trusted CI에서 한 번 만든 동일 Digest를 Registry와 Staging을 거쳐 Production으로 Promotion하는 정책
 
 GitHub Actions를 사용한다면 Artifact Attestation을 생성할 수 있습니다. Action은 Tag가 아니라 검토한 Full Commit SHA로 Pin하는 정책을 권장합니다.
 
@@ -413,7 +413,7 @@ test -n "$ARTIFACT_SHA"
 
 새 CVE가 발표되거나 Signing Identity가 침해됐을 때 `현재 어느 서비스가 영향받는가`를 몇 분 안에 찾을 수 있어야 SBOM이 운영 자산이 됩니다.
 
-![새 Advisory·악성 Version·Identity 또는 Builder 침해를 SBOM Catalog와 Runtime Inventory에서 영향 Digest로 연결하고 즉시 차단·격리한 뒤 Clean Rebuild와 Release Gate 재검증으로 되돌리는 대응 폐루프](assets/blog-55-runtime-response-loop.png)
+> 🖼️ **그림**: 새 Advisory·악성 Version·Identity 또는 Builder 침해를 SBOM Catalog와 Runtime Inventory에서 영향 Digest로 연결하고 즉시 차단·격리한 뒤 Clean Rebuild와 Release Gate 재검증으로 되돌리는 대응 폐루프
 
 운영 절차에는 다음을 포함합니다.
 

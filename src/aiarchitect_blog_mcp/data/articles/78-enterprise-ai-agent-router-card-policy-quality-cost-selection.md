@@ -2,7 +2,7 @@
 
 여러 전문 AI Agent 중 어디로 위임할지 고르는 문제는 Agent Card의 자기 선언만으로 풀 수 없습니다. 선언한 기능과 실제 품질·지연·비용·가용성은 다르기 때문입니다. 이 글은 Discovery·Selection·Delivery를 분리한 엔터프라이즈 Agent Router 아키텍처와 Hard Gate·점수화, 결정적 Tie-break, Canary와 Fallback, 라우팅 판단의 감사 기록을 정리합니다.
 
-![여러 AI Agent Candidate 경로가 Router와 정책 Gate를 통과해 하나의 검증된 실행 Route로 선택되는 구조](assets/blog-78-enterprise-agent-router-hero.png)
+> 🖼️ **그림**: 여러 AI Agent Candidate 경로가 Router와 정책 Gate를 통과해 하나의 검증된 실행 Route로 선택되는 구조
 
 전문 Agent가 하나뿐일 때 위임은 단순합니다. Orchestrator가 정해진 대상에게 A2A Task를 보내면 됩니다. 그러나 같은 Skill을 제공하는 Agent가 여러 Version·조직·지역·비용 등급으로 늘어나면 질문이 달라집니다.
 

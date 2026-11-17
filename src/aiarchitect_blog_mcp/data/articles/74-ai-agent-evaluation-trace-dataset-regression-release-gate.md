@@ -2,7 +2,7 @@
 
 LLM 평가지표를 정하는 것과 배포를 막을 수 있는 평가를 갖추는 것은 다릅니다. 운영에서 실패한 사례가 다음 배포의 회귀 테스트로 돌아오지 않으면 같은 문제가 반복됩니다. 이 글은 운영 Trace를 안전한 Evaluation Dataset으로 승격하고, 최종 답변·RAG·Tool 호출·Memory·실행 경로를 평가해 CI/CD Regression Gate와 Canary 배포로 연결하는 AI Agent 평가 아키텍처를 정리합니다.
 
-![운영 Trace를 평가 Dataset과 Regression Gate, Canary 배포로 연결하는 AI Agent 평가 아키텍처](assets/blog-74-ai-agent-evaluation-release-loop-hero.png)
+> 🖼️ **그림**: 운영 Trace를 평가 Dataset과 Regression Gate, Canary 배포로 연결하는 AI Agent 평가 아키텍처
 
 AI Agent의 Prompt, Model, 검색 Index 또는 Tool 설명을 조금 바꿨다고 가정해 보겠습니다.
 

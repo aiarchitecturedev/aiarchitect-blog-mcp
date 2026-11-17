@@ -2,13 +2,13 @@
 
 자바 역직렬화 취약점은 신뢰할 수 없는 바이트를 객체로 되살리는 순간 코드 실행으로 이어집니다. Update 파일이나 배포 Artifact도 검증 없이 소비하면 같은 성격의 무결성 실패가 됩니다. 이 글은 OWASP Top 10:2025 A08을 기준으로 Java 21·Spring Boot 3에서 제한된 역직렬화 경계, 서명된 Update 검증, Artifact 무결성과 CycloneDX SBOM 설계를 정리합니다.
 
-![검증된 Software Artifact가 Identity·Digest·Freshness·Policy Gate를 통과하고 변조본은 격리되는 무결성 구조](assets/blog-60-software-data-integrity-hero.png)
+> 🖼️ **그림**: 검증된 Software Artifact가 Identity·Digest·Freshness·Policy Gate를 통과하고 변조본은 격리되는 무결성 구조
 
 무결성(Integrity)은 데이터가 깨지지 않았다는 뜻만이 아닙니다. 시스템이 사용하는 Software, Configuration, Update와 업무 데이터가 **기대한 출처에서 왔고, 승인된 내용이며, 전달 과정에서 바뀌지 않았고, 지금 사용해도 되는 상태**임을 확인하는 성질입니다.
 
 파일의 Hash가 일치해도 공격자가 그 Hash까지 바꿀 수 있다면 신뢰할 수 없습니다. Digital Signature가 유효해도 오래된 취약 Version을 재전송한 것이라면 안전한 Update가 아닙니다. JSON 문법이 올바르더라도 Client가 `role=ADMIN`을 넣을 수 있다면 중요한 데이터의 의미적 무결성이 깨집니다.
 
-![생산자 Identity와 정확한 Byte, 최신성·Replay, 목적·정책을 검증한 뒤 제한된 Context에서만 사용하는 무결성 소비 Gate](assets/blog-60-integrity-consumption-gate.png)
+> 🖼️ **그림**: 생산자 Identity와 정확한 Byte, 최신성·Replay, 목적·정책을 검증한 뒤 제한된 Context에서만 사용하는 무결성 소비 Gate
 
 *무결성은 다운로드 순간이 아니라 검증한 Byte를 실제로 사용하는 순간까지 이어집니다.*
 
@@ -135,7 +135,7 @@ DTO Validation은 문자열 길이와 개수뿐 아니라 다음 의미를 확�
 - 중복 Reference와 동시 요청의 의미가 정의됐는가?
 - Client가 보낸 역할·가격·승인 상태를 Server가 무시하는가?
 
-![신뢰되지 않은 Byte를 제한된 JSON DTO와 의미 검증을 거쳐 Server 소유 Command로 만들고 Class 선택과 Native Stream은 거부하는 역직렬화 경계](assets/blog-60-bounded-deserialization-boundary.png)
+> 🖼️ **그림**: 신뢰되지 않은 Byte를 제한된 JSON DTO와 의미 검증을 거쳐 Server 소유 Command로 만들고 Class 선택과 Native Stream은 거부하는 역직렬화 경계
 
 *고정 DTO는 Type 선택권을 줄이고, Authorization·상태·Budget 검증은 데이터의 의미적 무결성을 지킵니다.*
 
@@ -357,7 +357,7 @@ Update Client가 기억해야 할 상태도 있습니다.
 
 서명만 검사하면 이전에 정상 서명된 취약 Version으로 내리는 Rollback Attack과 최신 Metadata 전달을 막는 Freeze Attack을 놓칠 수 있습니다.
 
-![Manifest 서명과 최신성, Artifact 크기와 Digest, 격리 Staging, 원자 활성화, Health 판정과 Rollback을 연결한 안전한 Update 상태 기계](assets/blog-60-signed-update-state-machine.png)
+> 🖼️ **그림**: Manifest 서명과 최신성, Artifact 크기와 Digest, 격리 Staging, 원자 활성화, Health 판정과 Rollback을 연결한 안전한 Update 상태 기계
 
 *검증 실패와 Health 실패는 모두 명시적인 거부·Rollback 상태로 끝나야 합니다.*
 
@@ -455,7 +455,7 @@ Provenance(출처 증명)는 Artifact의 Source와 Build 과정에 대한 진술
 
 각 문서가 같은 Artifact Digest와 Release Identity를 가리키게 해야 합니다. File 이름이나 `latest` Tag만으로 연결하면 교체 공격과 혼동이 생깁니다.
 
-![Artifact Digest를 기준으로 SBOM, Signature, Provenance, VEX를 결합하고 정책이 통과한 정확한 Digest만 배포하는 증거 Gate](assets/blog-60-artifact-evidence-policy-gate.png)
+> 🖼️ **그림**: Artifact Digest를 기준으로 SBOM, Signature, Provenance, VEX를 결합하고 정책이 통과한 정확한 Digest만 배포하는 증거 Gate
 
 *SBOM·Signature·Provenance·VEX는 서로를 대신하지 않고 같은 Artifact를 설명할 때 함께 작동합니다.*
 
@@ -602,7 +602,7 @@ Signing Key나 Build Identity 침해가 의심되면 다음 순서를 준비합�
 
 File 이름과 Version 문자열만으로 영향 범위를 찾지 않습니다. Artifact Digest, Signer Identity, Build Run과 Deployment Event를 연결해야 합니다.
 
-![변조와 Signer 침해 탐지에서 신뢰 철회, 영향 Digest 식별, 배포 차단과 Rollback, 신뢰 재구축과 Negative Test로 이어지는 복구 폐루프](assets/blog-60-trust-revocation-recovery-loop.png)
+> 🖼️ **그림**: 변조와 Signer 침해 탐지에서 신뢰 철회, 영향 Digest 식별, 배포 차단과 Rollback, 신뢰 재구축과 Negative Test로 이어지는 복구 폐루프
 
 *무결성 사고 대응은 침해된 신뢰를 철회하고 검증 가능한 새 신뢰로 소비를 재개할 때 끝납니다.*
 

@@ -2,7 +2,7 @@
 
 AI Agent 권한을 역할 하나로 묶으면 그 Agent가 접근 가능한 모든 데이터가 한 사용자의 질문으로 흘러나올 수 있습니다. 권한은 사용자만이 아니라 테넌트·객체·작업·환경을 함께 봐야 판단됩니다. 이 글은 엔터프라이즈 AI Agent의 인가 판단을 이 다섯 축으로 모델링하고, 정책 결정부터 승인과 실제 실행 결과까지 감사 로그로 잇는 아키텍처를 정리합니다.
 
-![사용자 요청이 Identity, Tenant, 정책 결정, 승인과 Tool 실행 경계를 통과하고 실제 업무 결과와 변경 불가능한 감사 증거로 연결되는 밝은 엔터프라이즈 AI Agent 권한 거버넌스](assets/blog-19-enterprise-agent-authorization-audit-hero.png)
+> 🖼️ **그림**: 사용자 요청이 Identity, Tenant, 정책 결정, 승인과 Tool 실행 경계를 통과하고 실제 업무 결과와 변경 불가능한 감사 증거로 연결되는 밝은 엔터프라이즈 AI Agent 권한 거버넌스
 
 *그림 1. AI Agent의 제한된 권한과 실제 업무 실행, 감사 증거를 하나의 통제 경로로 연결한 엔터프라이즈 권한 거버넌스*
 
@@ -433,7 +433,7 @@ Side Effect
 
 PDP가 허용했더라도 PEP가 승인 확인, 입력 Masking과 Rate Limit 같은 Obligation (의무 사항)을 적용하지 못하면 실행하지 않습니다.
 
-![Subject와 Actor 요청이 Tenant Context를 고정하는 PEP, RBAC와 ABAC를 평가하는 PDP, Tool Adapter와 Business Service 재인가를 통과하고 거부는 무실행 감사 증거로 남는 구조](assets/blog-19-policy-enforcement-boundary.png)
+> 🖼️ **그림**: Subject와 Actor 요청이 Tenant Context를 고정하는 PEP, RBAC와 ABAC를 평가하는 PDP, Tool Adapter와 Business Service 재인가를 통과하고 거부는 무실행 감사 증거로 남는 구조
 
 *그림 2. 권한 결정과 집행을 분리하고 허용 경로와 거부·무실행 증거를 명확히 구분한 AI Agent 정책 경계*
 
@@ -711,7 +711,7 @@ AI_RUN_STARTED
   → SIDE_EFFECT_CONFIRMED
 ```
 
-![요청 의도, 권한 결정, 승인과 의무 사항, Tool 실행, Side Effect를 별도 사건으로 기록하고 탐지와 조사 결과가 정책과 Negative Test를 갱신하는 감사 증거 폐루프](assets/blog-19-decision-audit-evidence-loop.png)
+> 🖼️ **그림**: 요청 의도, 권한 결정, 승인과 의무 사항, Tool 실행, Side Effect를 별도 사건으로 기록하고 탐지와 조사 결과가 정책과 Negative Test를 갱신하는 감사 증거 폐루프
 
 *그림 3. Decision ID와 실행 Outcome을 Append-only 감사 증거로 연결하고 탐지 결과를 정책·회귀 Test로 되돌리는 폐루프*
 

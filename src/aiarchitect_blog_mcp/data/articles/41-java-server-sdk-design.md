@@ -2,13 +2,13 @@
 
 고객사 서버에서 프라이빗 API를 호출하는 코드를 프로젝트마다 새로 작성하면 인증 갱신과 재시도, 오류 해석이 조금씩 달라집니다. Java Server SDK가 정해야 할 것은 편의 메서드 목록이 아니라 무엇을 보장하고 무엇을 바꾸지 않을지에 대한 약속입니다. 이 글은 Java Server SDK 설계에 필요한 모듈 경계, 장수명 Client, 동기·비동기 API, 인증·재시도·오류·관측성 원칙을 정리합니다.
 
-![고객사 서버와 Private API 사이에서 안정적인 공개 API·정책 Core·전송 계층을 제공하고 장수명 연결과 재시도·관측 증거를 관리하는 Java Server SDK 아키텍처 이미지](assets/blog-41-java-server-sdk-private-api-hero.png)
+> 🖼️ **그림**: 고객사 서버와 Private API 사이에서 안정적인 공개 API·정책 Core·전송 계층을 제공하고 장수명 연결과 재시도·관측 증거를 관리하는 Java Server SDK 아키텍처 이미지
 
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 원하는 형태로 구현하면서도, 프라이빗 망의 API 서버를 직접 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다.
 
 이 구조에서 Java Server SDK는 단순한 HTTP 호출 편의 라이브러리가 아닙니다. 고객사 서버가 프라이빗 API를 사용할 때 필요한 인증, 테넌트 문맥, 오류 변환, 재시도, 멱등성, 타임아웃과 관측 정책을 한곳에서 적용하는 **신뢰 경계의 실행 구성요소**입니다.
 
-![Mobile·Web 채널은 고객사 공개 API까지만 접근하고 고객사 서버 내부의 Java Server SDK가 허용된 서버 간 연결을 통해 Private API를 호출하는 신뢰 경계](assets/blog-41-private-api-trust-path.png)
+> 🖼️ **그림**: Mobile·Web 채널은 고객사 공개 API까지만 접근하고 고객사 서버 내부의 Java Server SDK가 허용된 서버 간 연결을 통해 Private API를 호출하는 신뢰 경계
 
 구체적인 네트워크 기술은 배포 환경마다 달라질 수 있습니다. 중요한 원칙은 모바일 앱과 브라우저가 프라이빗 Endpoint나 서버 자격 증명을 직접 갖지 않고, 고객사 서버 안의 Java SDK가 통제된 경로를 통해 호출한다는 점입니다.
 
@@ -54,7 +54,7 @@ SDK가 모든 문제를 해결하려 하면 고객사 애플리케이션의 프�
 
 하나의 `sdk.jar`에 공개 모델, HTTP DTO, 인증, JSON Mapper, Retry 구현과 Spring 설정을 모두 넣으면 작은 변경도 전체 패키지에 영향을 줍니다. 권장하는 시작 구조는 다음과 같습니다.
 
-![sdk-core를 중심으로 공개 API·관측 SPI·HTTP 전송·테스트 Fixture·Spring Boot 조립 모듈의 컴파일 및 런타임 의존 방향을 분리한 Java Server SDK 모듈 구조](assets/blog-41-sdk-module-boundaries.png)
+> 🖼️ **그림**: sdk-core를 중심으로 공개 API·관측 SPI·HTTP 전송·테스트 Fixture·Spring Boot 조립 모듈의 컴파일 및 런타임 의존 방향을 분리한 Java Server SDK 모듈 구조
 
 화살표는 호출 흐름이 아니라 **컴파일·런타임 의존 방향**을 뜻합니다. `sdk-api`는 구현 모듈을 알지 않고, Core와 전송 구현을 조립하는 책임은 Starter 같은 최외곽 모듈에 둡니다.
 
@@ -114,7 +114,7 @@ OpenAPI는 언어 독립적인 HTTP API 인터페이스를 정의하고, 사람�
 
 권장 구조는 생성 코드를 내부 전송 계층에 두고 안정적인 공개 API로 감싸는 것입니다.
 
-![Customer Application이 안정적인 Java 공개 API와 Core Policy를 거쳐 내부 Generated Transport로 Private API를 호출해 생성 코드 변경이 고객 코드로 전파되지 않는 계층 구조](assets/blog-41-stable-api-transport-separation.png)
+> 🖼️ **그림**: Customer Application이 안정적인 Java 공개 API와 Core Policy를 거쳐 내부 Generated Transport로 Private API를 호출해 생성 코드 변경이 고객 코드로 전파되지 않는 계층 구조
 
 ```java
 public interface SessionService {
@@ -162,7 +162,7 @@ Session session = client.sessions().create(
 
 Client 수명에서 가장 자주 놓치는 부분은 “누가 만들었고 누가 닫는가”입니다.
 
-![SdkClient Builder가 SDK 소유 자원과 호출자 주입 자원을 구분해 장수명 Thread-safe Client를 만들고 close 시 SDK 소유 자원만 종료하는 수명 주기](assets/blog-41-client-resource-ownership.png)
+> 🖼️ **그림**: SdkClient Builder가 SDK 소유 자원과 호출자 주입 자원을 구분해 장수명 Thread-safe Client를 만들고 close 시 SDK 소유 자원만 종료하는 수명 주기
 
 권장 규칙은 단순합니다.
 
@@ -274,7 +274,7 @@ record TransportResponse(
 
 Core가 `TransportResponse`를 해석해 다음 단계로 변환합니다.
 
-![Public Request에 요청 문맥과 자격 증명을 적용하고 Deadline·Retry·멱등 정책 안에서 Transport를 실행한 뒤 Response Mapping이 Public Model 또는 안정적인 SDK Exception으로 분기하는 실행 계약](assets/blog-41-operation-execution-contract.png)
+> 🖼️ **그림**: Public Request에 요청 문맥과 자격 증명을 적용하고 Deadline·Retry·멱등 정책 안에서 Transport를 실행한 뒤 Response Mapping이 Public Model 또는 안정적인 SDK Exception으로 분기하는 실행 계약
 
 전송 라이브러리의 예외를 그대로 외부로 던지지 않습니다. 내부 구현을 JDK HttpClient에서 다른 구현으로 교체해도 고객 애플리케이션의 `catch` 문이 깨지지 않아야 합니다.
 

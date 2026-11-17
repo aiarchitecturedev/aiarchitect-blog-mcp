@@ -2,7 +2,7 @@
 
 AI Agent의 Prompt 한 줄을 바꾸는 일은 코드 배포처럼 보이지만 승인 절차는 그대로 적용되지 않습니다. 검증 결과가 좋다는 사실과 지금 이 변경을 배포해도 된다는 결정은 서로 다른 판단이고, 모든 변경에 같은 승인 단계를 요구하면 사람이 형식적으로 승인하기 시작합니다. 이 글은 변경을 불변 Change Set으로 고정하고 Risk Tier별 Evidence Gate, 자동·사람 승인, 기한부 예외, 단계적 배포와 Rollback 계약으로 연결하는 설계를 정리합니다.
 
-![기업 AI Agent의 불변 Change Set이 Risk Tier와 Evidence Gate를 거쳐 자동·사람 승인으로 분기되고 단계적 배포 또는 Rollback으로 연결되는 변경 승인 자동화 아키텍처](assets/blog-93-ai-agent-change-approval-evidence-gate-hero.png)
+> 🖼️ **그림**: 기업 AI Agent의 불변 Change Set이 Risk Tier와 Evidence Gate를 거쳐 자동·사람 승인으로 분기되고 단계적 배포 또는 Rollback으로 연결되는 변경 승인 자동화 아키텍처
 
 AI Agent의 Prompt 회귀 평가가 통과했고, Tool Contract Test도 성공했으며, Red Team의 Critical Finding은 없습니다. 그렇다면 운영 배포를 자동 승인해도 될까요?
 
@@ -66,7 +66,7 @@ Change Request
   → Retain / Hold / Rollback
 ```
 
-<img src="assets/blog-93-change-approval-decision-pipeline.png" alt="기업 AI Agent의 Change Request가 불변 Change Set과 영향 분석, Inherent Risk Tier, Evidence Profile과 Gate를 거쳐 자동 승인, 사람 승인 또는 기한부 Risk Acceptance로 분기되고 서명된 Decision, 단계적 Promotion과 관찰 후 유지 또는 Rollback으로 이어지는 변경 승인 결정 파이프라인" width="660" />
+> 🖼️ **그림**: 기업 AI Agent의 Change Request가 불변 Change Set과 영향 분석, Inherent Risk Tier, Evidence Profile과 Gate를 거쳐 자동 승인, 사람 승인 또는 기한부 Risk Acceptance로 분기되고 서명된 Decision, 단계적 Promotion과 관찰 후 유지 또는 Rollback으로 이어지는 변경 승인 결정 파이프라인
 
 각 화살표는 단순한 화면 전환이 아니라 입출력 계약입니다. 예를 들어 Risk Classifier는 `TIER-3`이라는 숫자만 반환하면 안 됩니다. 어떤 업무 피해와 권한 변화, 노출 범위, 비가역성이 그 결과를 만들었는지 Reason Code와 근거를 함께 반환해야 합니다.
 
@@ -193,7 +193,7 @@ Risk Tier가 정해지면 필요한 Evidence를 사람의 기억이 아니라 Ve
 | Human Approval | 선택 | 정책 기반 | 필수 | 다중·독립 승인 |
 | Observation Window | 짧음 | 필수 | 확대 | 보수적·단계별 |
 
-<img src="assets/blog-93-risk-tier-approval-boundary.png" alt="Impact·Likelihood·Exposure·Authority·Reversibility로 분류한 TIER-1부터 TIER-4까지의 변경 위험이 각기 다른 Evidence 요구와 자동 승인, 조건부 승인, 독립 사람 승인, 다중 승인 경계로 연결되는 구조" width="600" />
+> 🖼️ **그림**: Impact·Likelihood·Exposure·Authority·Reversibility로 분류한 TIER-1부터 TIER-4까지의 변경 위험이 각기 다른 Evidence 요구와 자동 승인, 조건부 승인, 독립 사람 승인, 다중 승인 경계로 연결되는 구조
 
 Profile에는 Evidence Type만 적지 않습니다. Issuer 신뢰, Subject 일치, Freshness, Coverage, Threshold, 허용되는 재사용 조건, 실패 시 Blocking 여부를 함께 둡니다.
 
@@ -512,7 +512,7 @@ Break-glass 권한은 평상시 비활성화하고, Incident ID와 짧은 TTL에
 | Limited GA | 허용 Cohort 25% | 최소 표본·관찰 시간 충족 | 100% Promotion 또는 유지 |
 | GA | 승인된 전체 Scope | 모든 Promotion Decision 유효 | 지속 모니터링 |
 
-<img src="assets/blog-93-promotion-rollback-state-machine.png" alt="승인된 현재 Scope에서 Shadow·Pilot·Canary·Limited GA를 단계적으로 진행하고 관찰 사후조건의 충족·불충분·위반에 따라 Promotion, Retain, 동결, Capability 차단, 이전 Release와 업무 효과 복구로 전이하는 상태 흐름" width="660" />
+> 🖼️ **그림**: 승인된 현재 Scope에서 Shadow·Pilot·Canary·Limited GA를 단계적으로 진행하고 관찰 사후조건의 충족·불충분·위반에 따라 Promotion, Retain, 동결, Capability 차단, 이전 Release와 업무 효과 복구로 전이하는 상태 흐름
 
 숫자는 예시일 뿐이며 서비스의 요청량과 피해 규모에 맞춰야 합니다. 요청량이 적다면 Traffic 비율보다 최소 Sample과 관찰 시간을 먼저 충족해야 합니다.
 

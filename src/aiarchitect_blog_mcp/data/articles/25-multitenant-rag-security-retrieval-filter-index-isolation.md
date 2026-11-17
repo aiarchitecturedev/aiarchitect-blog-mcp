@@ -2,7 +2,7 @@
 
 멀티테넌트 RAG에서 테넌트 데이터가 섞이는 사고는 검색 단계가 아니라 수집 단계에서 이미 시작됩니다. 원본 문서의 ACL을 Chunk와 Vector까지 전파하지 않으면 Retrieval Filter로는 되돌릴 수 없습니다. 이 글은 수집 시 권한 전파, 인증된 Tenant Context 기반 Retrieval Filter 강제, Index와 Cache 격리, Citation 노출 범위, 삭제 전파까지 멀티테넌트 RAG의 권한 경계를 정리합니다.
 
-![여러 Tenant의 문서 흐름이 각자의 Identity와 ACL 보안 Gate를 거쳐 격리된 Vector Index에서 안전하게 검색되는 구조](assets/blog-25-multitenant-rag-security-hero.png)
+> 🖼️ **그림**: 여러 Tenant의 문서 흐름이 각자의 Identity와 ACL 보안 Gate를 거쳐 격리된 Vector Index에서 안전하게 검색되는 구조
 
 RAG (Retrieval-Augmented Generation, 검색 증강 생성)는 사용자의 질문과 관련된 문서를 찾아 모델 Context에 넣습니다.
 
@@ -337,7 +337,7 @@ Chunk가 원본보다 넓은 권한을 가지면 안 됩니다.
 
 공개 가능한 파생물을 만들려면 별도의 Declassification (보안 등급 해제) 승인과 검증이 필요합니다.
 
-![원본 ACL이 Security Envelope와 Chunk를 거쳐 격리 Index, Citation, Cache까지 이어지는 권한 전파 구조](assets/blog-25-multitenant-rag-acl-propagation.png)
+> 🖼️ **그림**: 원본 ACL이 Security Envelope와 Chunk를 거쳐 격리 Index, Citation, Cache까지 이어지는 권한 전파 구조
 
 *그림 1. 원본 권한을 Security Envelope에 고정하고 Chunk·Index·Citation·Cache까지 같은 보안 문맥을 유지하는 흐름*
 
@@ -444,7 +444,7 @@ Model이 `tenantId`, Group, Clearance와 정책 Version을 생성하거나 수�
 
 Retrieval Service가 인증된 Server Context에서 값을 주입합니다.
 
-![인증된 Tenant와 Role로 Retrieval 범위를 고정하고 ACL 사전 필터와 객체 재인가를 거쳐 허용 Chunk만 모델에 전달하는 흐름](assets/blog-25-multitenant-rag-retrieval-gate.png)
+> 🖼️ **그림**: 인증된 Tenant와 Role로 Retrieval 범위를 고정하고 ACL 사전 필터와 객체 재인가를 거쳐 허용 Chunk만 모델에 전달하는 흐름
 
 *그림 2. 후보 검색 전에 권한 범위를 좁히고 결과 객체를 다시 인가해 허용된 최소 Context만 전달하는 검색 Gate*
 
