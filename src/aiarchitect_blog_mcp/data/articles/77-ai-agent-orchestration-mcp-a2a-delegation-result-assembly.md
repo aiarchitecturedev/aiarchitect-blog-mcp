@@ -18,38 +18,6 @@ MCP Tool과 A2A Agent의 경계를 나눈 것만으로는 운영 가능한 실�
 
 > 이 글의 예시 스키마·식별자·업무 건수·시각과 가정 시나리오는 교육용 합성 예시입니다. 특정 회사·고객·제품·운영 환경이나 실제 성과를 나타내지 않습니다. 다만 본문에서 **"필자"라고 밝힌 네 사례는 실제 설계·디버깅 경험을 비식별화한 것**이며, 회사·제품·서비스·저장소·실행 식별자와 운영 건수·소요 시간은 포함하지 않았습니다. 2026-08-11 현재 A2A 최신 공개 Version은 1.0이며 MCP 기준은 2026-07-28입니다. 실제 구현에서는 사용하는 Protocol·Extension·SDK Version과 조직의 보안·개인정보·감사 요구사항을 다시 확인해야 합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">BLOG-75의 경계 결정을 실행 입력으로 받는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">실행 주체별 소유 상태를 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">Root Run 경로를 다섯 노드에 배치한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">실행을 다섯 단계의 수명주기로 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">Execution Plan을 모델의 생각이 아니라 검증 가능한 계약으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">각 Step을 Local·MCP·A2A·Human으로 분류한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">순차·병렬·조건부 실행을 의도적으로 선택한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">다른 Agent에는 최소 Context Package만 전달한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">사용자·Orchestrator·Specialist·Workload Identity를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">Root Run과 A2A Task·MCP Call·업무 Record ID를 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">정상 실행 Sequence를 경계별로 읽는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">Result Envelope로 출처·상태·품질을 통일한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">결과를 조립하기 전에 Schema·출처·정책을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">MCP 결과와 Agent 판단이 충돌할 때의 우선순위를 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">부분 성공을 숨기지 않고 사용자 계약으로 표현한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">Timeout·Cancel·Retry를 경계별로 다르게 처리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">추가 입력과 승인을 하나의 대기 상태로 뭉치지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">Side Effect는 최종 실행 지점에서 다시 인가하고 멱등 처리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">Trace·Audit·Evaluation을 Root Run에 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">합성 정상 사례로 전체 흐름을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">합성 장애 사례에서 성공처럼 보이는 실패를 찾는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">단계적으로 구현한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23">흔한 안티패턴</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24">운영 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25">마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 ## 1. BLOG-75의 경계 결정을 실행 입력으로 받는다
 
 Runtime은 매 요청마다 “이 대상을 Tool로 볼까, Agent로 볼까”를 새로 판단하지 않습니다. 승인된 Boundary Record에서 허용 Target·Skill·Tool·Version·Artifact Schema·최대 권한·Fallback을 읽고, 이번 Run에 필요한 항목만 Execution Plan으로 구체화합니다.

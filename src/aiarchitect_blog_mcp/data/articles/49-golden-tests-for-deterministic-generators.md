@@ -4,25 +4,6 @@
 
 ![같은 입력을 받은 결정적 생성기가 독립적으로 만든 두 구조화 산출물을 비교해 Golden Test의 재현성과 변경 검토를 표현한 이미지](assets/blog-49-golden-test-deterministic-generator-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">골든 테스트란 무엇이고, 무엇이 아닌가</a></li>
-<li><a href="#ai-section-2">어디에 강한가</a></li>
-<li><a href="#ai-section-3">진짜 문제: 출력을 흔드는 비결정성</a></li>
-<li><a href="#ai-section-4">정규화: 이음매 주입과 값 고정</a></li>
-<li><a href="#ai-section-5">갱신 규율: 골든 diff도 코드처럼 리뷰한다</a></li>
-<li><a href="#ai-section-6">고무도장 실패 모드: 무검토 자동 갱신은 무가치</a></li>
-<li><a href="#ai-section-7">취약성 vs 커버리지: 전체 스냅샷의 함정</a></li>
-<li><a href="#ai-section-8">클린룸 반복 생성: 결정성 자체를 검증한다</a></li>
-<li><a href="#ai-section-9">CI에서의 골든 테스트</a></li>
-<li><a href="#ai-section-10">안티패턴과 쓰지 말아야 할 때</a></li>
-<li><a href="#ai-section-11">도입·운영 체크리스트</a></li>
-<li><a href="#ai-section-12">마무리</a></li>
-<li><a href="#ai-section-13">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 코드 스캐폴더, 템플릿 렌더러, 직렬화기, 포매터, 리포트·문서 생성기 — 이들의 공통점은 **입력을 받아 구조화된 출력을 만든다**는 것입니다. 이런 생성기에서 가장 무섭고 흔한 사고는 "관계없어 보이는 변경 하나가 **출력을 조용히 바꿔** 모든 사용처에 퍼지는 것"입니다. 이걸 가장 싸게 잡는 안전망이 **골든 테스트 (Golden Test)** 입니다. 알려진 정답 출력을 "골든" 파일로 고정해 두고, 매번 생성 결과와 대조하는 방식입니다. 흔히 스냅샷·승인·특성화 테스트와 묶어 부르지만 결이 조금씩 다릅니다 — 스냅샷 테스트는 프레임워크가 저장·비교를 지원하는 구현 방식, 승인 테스트는 사람이 결과를 검토·승인하는 워크플로, 특성화 테스트는 기존 시스템의 현재 동작을 기록하는 목적(골든 방식을 쓸 수 있음)입니다. 이 글은 그 공통 뼈대인 '기준 산출물과 대조'를 다룹니다.
 
 그런데 골든 테스트는 악명 높은 실패 모드 두 가지를 함께 가지고 있습니다. 하나는 **비결정성 때문에 이유 없이 깨지는 것**(flaky), 다른 하나는 **검토 없이 자동 갱신되어 아무것도 못 잡는 것**(rubber-stamp)입니다. 이 글은 골든 테스트가 잘 맞는 곳과 아닌 곳, 출력을 흔드는 비결정성을 **정규화 (Canonicalization)** 로 잡는 법, 골든 갱신을 코드처럼 다루는 규율, 그리고 **결정성 자체를 검증하는 클린룸 반복 생성**까지 정리합니다.

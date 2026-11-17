@@ -4,40 +4,6 @@ Log Forging은 사용자 입력이 그대로 로그에 들어가 기록 자체�
 
 ![변조된 Event를 신뢰 경계에서 차단하고 보호 수집·탐지·대응으로 연결하는 Security Logging 구조](assets/blog-61-security-logging-alerting-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">먼저 용어와 책임을 구분한다</a></li>
-<li><a href="#ai-section-2">A09가 다루는 실패를 공격 흐름으로 본다</a></li>
-<li><a href="#ai-section-3">Threat Model에서 Security Event Inventory를 만든다</a></li>
-<li><a href="#ai-section-4">문자열 메시지가 아니라 구조화 Event 계약을 만든다</a></li>
-<li><a href="#ai-section-5">Log Forging은 가짜 기록을 끼워 넣는 공격이다</a></li>
-<li><a href="#ai-section-6">구조화 Logging과 출력 Encoding을 함께 사용한다</a></li>
-<li><a href="#ai-section-7">원본 값을 남기기 전에 필요한지부터 묻는다</a></li>
-<li><a href="#ai-section-8">URL, Header와 오류도 최소 정보만 기록한다</a></li>
-<li><a href="#ai-section-9">Interaction ID는 한 요청의 Event를 연결한다</a></li>
-<li><a href="#ai-section-10">Spring Boot 구조화 Logging은 Format 계약으로 사용한다</a></li>
-<li><a href="#ai-section-11">Diagnostic Log와 Audit Trail을 분리한다</a></li>
-<li><a href="#ai-section-12">Log 무결성과 가용성을 별도로 보호한다</a></li>
-<li><a href="#ai-section-13">시간은 정확도와 신뢰도를 함께 남긴다</a></li>
-<li><a href="#ai-section-14">Detection Rule은 공격 가설을 실행 가능한 조건으로 만든다</a></li>
-<li><a href="#ai-section-15">한 Event보다 공격 Sequence를 탐지한다</a></li>
-<li><a href="#ai-section-16">Alert는 조사 가능한 최소 문맥을 제공한다</a></li>
-<li><a href="#ai-section-17">Severity와 Confidence를 분리해 경보 피로를 줄인다</a></li>
-<li><a href="#ai-section-18">Playbook은 Alert를 행동으로 바꾼다</a></li>
-<li><a href="#ai-section-19">자동 대응에는 제한과 되돌리기 계약이 필요하다</a></li>
-<li><a href="#ai-section-20">Log Flooding과 수집 장애도 Threat Model에 포함한다</a></li>
-<li><a href="#ai-section-21">Logging 실패의 Fail-open과 Fail-closed 경계를 정한다</a></li>
-<li><a href="#ai-section-22">멀티테넌트 Log는 수집부터 조회까지 격리한다</a></li>
-<li><a href="#ai-section-23">Negative Test로 Log Forging과 민감정보 유출을 막는다</a></li>
-<li><a href="#ai-section-24">관측할 것은 공격 수뿐 아니라 탐지 체인의 건강 상태다</a></li>
-<li><a href="#ai-section-25">흔한 오해를 Review에서 제거한다</a></li>
-<li><a href="#ai-section-26">Code Review Checklist</a></li>
-<li><a href="#ai-section-27">마무리</a></li>
-<li><a href="#ai-section-28">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 공격을 차단하는 코드가 있어도 우회 시도를 기록하지 않으면 다음 공격을 알아채기 어렵습니다. Log를 남겨도 아무도 보지 않거나 Alert가 담당자에게 도착하지 않으면 대응은 시작되지 않습니다. Alert가 도착해도 무엇을 확인하고 차단해야 하는지 Playbook이 없으면 중요한 시간이 다시 사라집니다.
 
 ![Threat와 Abuse Case에서 Event 계약·보호 수집·탐지·경보·Playbook을 거쳐 통제 개선으로 돌아가는 폐루프](assets/blog-61-security-event-response-loop.png)
@@ -65,7 +31,6 @@ Log Forging은 사용자 입력이 그대로 로그에 들어가 기록 자체�
 
 각 기능은 서로를 대신하지 않습니다.
 
-
 `Log가 있다`는 말만으로는 A09 대응이 아닙니다. 필요한 Event가 일관된 Schema로 생성되고, 변조와 유출로부터 보호되며, 탐지와 대응까지 연결돼야 합니다.
 
 ## 2. A09가 다루는 실패를 공격 흐름으로 본다
@@ -79,7 +44,6 @@ OWASP Top 10:2025 A09는 다음과 같은 실패를 포함합니다.
 - Log가 로컬에만 있고 삭제·변조·수집 중단을 알 수 없습니다.
 - Alert 임계값, 담당자, Escalation과 Playbook이 없습니다.
 - False Positive가 너무 많아 중요한 Alert가 묻힙니다.
-
 
 Logging은 공격 이후의 장식이 아니라 모든 Security Control이 성공과 실패를 설명하는 공통 계약입니다.
 
@@ -97,9 +61,7 @@ Logging은 공격 이후의 장식이 아니라 모든 Security Control이 성�
 
 Threat Model에서 Control과 필수 Event까지 먼저 연결합니다.
 
-
 필수 Event는 Version 관리되는 Schema와 반복 검증으로 이어집니다.
-
 
 내부 시스템, 승인된 Penetration Test와 관리자도 Event 대상에서 제외하지 않습니다. 신뢰 주체라는 분류를 남길 수는 있지만 관측 자체를 생략하면 내부 오용과 침해 계정을 놓칩니다.
 
@@ -159,9 +121,7 @@ record SecurityEvent(
 
 Event의 식별·시간·실행 문맥을 먼저 고정합니다.
 
-
 행위·결과·신뢰 문맥은 별도 안정 필드로 연결합니다.
-
 
 필드 이름과 Type, 최대 길이, Null 허용 여부, 개인정보 등급을 Schema로 관리합니다. 탐지 규칙은 자연어 문장이 아니라 `eventType`, `outcome`, `reasonCode`처럼 안정된 필드를 사용합니다.
 
@@ -188,7 +148,6 @@ guest\r\n2026-08-01 INFO Login succeeded for administrator
 ```
 
 한 번의 실패 요청이 두 줄처럼 보이면서 가짜 성공 Event를 만들 수 있습니다. CSV, Syslog, Terminal Escape Sequence 또는 Log Viewer가 특별하게 해석하는 값도 후속 분석기를 속일 수 있습니다.
-
 
 CWE(Common Weakness Enumeration, 공통 약점 목록)-117은 이를 Log 출력의 부적절한 중화 문제로 분류합니다.
 
@@ -235,7 +194,6 @@ log.atWarn()
     .log("Security control rejected authentication");
 ```
 
-
 CR과 LF를 제거하는 것만으로 모든 Injection이 해결되지는 않습니다. JSON Encoder, Database Parameter Binding, Viewer의 HTML Encoding처럼 **최종 소비 Format에 맞는 출력 처리**가 필요합니다.
 
 위 함수는 Log 표시용 보조 정책입니다. 인가·탐지 판단에 사용하는 `event_type`, `outcome`, `severity`, `reason_code`는 외부 문자열을 정리해 만들지 않고 Server가 허용된 Enum과 정책 결과에서 생성해야 합니다. 양방향 텍스트 제어 문자까지 표시용 필드에서 제한해 운영자가 화면 순서를 잘못 해석할 위험도 줄입니다.
@@ -259,9 +217,7 @@ Security Log는 공격 증거이면서 새로운 민감정보 저장소가 될 �
 
 수집 후보는 먼저 탐지·조사 목적과 데이터 분류를 확인합니다.
 
-
 Secret이 아닌 필요한 정보만 최소화해 제한된 저장소로 보냅니다.
-
 
 단순 SHA-256 Hash로 이메일이나 전화번호를 가명화하면 후보 값 대입으로 원문을 추측할 수 있습니다. 상관 분석이 꼭 필요하면 접근이 제한된 별도 Key 기반 HMAC(Hash-based Message Authentication Code, 해시 기반 메시지 인증 코드)을 검토하고, Key Rotation과 목적별 Domain Separation을 적용합니다.
 
@@ -292,7 +248,6 @@ record SafeHttpEventFields(
 
 한 사용자의 버튼 클릭이 API Gateway, Application, Queue Worker와 Database Audit Event로 이어질 수 있습니다. Interaction ID(상호작용 식별자)는 이 Event들이 같은 업무 상호작용에서 발생했음을 연결합니다.
 
-
 Client가 보낸 Correlation Header를 Log의 신뢰 식별자로 그대로 사용하지 않습니다. 형식과 길이를 검증한 외부 Reference와 Server가 생성한 내부 Interaction ID를 구분합니다. Trace ID는 성능 추적에 유용하지만 Security Event 보존·접근 정책과 항상 같지는 않으므로 목적을 분리합니다.
 
 MDC(Mapped Diagnostic Context, 매핑된 진단 컨텍스트)를 사용할 때 Thread Pool과 비동기 경계에서 값이 다른 요청으로 누출되지 않도록 설정·복원·제거 수명주기를 Test합니다.
@@ -314,7 +269,6 @@ logging:
 
 위 설정은 구조화 Logging이 내장된 Spring Boot 3.4 이상 계열의 합성 예시입니다. 이전 Spring Boot 3 Minor Version에서는 승인된 JSON Encoder를 별도로 사용할 수 있습니다. 어느 방식을 사용하든 Event Schema와 민감정보 정책은 Logger 설정이 아니라 Application 계약으로 유지합니다.
 
-
 SLF4J(Simple Logging Facade for Java, 자바 단순 로깅 퍼사드)의 Fluent API에서 Key-Value를 사용해도 최종 Appender가 구조화 필드를 보존하는지 통합 Test로 확인합니다.
 
 ## 11. Diagnostic Log와 Audit Trail을 분리한다
@@ -327,13 +281,11 @@ Diagnostic Log는 장애 분석과 운영 관측이 목적이고, Audit Trail은
 - **접근** — Diagnostic Log는 운영자 중심의 권한을 적용하고 Audit Trail은 업무·보안·감사 역할별 최소 권한을 적용합니다.
 - **무결성** — Diagnostic Log는 중앙 수집과 변조 방지를 적용합니다. Audit Trail은 Append-only·삭제 통제·증거 Chain을 더 강화합니다.
 
-
 `DEBUG` Level을 끈다고 로그인 실패와 관리자 권한 변경 Audit Event까지 사라지면 안 됩니다. Audit 저장 실패가 중요 거래에 어떤 영향을 주는지도 업무 위험에 따라 명시적으로 결정합니다.
 
 ## 12. Log 무결성과 가용성을 별도로 보호한다
 
 Log는 공격자의 흔적을 담기 때문에 삭제·변조·유출·Flooding의 표적이 됩니다.
-
 
 핵심 통제는 다음과 같습니다.
 
@@ -368,7 +320,6 @@ Mobile과 Offline Client가 전달한 Event Time은 조작·지연될 수 있습
 
 좋은 탐지 규칙은 `오류가 많다`가 아니라 공격 가설, 필요한 Event, 집계 축, 시간 창, 예외와 대응을 명시합니다.
 
-
 예를 들어 Credential Stuffing 탐지는 하나의 IP Address만 세지 않습니다.
 
 - 여러 계정에 대한 실패를 발생시키는 Network·Device
@@ -381,7 +332,6 @@ Mobile과 Offline Client가 전달한 Event Time은 조작·지연될 수 있습
 ## 15. 한 Event보다 공격 Sequence를 탐지한다
 
 개별 Event는 정상처럼 보여도 순서가 공격을 드러낼 수 있습니다.
-
 
 Sequence Rule에는 최대 허용 간격, 순서 변경, 중복 Event, 늦게 도착한 Event와 부분 실패의 의미를 정의합니다. Message 재전송 때문에 같은 Event가 두 번 들어와도 Alert 수가 폭증하지 않게 Event ID 기반 중복 제거를 적용합니다.
 
@@ -408,7 +358,6 @@ Alert 제목만 `Suspicious activity detected`라면 담당자는 다시 처음�
 
 Alert Message에 원본 Token, Password, 전체 Request Body와 민감한 Stack Trace를 복사하지 않습니다. 접근 통제된 조사 화면의 Reference와 필요한 최소 문맥을 전달합니다.
 
-
 ## 17. Severity와 Confidence를 분리해 경보 피로를 줄인다
 
 Severity(심각도)는 실제라면 영향이 얼마나 큰지, Confidence(신뢰도)는 탐지가 실제 공격일 가능성이 얼마나 높은지를 나타냅니다.
@@ -417,7 +366,6 @@ Severity(심각도)는 실제라면 영향이 얼마나 큰지, Confidence(신�
 - **Severity 높음·Confidence 낮음** — 신속하게 추가 증거를 수집하고 검토합니다.
 - **Severity 낮음·Confidence 높음** — Ticket을 생성하거나 추세 분석 대상으로 관리합니다.
 - **Severity 낮음·Confidence 낮음** — 저장·집계한 뒤 Rule 개선 후보로 관리합니다.
-
 
 False Positive를 줄이려고 Security Event를 삭제하지 않습니다. 원본 Event는 보존하고 Rule의 집계, Suppression, Context와 Routing을 개선합니다. 반복 Alert를 묶더라도 최초·최종 시각, 총 Event 수와 영향 대상을 잃지 않습니다.
 
@@ -434,7 +382,6 @@ False Positive를 줄이려고 Security Event를 삭제하지 않습니다. 원�
 7. Recovery와 정상화 조건
 8. Evidence 보존, 종료 기준과 사후 개선 항목
 
-
 NIST SP 800-61 Revision 3은 Incident Response(사고 대응)를 별도 순간 작업이 아니라 Cybersecurity Risk Management(사이버보안 위험 관리) 전반에 통합하도록 권고합니다.
 
 ![공격 가설과 Sequence Rule을 Severity·Confidence로 평가하고 조사 가능한 Alert·제한된 대응·사후 개선으로 연결하는 흐름](assets/blog-61-detection-playbook-loop.png)
@@ -447,9 +394,7 @@ Alert가 발생했다고 계정을 영구 삭제하거나 전체 서비스를 �
 
 탐지 결과는 신뢰 문맥을 보강한 뒤 사람 검토 또는 승인된 제한 조치로 전환합니다.
 
-
 제한 조치 이후에는 상태 확인과 사후 검토를 반드시 연결합니다.
-
 
 Session Revocation, 고위험 기능의 일시 Hold, 추가 인증 요구처럼 피해를 제한하는 조치를 우선합니다. 자동 대응 Policy Version과 실행 결과도 Security Event로 남깁니다.
 
@@ -459,9 +404,7 @@ Session Revocation, 고위험 기능의 일시 Hold, 추가 인증 요구처럼 
 
 대량 악성 Event는 입력·집계·Queue 단계에서 먼저 제한합니다.
 
-
 Queue 압력과 수집 경로는 각각 경보와 격리 정책으로 연결합니다.
-
 
 무조건 Sampling하면 중요한 공격 Event가 사라집니다. Event Type별 정책을 둡니다.
 
@@ -480,13 +423,11 @@ Queue 압력과 수집 경로는 각각 경보와 격리 정책으로 연결합�
 - **고액·고위험 거래** — 법·위험 정책에 따라 Audit 성공과 업무 변경의 원자적 연결을 검토합니다.
 - **Log 검색 UI 장애** — 원본 수집은 계속하고 조사 기능 장애를 별도 경보로 알립니다.
 
-
 업무 Transaction과 원격 Log 전송을 하나의 분산 Transaction으로 억지로 묶기보다 Transactional Outbox, Append-only Audit Table 또는 검증된 Messaging Pattern을 사용합니다.
 
 ## 22. 멀티테넌트 Log는 수집부터 조회까지 격리한다
 
 Tenant ID를 Event에 넣는 것만으로 격리가 완성되지 않습니다.
-
 
 - Client가 보낸 Tenant 값 대신 인증된 Server Context를 사용합니다.
 - Collector와 Storage의 Partition·Index·Encryption Policy를 검토합니다.
@@ -517,7 +458,6 @@ Tenant ID를 Event에 넣는 것만으로 격리가 완성되지 않습니다.
 - Event 중복·순서 변경·늦은 도착에도 Alert가 폭증하거나 사라지지 않는가?
 - Collector 중단과 Queue 포화가 별도 Alert를 생성하는가?
 
-
 Production에서 실제 공격을 기다리지 않고 Synthetic Event와 안전한 Canary를 정기적으로 주입해 End-to-End 경로를 검증합니다.
 
 ## 24. 관측할 것은 공격 수뿐 아니라 탐지 체인의 건강 상태다
@@ -532,7 +472,6 @@ Production에서 실제 공격을 기다리지 않고 Synthetic Event와 안전�
 - Rule별 True Positive·False Positive·중복 Alert 비율
 - Playbook 실행률, Containment 시간과 재발률
 - Retention·삭제 Job과 접근 감사 상태
-
 
 Mean Time to Detect 같은 평균 하나만 보면 장기 미탐지와 일부 치명적 지연이 가려질 수 있습니다. 위험 등급별 분포와 최악 구간, 미확인 Alert Age를 함께 확인합니다.
 
@@ -600,7 +539,6 @@ Mean Time to Detect 같은 평균 하나만 보면 장기 미탐지와 일부 �
 ## 27. 마무리
 
 Security Logging and Alerting Failures를 막는 핵심은 Log File을 생성하는 것이 아닙니다.
-
 
 안전한 시스템은 다음 질문에 답할 수 있어야 합니다.
 

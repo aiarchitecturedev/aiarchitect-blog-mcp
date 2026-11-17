@@ -2,42 +2,6 @@
 
 AI Agent 용량 계획에서 초당 요청 수는 출발점이 되지 못합니다. 한 번의 실행이 Model Token과 RAG 검색, MCP 호출, 다른 Agent 위임을 함께 소비하고, 재시도가 그 수요를 배로 키우며, Provider Quota가 별도의 상한으로 걸리기 때문입니다. 이 글은 업무 수요를 Token·Queue·동시 실행 수요로 변환하고 Retry 증폭과 장애 여유, 비용을 반영해 Admission Control과 Auto Scaling을 설계하는 방법을 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">AI Agent 용량은 요청 수 하나로 계산할 수 없다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Task Class와 업무 Outcome을 용량 계획의 기준으로 삼는다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">수요를 Workload Vector로 표현한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Trace에서 Execution Profile을 추출한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Logical Run을 실제 Attempt 부하로 변환한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Model 용량을 Input·Output·Reasoning Token으로 분리한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Context 성장과 Cache 효과를 별도로 모델링한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">RAG·MCP·A2A를 서로 다른 자원 단위로 계산한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Little's Law로 동시 실행 수를 추정한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Queue Length보다 Queue Age와 Drain Time을 본다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">가장 먼저 포화되는 Constraint가 전체 용량을 결정한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Provider Quota를 Versioned Capacity Contract로 관리한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Interactive·Async·Batch Workload를 분리한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Headroom·Redundancy·Failover 용량을 구분한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Retry·Fallback·Recovery Storm을 Reserve에 반영한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Admission Control에서 다차원 Budget을 예약한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Tenant·Task Class별 공정성과 격리를 설계한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Priority·Deadline·가치를 함께 보고 수락 순서를 정한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Rate·Concurrency·Token·Cost Limit의 역할을 나눈다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Auto Scaling은 Leading Signal과 Lagging Signal을 결합한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Cold Start와 Provisioning Lead Time을 계획에 넣는다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Scale-in은 장기 Task의 Drain·Lease·Checkpoint를 지킨다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">비용을 Run·Outcome·Tenant 단위로 예산화한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Organic·Inorganic 수요를 Scenario로 예측한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">부하 시험으로 Resource-to-Capacity 비율을 보정한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">포화 곡선과 과부하 실패 모드를 함께 찾는다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">합성 사례로 회의 분석 Agent 용량을 계산한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Capacity Plan을 Versioned Spec과 Gate로 운영한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">단계적으로 구현하고 운영 체크리스트로 검증한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">공식 참고자료</li>
-</ol>
-</blockquote>
-
 AI Agent 서비스에 하루 10만 건의 요청이 들어옵니다. 운영 회의에서는 다음과 같은 질문이 나옵니다.
 
 ```text

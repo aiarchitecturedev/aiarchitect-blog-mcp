@@ -4,32 +4,6 @@ Android SDK에서 suspend 함수와 Flow를 공개 API로 내보내는 순간 �
 
 ![Android 앱과 Kotlin SDK의 Coroutine·Flow·Lifecycle 실행 계약이 고객사 API의 보안 경계로 연결되는 구조](assets/blog-42-android-kotlin-sdk-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">Android SDK는 UI Framework가 아니라 기능 계약이다</a></li>
-<li><a href="#ai-section-2">공개 API는 한 번의 결과와 지속 이벤트를 구분한다</a></li>
-<li><a href="#ai-section-3">모듈은 Android 의존성을 최외곽에 둔다</a></li>
-<li><a href="#ai-section-4">Client는 장수명이고 화면을 참조하지 않는다</a></li>
-<li><a href="#ai-section-5">suspend 함수는 Main-safe 계약이어야 한다</a></li>
-<li><a href="#ai-section-6">SDK가 임의의 Scope를 만들지 않게 한다</a></li>
-<li><a href="#ai-section-7">Coroutine 취소와 업무 취소는 다르다</a></li>
-<li><a href="#ai-section-8">Flow에는 Cold·Hot·Replay·완료 의미가 필요하다</a></li>
-<li><a href="#ai-section-9">Callback 기반 전송은 callbackFlow로 안전하게 감싼다</a></li>
-<li><a href="#ai-section-10">Lifecycle 연결은 고객사 Presentation 계층이 소유한다</a></li>
-<li><a href="#ai-section-11">오류 계약에서 취소를 분리한다</a></li>
-<li><a href="#ai-section-12">인증은 Host 앱이 소유하고 SDK는 요청 시 가져온다</a></li>
-<li><a href="#ai-section-13">Endpoint와 TLS 정책도 Host 앱의 배포 계약이다</a></li>
-<li><a href="#ai-section-14">요청 문맥과 개인정보는 명시적인 값으로 전달한다</a></li>
-<li><a href="#ai-section-15">재시도는 Coroutine과 Deadline을 존중한다</a></li>
-<li><a href="#ai-section-16">테스트는 가상 시간과 Fake 전송을 사용한다</a></li>
-<li><a href="#ai-section-17">패키징도 고객사 통합 경험의 일부다</a></li>
-<li><a href="#ai-section-18">구현 체크리스트</a></li>
-<li><a href="#ai-section-19">마무리: Kotlin다운 SDK는 앱의 수명과 선택권을 존중한다</a></li>
-<li><a href="#ai-section-20">상호 참조 및 공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 직접 설계하면서도 프라이빗 API를 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다. 이번 글은 그중 Android Kotlin SDK의 공개 API와 실행 계약을 구체화합니다.
 
 Android SDK의 목적은 완성된 화면을 고객에게 강제하는 것이 아닙니다. 로그인 화면, 내비게이션, 디자인 시스템과 업무 흐름은 고객사 앱이 결정하고, SDK는 고객사 서버와 안전하게 통신하는 기능을 Kotlin다운 계약으로 제공합니다.
@@ -39,8 +13,6 @@ Android SDK의 목적은 완성된 화면을 고객에게 강제하는 것이 �
 모바일 앱은 프라이빗 API Endpoint나 서버 자격 증명을 갖지 않습니다. Kotlin SDK가 연결하는 대상은 고객사에 공개된 모바일용 API이며, 서버 간 프라이빗 연결은 고객사 서버와 Java Server SDK의 책임입니다.
 
 이 글은 특정 회사·고객·제품·내부 URL을 제외한 합성 예시로 `suspend`, `Flow`, 구조적 동시성, Lifecycle, 취소, 오류, 인증과 테스트 원칙을 정리합니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. Android SDK는 UI Framework가 아니라 기능 계약이다
 
@@ -58,8 +30,6 @@ Android SDK의 목적은 완성된 화면을 고객에게 강제하는 것이 �
 SDK가 `Activity`를 시작하거나 Dialog를 띄우고 전역 Singleton에 화면 상태를 저장하면 고객사의 앱 구조를 침범합니다. 반대로 SDK가 Callback과 원시 JSON만 노출하면 모든 고객이 Coroutine, 오류 변환과 Lifecycle 처리를 다시 구현해야 합니다.
 
 적절한 경계는 **업무 기능은 SDK가 캡슐화하고, 화면과 수명 범위는 호출자가 소유하는 것**입니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. 공개 API는 한 번의 결과와 지속 이벤트를 구분한다
 
@@ -93,8 +63,6 @@ interface SessionApi {
 
 SDK가 모든 값을 `Flow`로 만들면 단순 조회도 수집·완료 의미를 이해해야 합니다. 반대로 지속 이벤트를 `suspend fun List<Event>`로 제공하면 Polling과 갱신 책임이 호출자에게 새어 나갑니다.
 
-<a id="ai-section-3"></a>
-
 ## 3. 모듈은 Android 의존성을 최외곽에 둔다
 
 핵심 계약이 Android Framework에 과도하게 묶이면 JVM 단위 테스트와 다른 Kotlin 환경에서 재사용하기 어렵습니다.
@@ -110,8 +78,6 @@ SDK가 모든 값을 `Flow`로 만들면 단순 조회도 수집·완료 의미�
 - `sdk-testing`: Fake, Fixture와 계약 검증 도구
 
 `Activity`, `Fragment`, `ViewModel`, `LifecycleOwner`는 기본 공개 API에 넣지 않습니다. Android 앱은 SDK의 `suspend`·`Flow` 계약을 자신의 Presentation 계층에 연결합니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. Client는 장수명이고 화면을 참조하지 않는다
 
@@ -144,8 +110,6 @@ Client가 보관하면 안 되는 값:
 Android `Context`가 꼭 필요하다면 Builder에서 받은 값을 즉시 `applicationContext`로 축소하고, 왜 필요한지 문서화합니다. 화면 Context를 장수명 Client에 보관하면 메모리 누수 위험이 생깁니다.
 
 SDK가 장수명 Socket, Executor나 직접 생성한 전송 자원을 소유한다면 `MobileSdk`는 `Closeable` 같은 명시적인 종료 계약을 제공할 수 있습니다. Application 종료나 테스트 정리 시 한 번 닫되, 호출자가 주입한 Scope·Dispatcher·HTTP Client는 SDK가 임의로 종료하지 않습니다. Android Process가 강제로 종료될 수 있으므로 `close()` 호출에만 의존해 서버 상태나 중요 데이터를 보존해서도 안 됩니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. `suspend` 함수는 Main-safe 계약이어야 한다
 
@@ -187,8 +151,6 @@ internal data class SdkDispatchers(
 
 Dispatcher를 주입 가능하게 만들면 테스트에서 가상 시간과 실행 순서를 제어할 수 있습니다. 공개 Builder에 불필요하게 Coroutine 내부 구조를 노출하지 않고, 고급 설정이나 테스트 전용 Factory로 제공할 수도 있습니다.
 
-<a id="ai-section-6"></a>
-
 ## 6. SDK가 임의의 Scope를 만들지 않게 한다
 
 화면 작업의 시작과 종료를 가장 잘 아는 주체는 호출자입니다. 따라서 `suspend` 함수는 현재 Coroutine의 자식 작업으로 실행되고, `Flow`는 수집한 Scope를 따라야 합니다.
@@ -214,8 +176,6 @@ SDK 내부에서 `GlobalScope.launch`로 작업을 숨기면 호출자가 완료
 - 완료를 기다릴 수 있는 `Deferred`·Handle 반환
 - 서버에 작업을 접수하고 Operation ID로 상태 조회
 - 앱의 명시적인 Background Work 계층에서 실행
-
-<a id="ai-section-7"></a>
 
 ## 7. Coroutine 취소와 업무 취소는 다르다
 
@@ -249,8 +209,6 @@ internal suspend fun <T> execute(
 
 생성·결제·승인처럼 부작용이 있는 작업은 취소만 보고 실패로 단정하지 않습니다. 멱등 키나 Operation ID로 최종 상태를 확인할 수 있어야 합니다.
 
-<a id="ai-section-8"></a>
-
 ## 8. `Flow`에는 Cold·Hot·Replay·완료 의미가 필요하다
 
 `Flow<SessionEvent>`라는 타입만으로는 동작을 충분히 설명할 수 없습니다.
@@ -265,8 +223,6 @@ internal suspend fun <T> execute(
 | 느린 Collector는 어떻게 되는가 | 버퍼 크기와 Overflow 정책 명시 |
 
 SDK의 네트워크 이벤트는 기본적으로 Cold Flow로 제공하고, 앱이 자신의 Scope에서 `stateIn` 또는 `shareIn`을 선택하게 하는 방식이 유연합니다. SDK가 장수명 Hot Flow를 제공한다면 공유 Scope, Replay, 시작·종료 정책과 메모리 보유 조건을 공개해야 합니다.
-
-<a id="ai-section-9"></a>
 
 ## 9. Callback 기반 전송은 `callbackFlow`로 안전하게 감싼다
 
@@ -310,8 +266,6 @@ events(sessionId)
 ```
 
 진행률처럼 최신 값이 중요한 데이터는 오래된 값을 버릴 수 있지만, 감사·결제·명령 결과 이벤트는 누락을 허용하면 안 됩니다. 그런 이벤트는 서버 Cursor·Sequence와 재조회 API를 사용하고, 메모리 버퍼만으로 전달 보장을 만들지 않습니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. Lifecycle 연결은 고객사 Presentation 계층이 소유한다
 
@@ -359,8 +313,6 @@ viewLifecycleOwner.lifecycleScope.launch {
 
 Compose 앱은 `collectAsStateWithLifecycle` 같은 Lifecycle-aware Adapter를 Presentation 계층에서 선택할 수 있습니다. SDK Core가 Compose Runtime에 의존할 필요는 없습니다.
 
-<a id="ai-section-11"></a>
-
 ## 11. 오류 계약에서 취소를 분리한다
 
 HTTP 라이브러리 예외와 JSON 예외를 그대로 공개하면 구현 교체가 고객 앱의 `catch` 문을 깨뜨립니다.
@@ -397,8 +349,6 @@ class SdkAuthenticationException(
 
 오류 메시지에 Token, 원문 Payload와 개인정보를 넣지 않고, 분기에는 사람이 읽는 문구 대신 안정적인 `code`와 타입을 사용합니다.
 
-<a id="ai-section-12"></a>
-
 ## 12. 인증은 Host 앱이 소유하고 SDK는 요청 시 가져온다
 
 모바일 SDK에는 Java Server SDK용 Secret이나 프라이빗 API Credential을 포함하지 않습니다.
@@ -429,8 +379,6 @@ interface CredentialProvider {
 - 인증 실패의 무한 갱신·재시도 금지
 - Logout 시 Host가 Credential을 폐기하고 SDK Cache를 무효화
 
-<a id="ai-section-13"></a>
-
 ## 13. Endpoint와 TLS 정책도 Host 앱의 배포 계약이다
 
 SDK Builder는 고객사 모바일 API Endpoint만 받습니다.
@@ -449,8 +397,6 @@ Builder는 절대형 HTTPS URL인지 확인하고 User Info, Query와 Fragment�
 Production에서 HTTP Cleartext를 자동 허용하거나 모든 인증서를 신뢰하는 우회 코드를 넣지 않습니다. Android Network Security Configuration은 Cleartext, 신뢰할 CA와 Debug 전용 Override를 앱의 선언적 설정으로 제어할 수 있습니다.
 
 고객사가 사설 CA를 사용해야 한다면 Host 앱의 배포 환경과 인증서 회전 계획을 함께 설계합니다. SDK가 숨겨진 Trust Manager나 단일 인증서 Pin을 강제하면 인증서 교체 시 모든 고객 앱을 긴급 배포해야 할 수 있습니다.
-
-<a id="ai-section-14"></a>
 
 ## 14. 요청 문맥과 개인정보는 명시적인 값으로 전달한다
 
@@ -474,8 +420,6 @@ data class RequestContext(
 - 가명화된 상관관계 ID
 
 Token, 전체 URL Query, 원문 Request·Response Body, 사용자 입력과 개인식별정보는 기본 로그·Metric·Trace Attribute에서 제외합니다. 고객사 Logger·Telemetry Adapter를 주입하더라도 SDK가 전달하는 데이터의 Allowlist를 먼저 고정합니다.
-
-<a id="ai-section-15"></a>
 
 ## 15. 재시도는 Coroutine과 Deadline을 존중한다
 
@@ -511,8 +455,6 @@ internal suspend fun <T> retryWithinDeadline(
 - Offline이라는 이유만으로 무한 Queue를 SDK 내부에 만들지 않음
 
 장시간 보장 실행이 필요하면 UI Coroutine 재시도가 아니라 명시적인 Background Work와 서버 Operation 계약으로 분리합니다.
-
-<a id="ai-section-16"></a>
 
 ## 16. 테스트는 가상 시간과 Fake 전송을 사용한다
 
@@ -555,8 +497,6 @@ fun cancellationStopsRetry() = runTest {
 - 미지의 Enum·추가 응답 필드를 안전하게 처리
 - 호출자가 주입한 Scope·Dispatcher를 SDK가 종료하지 않음
 
-<a id="ai-section-17"></a>
-
 ## 17. 패키징도 고객사 통합 경험의 일부다
 
 고객사가 SDK를 도입할 때는 코드뿐 아니라 빌드 계약이 필요합니다.
@@ -579,8 +519,6 @@ dependencies {
 - AAR·POM·Checksum·서명 검증 방법
 
 SDK가 특정 DI, JSON, HTTP 또는 UI Framework를 고객 앱에 불필요하게 강제하지 않도록 공개 의존성을 최소화합니다.
-
-<a id="ai-section-18"></a>
 
 ## 18. 구현 체크리스트
 
@@ -617,8 +555,6 @@ SDK가 특정 DI, JSON, HTTP 또는 UI Framework를 고객 앱에 불필요하�
 - [ ] Kotlin·Coroutine·AndroidX 호환성 표가 있다.
 - [ ] Consumer Rule·Migration Guide·Changelog를 함께 배포한다.
 
-<a id="ai-section-19"></a>
-
 ## 19. 마무리: Kotlin다운 SDK는 앱의 수명과 선택권을 존중한다
 
 고객 맞춤형 Android SDK의 품질은 API 개수보다 경계의 명확성에서 결정됩니다.
@@ -632,8 +568,6 @@ SDK가 특정 DI, JSON, HTTP 또는 UI Framework를 고객 앱에 불필요하�
 결국 좋은 Kotlin SDK는 Android 앱을 대신 만드는 Framework가 아니라, **고객사가 원하는 앱을 만들면서도 통신·보안·오류·동시성 규칙을 일관되게 지킬 수 있게 하는 모바일 실행 계약**입니다.
 
 다음 글에서는 같은 공통 계약을 iOS Swift SDK의 `async/await`, `Task` 취소, `AsyncSequence`, Actor 격리와 Keychain 책임으로 옮기는 방법을 살펴봅니다.
-
-<a id="ai-section-20"></a>
 
 ## 20. 상호 참조 및 공식 참고 자료
 

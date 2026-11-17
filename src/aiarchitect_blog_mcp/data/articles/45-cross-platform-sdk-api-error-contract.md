@@ -4,26 +4,6 @@ Java·Kotlin·Swift·JavaScript SDK가 같은 API를 각자 다르게 해석하�
 
 ![공통 API·오류·상태·이벤트 의미 계약이 네 플랫폼 SDK로 투영되고 적합성 매트릭스와 통합 증거로 검증되는 크로스플랫폼 SDK 아키텍처 이미지](assets/blog-45-cross-platform-sdk-contract-hero.png)
 
-> **목차**
->
-> 1. [공통 계약은 공통 구현이 아니다](#ai-section-1)
-> 2. [계약 저장소와 Version을 진실의 원천으로 둔다](#ai-section-2)
-> 3. [Operation 의미와 플랫폼별 API 투영을 함께 고정한다](#ai-section-3)
-> 4. [JSON과 언어 Type의 경계를 명시한다](#ai-section-4)
-> 5. [Schema와 실행 가능한 의미 규칙을 함께 관리한다](#ai-section-5)
-> 6. [안정적인 오류 Code와 원본 정보를 보존한다](#ai-section-6)
-> 7. [상태를 Boolean이 아닌 전이 규칙으로 정의한다](#ai-section-7)
-> 8. [Event 전달과 Snapshot 재연결 계약을 연결한다](#ai-section-8)
-> 9. [Cursor와 관측 문맥을 불투명하게 유지한다](#ai-section-9)
-> 10. [변경 가능성과 호환성 정책을 계약에 포함한다](#ai-section-10)
-> 11. [Golden Vector는 합의된 명세에서 만든다](#ai-section-11)
-> 12. [같은 Fixture를 네 SDK에 독립 실행한다](#ai-section-12)
-> 13. [Consumer Contract와 Provider 적합성을 함께 쓴다](#ai-section-13)
-> 14. [CI에서 호환성과 적합성을 Release 조건으로 만든다](#ai-section-14)
-> 15. [계약 변경의 소유자와 완료 기준을 정한다](#ai-section-15)
-> 16. [구현·운영 체크리스트](#ai-section-16)
-> 17. [마무리와 참고 자료](#ai-section-17)
-
 같은 서비스를 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK로 제공하면 네 개의 구현이 생깁니다. 그러나 고객에게 전달해야 할 업무 의미까지 네 개가 되어서는 안 됩니다.
 
 예를 들어 서버는 상태 코드를 정상적으로 반환했는데 Android에서는 재시도하고 iOS에서는 즉시 실패한다면, 또는 Web SDK만 큰 숫자 ID를 다른 값으로 읽는다면 각 SDK의 코드는 동작해도 제품 계약은 깨진 것입니다.
@@ -34,7 +14,7 @@ Java·Kotlin·Swift·JavaScript SDK가 같은 API를 각자 다르게 해석하�
 
 이 글에서는 특정 고객·제품·내부 Endpoint를 제외한 합성 예시로 크로스플랫폼 SDK 계약과 적합성 테스트(Conformance Test)를 설계합니다. 스키마·식별자·오류 Code 값은 전부 **공개용 합성 값**입니다. 다만 본문에서 **"필자"라고 밝힌 단락은 실제 정합성 검증·표면 확장 경험**에서 회사·제품·저장소·Endpoint 경로와 실제 API·도메인 수처럼 운영 규모를 드러내는 정보를 제거해 재구성한 것입니다.
 
-<h2 id="ai-section-1" style="scroll-margin-top: 72px;">1. 공통 계약은 공통 구현이 아니다</h2>
+## 1. 공통 계약은 공통 구현이 아니다
 
 멀티플랫폼 SDK에서 재사용해야 하는 것은 소스 코드보다 결정 규칙입니다.
 
@@ -58,7 +38,7 @@ Java·Kotlin·Swift·JavaScript SDK가 같은 API를 각자 다르게 해석하�
 
 OpenAPI 문서 하나만으로 네 층이 모두 해결되지는 않습니다. Schema는 필드 형식을 잘 설명하지만 취소가 서버 작업도 중단하는지, 이벤트 중복을 어떻게 처리하는지, 알 수 없는 Enum을 보존해야 하는지까지 자동으로 결정하지는 못합니다.
 
-<h2 id="ai-section-2" style="scroll-margin-top: 72px;">2. 계약 저장소와 Version을 진실의 원천으로 둔다</h2>
+## 2. 계약 저장소와 Version을 진실의 원천으로 둔다
 
 공통 계약을 각 SDK Repository의 Wiki나 README에 복사해 두면 어느 문서가 최신인지 알 수 없습니다. 계약 원본과 실행 가능한 Fixture를 한곳에 두고, 각 SDK Build가 명시적인 계약 Version을 가져가도록 합니다.
 
@@ -98,7 +78,6 @@ eventDelivery: at-least-once
 
 계약 Version은 SDK Package Version과 같은 개념이 아닙니다. 하나의 계약 Version을 Java `4.x`, Kotlin `3.x`, Swift `2.x`, JavaScript `5.x`가 각각 구현할 수 있습니다. 어떤 SDK Version이 어떤 계약을 구현하는지는 별도 호환성 표로 추적합니다.
 
-
 ### 계약 저장소가 없을 때 무엇이 대신 진실의 원천이 되는가
 
 위 구조는 계약 저장소가 **먼저** 있다는 전제에서 출발합니다. 필자가 **정합성 검증과 API 표면 확장 작업에 참여한** 두 SDK — 브라우저에서 동작하는 소비자 SDK와 고객사 서버에 심는 중계 SDK — 사이에는 그 저장소가 없었습니다. 각자 자기 호출 목록을 자기 코드에 들고 있었습니다.
@@ -114,7 +93,7 @@ eventDelivery: at-least-once
 
 📌 계약 저장소가 있으면 양쪽 모두를 저장소와 대조하므로 판정이 대칭이 됩니다. 저장소가 없으면 **실제로 호출하는 쪽이 사실상의 계약**이 되고, 그 순간 판정은 한쪽 방향으로만 엄격해집니다. 이 상태는 동작하지만 계약을 코드에서 역산해야 하므로, 계약 저장소를 두는 편이 낫다는 이 절의 권고를 대체하지 않습니다. 다만 저장소를 만들기 전에도 **판정 방향만 먼저 정해 두면** 대조를 시작할 수 있습니다.
 
-<h2 id="ai-section-3" style="scroll-margin-top: 72px;">3. Operation 의미와 플랫폼별 API 투영을 함께 고정한다</h2>
+## 3. Operation 의미와 플랫폼별 API 투영을 함께 고정한다
 
 Operation마다 Method와 Path만 기록하지 말고 입력 전제조건, 성공 조건과 Side Effect를 함께 정의합니다.
 
@@ -166,7 +145,7 @@ Wire Envelope도 공통으로 정할 수 있습니다.
 - 성공 응답의 알 수 없는 필드를 버려도 되는가?
 - 같은 오류 Code를 네 SDK가 같은 분류로 노출하는가?
 
-<h2 id="ai-section-4" style="scroll-margin-top: 72px;">4. JSON과 언어 Type의 경계를 명시한다</h2>
+## 4. JSON과 언어 Type의 경계를 명시한다
 
 플랫폼 차이에서 가장 자주 생기는 장애는 복잡한 Algorithm보다 평범한 타입 변환입니다.
 
@@ -284,7 +263,7 @@ throw ApiException(
 
 일반 API 응답 비교에 JSON 문자열의 공백·Key 순서까지 요구하면 테스트가 취약해집니다. JSON을 Parsing한 뒤 의미적으로 비교하고, Hash나 전자서명처럼 Byte 일치가 필요한 경계에서만 Canonical JSON을 적용해야 합니다.
 
-<h2 id="ai-section-5" style="scroll-margin-top: 72px;">5. Schema와 실행 가능한 의미 규칙을 함께 관리한다</h2>
+## 5. Schema와 실행 가능한 의미 규칙을 함께 관리한다
 
 OpenAPI 3.1은 JSON Schema 기반으로 Request·Response 형식을 기술하는 데 유용합니다. 그러나 `readOnly`, `nullable`, `format` 같은 표기만 보고 각 Code Generator가 완전히 같은 Runtime 검증을 제공한다고 가정해서는 안 됩니다.
 
@@ -333,7 +312,7 @@ then:
 
 Schema 통과는 계약 검증의 시작이지 끝이 아닙니다. 예를 들어 날짜 문자열이 형식상 유효해도 UTC로 정규화해야 한다는 규칙이나, Timeout이 업무 실패를 의미하지 않는다는 규칙은 별도의 Scenario가 검증해야 합니다.
 
-<h2 id="ai-section-6" style="scroll-margin-top: 72px;">6. 안정적인 오류 Code와 원본 정보를 보존한다</h2>
+## 6. 안정적인 오류 Code와 원본 정보를 보존한다
 
 HTTP 상태는 전송 계층의 큰 분류입니다. 고객사 업무 로직이 `400`이나 사람이 읽는 `detail` 문자열을 Parsing해 분기하면 서버 문구 변경만으로 Application이 깨집니다.
 
@@ -401,7 +380,6 @@ JavaScript WebSdkError extends Error
 
 Network 단절, Caller 취소, Timeout, Protocol Parsing 실패, Service 오류도 구분합니다. 특히 Timeout은 “서버가 처리하지 않았다”는 증거가 아닙니다. Side Effect가 있는 Operation은 상태 조회 또는 같은 Idempotency Key를 이용한 재확인 경로가 필요합니다.
 
-
 ### 도메인별로 Code 대역을 나눈 뒤 겹치게 두면 컴파일러는 잡지 않는다
 
 이 절의 권고를 따라 오류를 도메인별 타입으로 나누고 각 타입에 숫자 대역을 주는 구조는 흔합니다. 그런데 그 구조에는 **분리만 있고 결합이 없는** 상태가 쉽게 남습니다. 도메인별 Code 타입이 서로 독립되어 있으면, 서로 다른 도메인이 같은 숫자를 쓰거나 Key의 의미와 Message가 어긋나도 **각 선언은 정상적으로 컴파일됩니다.**
@@ -434,9 +412,9 @@ export type UploadErrorCode = 8201
 📌 분리 자체는 옳습니다. 다만 **분리에는 결합 장치가 따라와야 합니다.** 실행 지침은 두 가지입니다.
 
 1. **대역을 코드 한 곳이 소유합니다.** 도메인별 선언이 각자 숫자를 고르면 겹침은 시간문제입니다. 대역 배정표를 한 파일에 두고 각 도메인이 그 안에서만 고르게 합니다. 겹침 자체를 Test로 검사하려면 배정표가 먼저 있어야 합니다.
-2. **`(Key, Code, Message)` 목록을 Vector로 고정합니다.** [11절](#ai-section-11)의 Golden Vector는 요청·응답에만 쓰는 것이 아닙니다. 다만 목록을 Vector로 두는 것만으로는 부족하고, **Code의 전역 유일성과 세 값의 일대일 대응을 검사하는 Assertion**을 Release Gate에 함께 둬야 빨간불이 켜집니다.
+2. **`(Key, Code, Message)` 목록을 Vector로 고정합니다.** 11절의 Golden Vector는 요청·응답에만 쓰는 것이 아닙니다. 다만 목록을 Vector로 두는 것만으로는 부족하고, **Code의 전역 유일성과 세 값의 일대일 대응을 검사하는 Assertion**을 Release Gate에 함께 둬야 빨간불이 켜집니다.
 
-<h2 id="ai-section-7" style="scroll-margin-top: 72px;">7. 상태를 Boolean이 아닌 전이 규칙으로 정의한다</h2>
+## 7. 상태를 Boolean이 아닌 전이 규칙으로 정의한다
 
 `isLoading`, `hasData`, `hasError`, `isClosed` Boolean을 독립적으로 두면 불가능한 조합이 생깁니다. 공통 상태 계약은 Discriminated State와 전이 규칙으로 정의합니다.
 
@@ -458,7 +436,7 @@ Closed(reason)
 
 초기 Loading이 취소되면 `Idle`로 돌아갈 수 있지만, 이전 값이 있는 Refresh가 취소되면 그 값을 가진 `Ready`로 돌아갑니다. Kotlin `StateFlow`, Swift Observable Model, React Store가 서로 다른 UI 수명을 갖더라도 같은 입력 Sequence에 대해 같은 논리 상태로 끝나야 합니다.
 
-<h2 id="ai-section-8" style="scroll-margin-top: 72px;">8. Event 전달과 Snapshot 재연결 계약을 연결한다</h2>
+## 8. Event 전달과 Snapshot 재연결 계약을 연결한다
 
 이벤트의 JSON 모양만 공유하고 전달 보장을 정의하지 않으면 SDK마다 다른 동작을 하게 됩니다.
 
@@ -515,7 +493,7 @@ Mobile App은 Background 진입, Network 전환과 절전 때문에 연결이 �
 
 SDK가 Event를 영구 저장소처럼 취급해서는 안 됩니다. 최종 상태의 진실의 원천은 조회 API이며, Event는 상태 변화의 신속한 전달 수단입니다.
 
-<h2 id="ai-section-9" style="scroll-margin-top: 72px;">9. Cursor와 관측 문맥을 불투명하게 유지한다</h2>
+## 9. Cursor와 관측 문맥을 불투명하게 유지한다
 
 Pagination Cursor를 Base64로 보이는 Offset 정도로 간주해 Client가 Parsing하면 서버 구현을 바꿀 수 없습니다.
 
@@ -555,7 +533,7 @@ Cursor 계약은 다음처럼 단순해야 합니다.
 
 W3C Trace Context의 `traceparent`와 `tracestate`는 서비스 간 Trace를 연결하는 표준 Header입니다. 그러나 외부에서 받은 값에 무제한 신뢰를 부여하거나 이를 Tenant·Actor 인가 근거로 사용해서는 안 됩니다. 신뢰 경계에서 길이·형식을 검증하고 Sampling·전파 정책을 적용합니다.
 
-<h2 id="ai-section-10" style="scroll-margin-top: 72px;">10. 변경 가능성과 호환성 정책을 계약에 포함한다</h2>
+## 10. 변경 가능성과 호환성 정책을 계약에 포함한다
 
 “필드를 추가했을 뿐”이라는 설명은 소비자에게 항상 호환 변경을 뜻하지 않습니다.
 
@@ -574,7 +552,7 @@ Forward Compatibility를 위해 SDK는 기본적으로 알 수 없는 **출력 �
 
 Event의 의미가 바뀌면 기존 `type`을 조용히 재정의하지 않고 새 Version의 Type이나 Schema를 병행합니다. 구체적인 SemVer, 폐기 기간과 Package Release Gate는 다음 글에서 다룹니다.
 
-<h2 id="ai-section-11" style="scroll-margin-top: 72px;">11. Golden Vector는 합의된 명세에서 만든다</h2>
+## 11. Golden Vector는 합의된 명세에서 만든다
 
 Java 구현의 Serialization 결과를 저장하고 나머지 SDK가 그대로 따라가게 하면 Java의 우연한 동작이 계약이 됩니다. Golden Vector는 구현이 아니라 합의된 명세에서 생성·검토해야 합니다.
 
@@ -610,7 +588,7 @@ vectors/
 
 앞선 [폴리글랏 보안 계약 검증 글](https://aiarchitect.tistory.com/34)은 Java와 Python 사이의 서명·Canonical Byte 일치를 다뤘습니다. 이번 글의 Golden Vector는 그보다 넓은 공개 SDK 의미 적합성을 다루며, 모든 JSON에 Byte 일치를 강제하지 않는다는 점이 다릅니다.
 
-<h2 id="ai-section-12" style="scroll-margin-top: 72px;">12. 같은 Fixture를 네 SDK에 독립 실행한다</h2>
+## 12. 같은 Fixture를 네 SDK에 독립 실행한다
 
 적합성 테스트의 핵심은 하나의 Runner로 네 SDK를 흉내 내는 것이 아닙니다. 각 언어의 실제 Public API와 실제 Serializer를 사용해 같은 Contract Fixture를 실행하는 것입니다.
 
@@ -631,7 +609,7 @@ Test Server는 단순 Mock 응답만 제공하지 않고 계약된 실패 상황
 
 Kotlin Test가 JVM의 Java Model을 직접 호출하거나 Swift Test가 미리 변환한 Fixture만 읽으면 실제 경계를 검증하지 못합니다. 각 SDK가 Wire Fixture를 직접 읽고 자신의 Public Model로 변환해야 합니다.
 
-<h2 id="ai-section-13" style="scroll-margin-top: 72px;">13. Consumer Contract와 Provider 적합성을 함께 쓴다</h2>
+## 13. Consumer Contract와 Provider 적합성을 함께 쓴다
 
 Contract Testing은 하나의 도구로 끝나지 않습니다.
 
@@ -642,7 +620,6 @@ Contract Testing은 하나의 도구로 끝나지 않습니다.
 - End-to-End Test는 인증, Gateway, 배포 설정과 Network까지 확인합니다.
 
 Consumer-driven Contract는 전체 OpenAPI의 모든 조합을 증명하지 않으며, E2E Test도 모든 경계 Vector를 빠르게 검증하기 어렵습니다. 서로 대체하기보다 실패를 찾는 층을 나눕니다.
-
 
 ### 집합 비교가 내는 것은 차이가 아니라 차이 후보다
 
@@ -665,7 +642,7 @@ Consumer-driven Contract는 전체 OpenAPI의 모든 조합을 증명하지 않�
 
 부수 소득도 있었습니다. 양쪽 대조가 계기가 되어 소비자 SDK 내부의 **미사용 상수 후보**도 확인했습니다. 이것은 교차 비교 자체가 증명한 결과라기보다, 후보의 호출처를 추적하는 추가 점검에서 나온 부수 발견입니다 — 같은 상수는 그 SDK 하나만 검색해도 찾을 수 있습니다. 📌 값싼 대조의 진짜 소득은 **어디를 열어 볼지 정해 준다**는 데 있습니다.
 
-<h2 id="ai-section-14" style="scroll-margin-top: 72px;">14. CI에서 호환성과 적합성을 Release 조건으로 만든다</h2>
+## 14. CI에서 호환성과 적합성을 Release 조건으로 만든다
 
 계약 문서를 검토했어도 Package Release가 이를 우회하면 의미가 없습니다. 계약 변경과 SDK Release를 CI Gate로 연결합니다.
 
@@ -682,7 +659,6 @@ Consumer-driven Contract는 전체 OpenAPI의 모든 조합을 증명하지 않�
 7. 호환성 표와 변경 내역이 갱신된 경우에만 Release합니다.
 
 OS나 Toolchain 제약으로 모든 Runner를 한 Build Machine에서 실행하기 어렵다면 결과를 Contract Version과 Commit SHA로 묶어 집계합니다. 일부 플랫폼이 실패하거나 실행되지 않은 상태를 전체 성공으로 표시해서는 안 됩니다.
-
 
 ### 실행 실패는 빨간불로 보이지만 검사기의 사각지대는 초록불로 보인다
 
@@ -703,7 +679,7 @@ OS나 Toolchain 제약으로 모든 Runner를 한 Build Machine에서 실행하�
 
 그래서 제외 항목에는 사유만이 아니라 **사유가 무효가 되는 조건**을 함께 적는 편이 낫습니다. Release Gate의 결과표에 "검사하지 않은 영역"을 한 칸으로 항상 표시하면, 초록불이 "전부 통과"가 아니라 "정의된 범위 안에서 통과"로 읽힙니다.
 
-<h2 id="ai-section-15" style="scroll-margin-top: 72px;">15. 계약 변경의 소유자와 완료 기준을 정한다</h2>
+## 15. 계약 변경의 소유자와 완료 기준을 정한다
 
 공통 계약은 문서 파일이 아니라 여러 팀의 변경 경계입니다.
 
@@ -727,7 +703,6 @@ OS나 Toolchain 제약으로 모든 Runner를 한 Build Machine에서 실행하�
 
 “모든 SDK Build 성공”만으로는 완료가 아닙니다. 고객사가 사용 중인 계약 Version과 새 SDK의 조합이 호환성 표에 기록되고, 실제 배포 Package로 검증돼야 합니다.
 
-
 ### 계약 저장소가 없던 당시, "완료"의 정의는 체크리스트에 있었다
 
 필자는 앞서 말한 두 SDK — 소비자 쪽과 중계 쪽 — 에 한 계약 변경을 **짝으로** 반영하는 일을 반복한 적이 있습니다. 계약 저장소가 없었으므로 어느 한쪽만 바뀌면 그 순간 표면이 어긋났습니다. 그래서 도메인을 추가할 때 따라야 할 절차를 문서에 순서대로 적고, 그것을 **문서상 완료 확인 기준**으로 뒀습니다.
@@ -749,12 +724,12 @@ OS나 Toolchain 제약으로 모든 Runner를 한 Build Machine에서 실행하�
 
 📌 여기서 두 가지가 남았습니다.
 
-- **완료 기준이 절차 문서로만 존재하면 그 절차의 준수 여부는 검증되지 않습니다.** 당시 이 체크리스트는 두 저장소를 함께 검증하는 CI Gate가 아니라 사람이 확인하는 절차였습니다. 이 절이 말하는 "완료 기준"은 문서에 적히는 것으로 끝나지 않고 [14절](#ai-section-14)의 Gate로 옮겨져야 합니다.
+- **완료 기준이 절차 문서로만 존재하면 그 절차의 준수 여부는 검증되지 않습니다.** 당시 이 체크리스트는 두 저장소를 함께 검증하는 CI Gate가 아니라 사람이 확인하는 절차였습니다. 이 절이 말하는 "완료 기준"은 문서에 적히는 것으로 끝나지 않고 14절의 Gate로 옮겨져야 합니다.
 - **한 계약 변경이 손대야 하는 자리의 종류와 수가 설계 지표입니다.** 새 도메인이 여러 층을 함께 고쳐야 한다면 그 층마다 불일치 지점이 생길 수 있습니다. 계약에서 코드를 생성하는 쪽으로 가면 이 수가 줄고, 절차 문서가 필요한 이유도 함께 줄어듭니다.
 
 ⚪ 남겨 둔 항목도 함께 카탈로그에 적었습니다. 노출하지 않기로 한 표면을 **보류 사유와 함께** 목록으로 두면, 나중에 같은 표면을 다시 검토할 때 "왜 없는가"를 처음부터 조사하지 않아도 됩니다. 계약 저장소가 없는 상태에서 그 카탈로그가 사실상 **비목표 선언**의 역할을 했습니다.
 
-<h2 id="ai-section-16" style="scroll-margin-top: 72px;">16. 구현·운영 체크리스트</h2>
+## 16. 구현·운영 체크리스트
 
 ### 공통 의미와 타입
 
@@ -787,7 +762,7 @@ OS나 Toolchain 제약으로 모든 Runner를 한 Build Machine에서 실행하�
 - [ ] 호환성 Diff와 네 SDK 적합성 결과가 Release Gate인가
 - [ ] 계약 Version과 SDK Version의 호환성 표를 관리하는가
 
-<h2 id="ai-section-17" style="scroll-margin-top: 72px;">17. 마무리와 참고 자료</h2>
+## 17. 마무리와 참고 자료
 
 크로스플랫폼 SDK의 품질은 네 언어의 Method 이름을 얼마나 비슷하게 만들었는지로 결정되지 않습니다. **같은 입력과 같은 사건을 네 SDK가 같은 업무 의미로 해석하고, 그 사실을 반복 가능한 테스트로 증명하는가**가 핵심입니다.
 

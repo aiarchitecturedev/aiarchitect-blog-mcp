@@ -4,34 +4,6 @@
 
 ![공통 제품 계약이 여러 채널 SDK를 조율하고 고객사 서버 신뢰 경계를 거쳐 Private API를 보호하는 멀티플랫폼 SDK 아키텍처](assets/blog-40-multiplatform-sdk-architecture-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">작성 배경: 고객 맞춤형 채널과 프라이빗 API 사이에 안전한 경계를 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">멀티플랫폼 SDK의 핵심 문제는 코드 중복이 아니라 의미의 분기다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">전체 구조: 신뢰 경계를 지키면서 계약 코어와 플랫폼 어댑터를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">진실의 원천: 사람의 기억이 아니라 기계가 읽는 계약</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">같은 API와 같은 모양의 API는 다르다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">설정 계약: 필수값, 선택값과 기본값을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">인증 계약: 토큰을 받는 방법과 보관하는 방법을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">오류 계약: 메시지가 아니라 코드와 속성으로 판단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">비동기·취소 계약: 실행 결과뿐 아니라 중단 의미도 맞춘다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">재시도 계약: SDK마다 세 번씩 재시도하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">실시간 이벤트 계약: 연결 상태와 업무 이벤트를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">플랫폼별 공개 API는 관습적으로, 상태 의미는 동일하게</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">상태 모델: 문자열을 그대로 노출하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">버전 전략: 패키지 버전과 서버 API 버전을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">하위 호환 변경과 파괴적 변경을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">적합성 테스트: 각 SDK가 같은 계약을 구현했음을 증명한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">관측성 계약: 사용자의 로그를 오염시키지 않으면서 진단 가능하게</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">기술문서 구조: 시작하기보다 운영하기가 더 중요하다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">릴리스 파이프라인: 생성·검증·패키징·문서를 한 흐름으로 묶는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">도입 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">마무리: 고객 채널의 자유도와 프라이빗 API 보호를 함께 달성한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">상호 참조 및 공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 이미 운영 중인 API 서버와 웹 프런트 페이지, 모바일 앱이 있다고 가정해 보겠습니다. 표준 화면만 제공할 때는 이 세 구성요소만으로도 충분하지만, 고객사마다 업무 흐름·브랜드·화면 구성이 달라지면 하나의 UI를 그대로 제공하는 방식에는 한계가 생깁니다.
 
 이 문제를 해결하기 위해 고객사가 자신의 요구에 맞는 채널을 구현할 수 있도록 다음 SDK를 제공할 수 있습니다.
@@ -48,8 +20,6 @@
 이때 가장 어려운 문제는 언어가 다르다는 사실 자체가 아닙니다. 같은 기능이 플랫폼마다 조금씩 다른 이름·상태·오류·재시도 정책으로 구현되면서 **하나의 제품이 다섯 가지 의미로 갈라지는 것**이 진짜 문제입니다.
 
 이 글은 Java·Spring Boot·Kotlin·Swift·React JavaScript SDK를 함께 설계할 때, 플랫폼의 장점을 살리면서도 제품 계약을 하나로 유지하는 방법을 정리합니다. 코드와 식별자는 공개 설명을 위한 합성 예시이며, 특정 고객사·회사·비공개 제품·내부 URL·계정·토큰을 포함하지 않습니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 작성 배경: 고객 맞춤형 채널과 프라이빗 API 사이에 안전한 경계를 만든다
 
@@ -68,8 +38,6 @@
 | 제품 변경 시 통합 안정성 | 버전 호환성 표와 공통 적합성 테스트 운영 |
 
 따라서 Mobile SDK, Front SDK와 Server SDK는 서로 독립된 라이브러리가 아니라 하나의 통합 경계를 역할별로 나눈 제품군입니다. 채널 SDK는 고객사의 구현 자유도를 높이고, Server SDK는 프라이빗 API의 보안과 운영 복잡성을 캡슐화합니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. 멀티플랫폼 SDK의 핵심 문제는 코드 중복이 아니라 의미의 분기다
 
@@ -110,8 +78,6 @@ POST /v1/sessions
 
 코드는 플랫폼별로 달라도 되지만, 상태 전이·오류 분류·재시도 조건·이벤트 순서·버전 정책은 같아야 합니다.
 
-<a id="ai-section-3"></a>
-
 ## 3. 전체 구조: 신뢰 경계를 지키면서 계약 코어와 플랫폼 어댑터를 분리한다
 
 권장 구조는 **계약 코어(Contract Core)** 와 **플랫폼 어댑터(Platform Adapter)** 를 분리하는 것입니다.
@@ -130,8 +96,6 @@ POST /v1/sessions
 | Sample App | 올바른 통합 방법과 실패 복구 시연 | 내부 구현에 의존하는 우회 코드 |
 
 이 구조에서 공통 코어는 반드시 하나의 언어로 공유할 필요가 없습니다. Java, Kotlin, Swift와 JavaScript가 각각 계약을 구현해도 됩니다. 중요한 것은 **공통 계약으로부터 생성·검증되고 동일한 적합성 테스트(Conformance Test)를 통과하는가**입니다. 또한 Channel SDK에서 프라이빗 API의 내부 DTO·Endpoint·인증 방식을 그대로 노출하지 않아야 Server SDK가 실질적인 경계 역할을 할 수 있습니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. 진실의 원천: 사람의 기억이 아니라 기계가 읽는 계약
 
@@ -208,8 +172,6 @@ components:
 
 SDK는 이 의미를 각 언어의 자연스러운 타입으로 옮겨야 합니다.
 
-<a id="ai-section-5"></a>
-
 ## 5. "같은 API"와 "같은 모양의 API"는 다르다
 
 제품 계약은 같아야 하지만, 모든 언어에 똑같은 문법을 강요하면 오히려 사용하기 어려운 SDK가 됩니다.
@@ -248,8 +210,6 @@ const session = await client.createSession(request);
 | 호환성·폐기 정책 | 패키지 배포 방식 |
 
 이 구분을 문서에 명시하면 "플랫폼 일관성"을 이유로 부자연스러운 API를 만들거나, 반대로 "플랫폼 관습"을 이유로 제품 의미를 바꾸는 일을 막을 수 있습니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. 설정 계약: 필수값, 선택값과 기본값을 구분한다
 
@@ -307,8 +267,6 @@ SDK 초기화는 모든 플랫폼에서 가장 먼저 만나는 API입니다. �
 이 예시는 값 자체보다 **설정의 의미와 단위가 계약에 포함되어야 한다**는 점을 보여 줍니다. `timeout: 3`처럼 단위가 없는 설정은 플랫폼마다 초·밀리초로 다르게 해석될 수 있습니다.
 
 여기서 `endpoint`는 모든 SDK가 같은 주소를 사용한다는 뜻이 아닙니다. 채널 SDK에는 고객사 서버의 공개 통합 Endpoint를 설정하고, 프라이빗 API 주소와 서버 자격 증명은 Server SDK가 실행되는 신뢰 경계 안에서만 설정합니다. 두 설정 객체의 필드 모양이 비슷하더라도 배포 대상과 비밀 수준은 분리해야 합니다.
-
-<a id="ai-section-7"></a>
 
 ## 7. 인증 계약: 토큰을 받는 방법과 보관하는 방법을 분리한다
 
@@ -416,8 +374,6 @@ abstract final class Pkce {
 📌 인증 계약을 "흐름도"로만 관리하면 이 층위가 통째로 빠집니다. **자료형·진법·인코딩·경계값을 계약 문서의 같은 표에 넣는 편이 안전합니다.**
 
 ℹ️ 위 예는 **한 플랫폼 SDK의 인증 유틸리티 하나**에서 가져온 사례이고, 이 글이 설명하는 네 SDK 공통 계약이 구현·검증됐다는 증거는 아닙니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. 오류 계약: 메시지가 아니라 코드와 속성으로 판단한다
 
@@ -537,8 +493,6 @@ export type SdkErrorCode = number
 
 ℹ️ 위 예는 **한 SDK의 오류 상수 선언 방식**에서 가져온 사례이고, 이 글이 설명하는 네 SDK 공통 계약이 구현·검증됐다는 증거는 아닙니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 비동기·취소 계약: 실행 결과뿐 아니라 중단 의미도 맞춘다
 
 네트워크 SDK에서 비동기는 단순히 반환 타입의 차이가 아닙니다. 작업이 언제 시작되고, 누가 취소할 수 있으며, 취소 후 콜백이 더 도착하는지까지 계약에 포함됩니다.
@@ -570,8 +524,6 @@ cancelOperation()   서버의 장기 실행 작업 취소를 요청
 ```
 
 이 구분이 없으면 화면 전환으로 Coroutine이 취소되었을 뿐인데 서버의 중요한 작업까지 중단되거나, 반대로 사용자가 취소 버튼을 눌렀는데 화면만 닫히고 서버 작업은 계속될 수 있습니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. 재시도 계약: SDK마다 세 번씩 재시도하지 않는다
 
@@ -609,8 +561,6 @@ cancelOperation()   서버의 장기 실행 작업 취소를 요청
 ```
 
 SDK는 재시도 횟수와 최종 실패 원인을 관측 정보에 남겨야 합니다. 그렇지 않으면 사용자는 요청을 한 번 보냈다고 생각하지만 운영 로그에는 여러 요청이 남고, 장애 원인을 찾기 어려워집니다.
-
-<a id="ai-section-11"></a>
 
 ## 11. 실시간 이벤트 계약: 연결 상태와 업무 이벤트를 분리한다
 
@@ -662,8 +612,6 @@ WebSocket·SSE·스트리밍 SDK에서는 이벤트 이름보다 **순서·중�
 - 구독 해제와 SDK 종료 시 리소스를 어떻게 정리하는가
 
 React 공식 문서는 외부 시스템과 동기화하는 로직을 목적이 분명한 Custom Hook으로 감싸고, Effect 정리 함수에서 연결을 해제하는 패턴을 안내합니다. SDK도 같은 원칙으로 `useSessionEvents` 같은 구체적 Hook을 제공하고, 단순히 `useEffectOnce` 같은 범용 생명주기 우회 API는 제공하지 않는 편이 좋습니다.
-
-<a id="ai-section-12"></a>
 
 ## 12. 플랫폼별 공개 API는 관습적으로, 상태 의미는 동일하게
 
@@ -772,8 +720,6 @@ function SessionPanel({ sessionId }) {
 
 React Component 안에서 전송 계층을 직접 만들지 않고 Provider나 명시적 Client 인스턴스로 주입하면 테스트·서버 사이드 렌더링·다중 테넌트 구성에 대응하기 쉽습니다.
 
-<a id="ai-section-13"></a>
-
 ## 13. 상태 모델: 문자열을 그대로 노출하지 않는다
 
 서버의 상태 문자열을 SDK가 검증 없이 그대로 전달하면 서버 오타나 신규 상태가 애플리케이션 분기를 깨뜨릴 수 있습니다.
@@ -834,8 +780,6 @@ JobStatus:        CREATED · ACTIVE · COMPLETED · FAILED
 
 SDK가 서버를 대신해 업무 상태를 결정해서는 안 되지만, 명백히 불가능한 전이를 감지해 관측 로그와 진단 이벤트를 남길 수는 있습니다.
 
-<a id="ai-section-14"></a>
-
 ## 14. 버전 전략: 패키지 버전과 서버 API 버전을 분리한다
 
 멀티플랫폼 환경에는 최소 세 가지 버전이 존재합니다.
@@ -870,8 +814,6 @@ Semantic Versioning은 공개 API를 먼저 선언하고 다음 규칙을 사용
 
 중요한 것은 버전 번호를 맞추는 것이 아니라 **어떤 계약 버전을 구현하고 어떤 서버 범위와 호환되는지 선언하는 것**입니다.
 
-<a id="ai-section-15"></a>
-
 ## 15. 하위 호환 변경과 파괴적 변경을 구분한다
 
 | 변경 | 일반적 판단 | 주의점 |
@@ -887,8 +829,6 @@ Semantic Versioning은 공개 API를 먼저 선언하고 다음 규칙을 사용
 | 기본 타임아웃 축소 | 행동 변화 | 릴리스 노트와 영향 검증 |
 
 특히 "새 Enum 값을 추가하는 것은 하위 호환"이라는 판단은 수신 SDK가 미지의 값을 처리할 수 있을 때만 맞습니다. 코드 생성기의 기본 설정이 미지 Enum을 파싱 오류로 처리한다면 서버의 단순 추가가 모든 구버전 앱의 장애가 됩니다.
-
-<a id="ai-section-16"></a>
 
 ## 16. 적합성 테스트: 각 SDK가 같은 계약을 구현했음을 증명한다
 
@@ -937,8 +877,6 @@ conformance/
 
 적합성 테스트 결과를 릴리스 조건으로 사용하면 "Java SDK에서는 되는데 Swift SDK에서는 다르게 동작한다"는 문제를 배포 전에 발견할 수 있습니다.
 
-<a id="ai-section-17"></a>
-
 ## 17. 관측성 계약: 사용자의 로그를 오염시키지 않으면서 진단 가능하게
 
 SDK는 애플리케이션 내부에서 동작하므로 로그를 너무 많이 남기면 사용자 시스템을 오염시키고, 너무 적게 남기면 장애를 진단할 수 없습니다.
@@ -968,8 +906,6 @@ SDK는 애플리케이션 내부에서 동작하므로 로그를 너무 많이 �
 - 서버 비밀키와 내부 Stack Trace
 
 SDK는 자체 로거를 강제로 설치하기보다 플랫폼의 로깅·Telemetry 어댑터를 주입받도록 설계하는 편이 좋습니다. 호출자는 로그 수준과 수집 대상을 통제할 수 있어야 합니다.
-
-<a id="ai-section-18"></a>
 
 ## 18. 기술문서 구조: 시작하기보다 운영하기가 더 중요하다
 
@@ -1002,8 +938,6 @@ Quick Start만 있고 실패·종료·마이그레이션 문서가 없으면 데
 - SDK 업데이트 전에 어떤 호환성 표를 확인하는가
 - 로그와 오류에서 고객 지원에 전달할 식별자는 무엇인가
 
-<a id="ai-section-19"></a>
-
 ## 19. 릴리스 파이프라인: 생성·검증·패키징·문서를 한 흐름으로 묶는다
 
 권장 릴리스 흐름은 다음과 같습니다.
@@ -1011,8 +945,6 @@ Quick Start만 있고 실패·종료·마이그레이션 문서가 없으면 데
 ![계약 검증에서 SDK 생성·공통 적합성 테스트를 거쳐 샘플 통합·서명·배포·호환성 문서화까지 이어지고 운영 피드백이 다음 계약 변경으로 돌아오는 릴리스 흐름](assets/blog-40-release-pipeline.png)
 
 계약 변경과 SDK 릴리스를 같은 Pull Request에 모두 넣어야 한다는 뜻은 아닙니다. 대신 계약이 바뀌었을 때 영향받는 SDK와 호환성 테스트가 자동으로 식별되고, 아직 준비되지 않은 플랫폼은 호환성 표에서 명확히 제외되어야 합니다.
-
-<a id="ai-section-20"></a>
 
 ## 20. 도입 체크리스트
 
@@ -1050,8 +982,6 @@ Quick Start만 있고 실패·종료·마이그레이션 문서가 없으면 데
 - [ ] Migration Guide와 Compatibility Matrix가 함께 배포된다.
 - [ ] 토큰·개인정보·원문 Payload가 기본 로그에 남지 않는다.
 
-<a id="ai-section-21"></a>
-
 ## 21. 마무리: 고객 채널의 자유도와 프라이빗 API 보호를 함께 달성한다
 
 Java, Kotlin, Swift와 JavaScript는 비동기 모델·오류 표현·생명주기·패키지 생태계가 다릅니다. 이 차이를 억지로 감추면 각 언어에서 사용하기 불편한 SDK가 됩니다. 반대로 각 플랫폼 팀이 제품 의미까지 자유롭게 해석하면 상태·오류·재시도·이벤트가 서로 달라집니다.
@@ -1066,8 +996,6 @@ Java, Kotlin, Swift와 JavaScript는 비동기 모델·오류 표현·생명주�
 이때 Mobile·Front SDK는 고객 채널의 구현 자유도를 제공하고, Java·Spring Boot Server SDK는 직접 접근할 수 없는 프라이빗 API와 고객사 시스템 사이의 통제된 연결을 담당합니다. 이 두 축을 공통 계약과 적합성 테스트로 묶어야 사용자 경험, 보안 경계와 운영 안정성을 함께 유지할 수 있습니다.
 
 다음 글에서는 이 구조를 서버 측에서 구체화해, 프라이빗 API 연결을 담당하는 Java SDK의 모듈 구성·Client 수명·동기/비동기 API·전송 계층·테스트 경계를 살펴봅니다.
-
-<a id="ai-section-22"></a>
 
 ## 22. 상호 참조 및 공식 참고 자료
 

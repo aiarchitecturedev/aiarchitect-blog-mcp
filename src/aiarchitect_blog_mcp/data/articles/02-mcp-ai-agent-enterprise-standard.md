@@ -12,23 +12,6 @@ MCP(Model Context Protocol)는 바로 이 연결 방식을 표준화한 공개 �
 
 흔히 MCP를 ‘AI 애플리케이션을 위한 USB-C’에 비유합니다. 연결 대상마다 전용 어댑터를 새로 설계하는 대신, 공통 규격으로 데이터와 도구를 연결한다는 의미입니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP가 해결하려는 문제</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Host, Client, Server의 역할</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tools, Resources, Prompts</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP 요청은 어떻게 처리되는가</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">REST API와 MCP는 무엇이 다른가</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기업용 MCP에서 더 중요한 것</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP가 적합한 경우와 그렇지 않은 경우</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-<a id="ai-section-1"></a>
-
 ## 1. MCP가 해결하려는 문제
 
 MCP가 없다고 해서 AI와 업무 시스템을 연결할 수 없는 것은 아닙니다. 기존 REST API나 SDK를 직접 연동해도 됩니다. 문제는 AI 애플리케이션과 외부 시스템이 늘어날수록 통합 조합이 빠르게 복잡해진다는 점입니다.
@@ -68,8 +51,6 @@ flowchart LR
 
 외부 시스템이 MCP Server로 기능을 제공하면, MCP를 지원하는 여러 AI 애플리케이션에서 같은 방식으로 연결할 수 있습니다. 다만 MCP가 기존 API를 없애는 것은 아닙니다. 대부분의 기업 환경에서는 기존 API와 업무 로직을 유지하고, 그 앞에 AI가 이해할 수 있는 MCP 인터페이스를 추가하게 됩니다.
 
-<a id="ai-section-2"></a>
-
 ## 2. Host, Client, Server의 역할
 
 MCP는 크게 세 구성요소로 이해하면 쉽습니다.
@@ -87,8 +68,6 @@ Host 내부에서 특정 MCP Server와 연결을 담당하는 구성요소입니
 외부 데이터와 업무 기능을 MCP 규격으로 노출하는 프로그램입니다. 로컬 PC에서 실행될 수도 있고, 기업의 원격 서버나 SaaS 환경에서 운영될 수도 있습니다.
 
 여기서 중요한 점은 MCP Server가 AI 모델 자체가 아니라는 것입니다. Server는 자신이 담당하는 데이터와 기능을 명확한 계약으로 제공하고, 실제 추론과 전체 작업 조정은 Host가 담당합니다.
-
-<a id="ai-section-3"></a>
 
 ## 3. Tools, Resources, Prompts
 
@@ -130,8 +109,6 @@ Resource는 파일, 문서, 레코드처럼 모델이 읽고 판단에 사용할
 ### Prompts: 재사용 가능한 작업 방식
 
 Prompt는 특정 업무를 일관된 순서와 형식으로 수행하도록 돕는 템플릿입니다. 조직의 분석 절차나 결과 형식을 재사용 가능한 형태로 제공할 때 유용합니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. MCP 요청은 어떻게 처리되는가
 
@@ -182,8 +159,6 @@ MCP의 데이터 계층은 JSON-RPC 2.0을 사용합니다. 전송 방식은 로
 
 > 참고: `2025-11-25` 이전 방식에 익숙하다면 주의해야 합니다. `2026-07-28` 사양에서는 `initialize` 핸드셰이크와 `Mcp-Session-Id` 기반 프로토콜 세션이 제거됐습니다. 요청마다 필요한 버전과 기능 정보를 전달하는 stateless 구조가 도입되어 일반적인 HTTP 인프라에서 수평 확장이 쉬워졌습니다.
 
-<a id="ai-section-5"></a>
-
 ## 5. REST API와 MCP는 무엇이 다른가
 
 REST API와 MCP는 경쟁 관계가 아닙니다.
@@ -211,8 +186,6 @@ MCP Host / Client
 ```
 
 기존 업무 API가 잘 설계돼 있다면 다시 만들 필요가 없습니다. MCP Server는 기존 API를 호출하면서 AI가 사용할 수 있는 도구 이름, 입력 스키마, 권한 경계, 결과 형식을 제공하면 됩니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. 기업용 MCP에서 더 중요한 것
 
@@ -258,8 +231,6 @@ MCP Host / Client
 
 📌 이 경험에서 얻은 운영 원칙은 **모델 식별자를 운영 설정에 명시하고 코드 기본값에만 의존하지 않는 것**입니다. 모델 식별자는 우리가 통제하지 않는 외부 값이며, 공급자가 변경하거나 은퇴시킬 수 있습니다. 이번에는 그 값을 쓰던 요약 기능이 멈췄습니다.
 
-<a id="ai-section-7"></a>
-
 ## 7. MCP가 적합한 경우와 그렇지 않은 경우
 
 MCP는 다음 상황에서 특히 효과적입니다.
@@ -272,8 +243,6 @@ MCP는 다음 상황에서 특히 효과적입니다.
 반대로 단일 애플리케이션이 단일 API를 호출하고 인터페이스가 거의 변하지 않는다면 직접 연동이 더 단순할 수 있습니다. 실시간 대용량 스트리밍이나 매우 낮은 지연이 핵심인 데이터 경로도 별도의 전용 프로토콜이 더 적합할 수 있습니다.
 
 MCP를 도입하는 목적은 유행하는 기술을 하나 더 추가하는 데 있지 않습니다. AI와 업무 시스템 사이의 계약을 표준화하고, 연결 기능을 재사용 가능한 통합 자산으로 만드는 데 있습니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. 마무리
 
@@ -288,8 +257,6 @@ MCP는 AI 모델의 성능을 높이는 기술이라기보다 AI가 실제 시�
 다음 글에서는 이 구조를 바탕으로 **기업용 MCP Server를 설계할 때 Tool을 어떻게 나누고 이름과 입력 스키마를 어떻게 정의해야 하는지** 구체적인 사례와 함께 살펴보겠습니다.
 
 ---
-
-<a id="ai-section-9"></a>
 
 ## 9. 참고 자료
 

@@ -4,33 +4,6 @@ AI Agent 장애는 로그를 모아 놓아도 원인이 잘 보이지 않습니�
 
 ![AI Agent 요청 경로의 Trace와 운영·품질·감사 신호가 평가 및 안전한 배포 피드백 루프로 연결되는 관측성 아키텍처](assets/blog-72-ai-agent-observability-trace-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">관측성은 “로그를 많이 남기는 것”이 아니다</a></li>
-<li><a href="#ai-section-2">하나의 요청을 Trace Tree로 먼저 그린다</a></li>
-<li><a href="#ai-section-3">Trace Context와 업무 식별자를 구분한다</a></li>
-<li><a href="#ai-section-4">Java Gateway에서 Python Agent까지 Context를 전파한다</a></li>
-<li><a href="#ai-section-5">MCP Tool 호출은 _meta로 Trace를 이어 간다</a></li>
-<li><a href="#ai-section-6">Agent Span은 계획·검색·모델·Tool을 분리한다</a></li>
-<li><a href="#ai-section-7">RAG는 “검색 성공”과 “답변 근거 충분”을 구분한다</a></li>
-<li><a href="#ai-section-8">Model 호출은 요청·응답 Version과 비용 신호를 남긴다</a></li>
-<li><a href="#ai-section-9">“실행 오류”와 “품질 실패”를 같은 ERROR로 표시하지 않는다</a></li>
-<li><a href="#ai-section-10">Trace와 Audit Trail을 연결하되 대체하지 않는다</a></li>
-<li><a href="#ai-section-11">민감정보는 “수집 후 Masking”보다 “기본 미수집”이 우선이다</a></li>
-<li><a href="#ai-section-12">Baggage에는 권한과 개인정보를 싣지 않는다</a></li>
-<li><a href="#ai-section-13">Sampling은 무작위 비율 하나로 끝내지 않는다</a></li>
-<li><a href="#ai-section-14">Metric은 지연·행동·품질·안전을 분리한다</a></li>
-<li><a href="#ai-section-15">운영 Trace를 회귀 평가로 되돌리는 폐쇄 루프를 만든다</a></li>
-<li><a href="#ai-section-16">합성 장애 사례로 Trace를 읽어 본다</a></li>
-<li><a href="#ai-section-17">단계적으로 도입한다</a></li>
-<li><a href="#ai-section-18">흔한 안티패턴</a></li>
-<li><a href="#ai-section-19">운영 체크리스트</a></li>
-<li><a href="#ai-section-20">마무리</a></li>
-<li><a href="#ai-section-21">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 사용자가 AI Agent에게 요청합니다.
 
 ```text

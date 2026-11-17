@@ -4,25 +4,6 @@
 
 ![기술 블로그 문서가 self-contained Package와 읽기 전용 MCP Gateway로 배포되고 AI Client 결과가 원문 페이지로 다시 연결되는 구조](assets/blog-63-blog-mcp-publication-hero.png)
 
-<div id="aiarchitect-toc" style="background-color: #f6f9fc; color: #263746;">
-<p style="color: #263746;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555;">
-<li style="color: #555555;"><a href="#ai-section-1">먼저 실행해 보기</a></li>
-<li style="color: #555555;"><a href="#ai-section-2">왜 블로그를 MCP 서버로 만드는가</a></li>
-<li style="color: #555555;"><a href="#ai-section-3">설계 원칙 — 작게, 읽기 전용으로, 결정적으로</a></li>
-<li style="color: #555555;"><a href="#ai-section-4">다섯 개 도구로 탐색 흐름 만들기</a></li>
-<li style="color: #555555;"><a href="#ai-section-5">임베딩 없이 시작하는 결정적 검색</a></li>
-<li style="color: #555555;"><a href="#ai-section-6">원문 URL은 프롬프트가 아니라 데이터에 넣는다</a></li>
-<li style="color: #555555;"><a href="#ai-section-7">미게시 글은 홈으로 보내지 말고 fail-closed로 제외한다</a></li>
-<li style="color: #555555;"><a href="#ai-section-8">콘텐츠 스냅샷을 self-contained 패키지로 만들기</a></li>
-<li style="color: #555555;"><a href="#ai-section-9">코드와 콘텐츠 라이선스를 분리한다</a></li>
-<li style="color: #555555;"><a href="#ai-section-10">테스트는 프로토콜보다 배포 아티팩트까지 본다</a></li>
-<li style="color: #555555;"><a href="#ai-section-11">이 구현에서 얻은 교훈</a></li>
-<li style="color: #555555;"><a href="#ai-section-12">참고 자료</a></li>
-</ol>
-</div>
-
-
 기술 블로그를 오래 쓰면 글은 쌓이지만, AI 에이전트가 그 글을 정확히 찾고 원문까지 연결하는 경로는 저절로 생기지 않습니다. 검색 엔진에 색인되기를 기다리는 대신, 공개 콘텐츠를 **모델 컨텍스트 프로토콜(Model Context Protocol, MCP)** 도구로 직접 제공하면 어떨까요?
 
 저는 이 블로그의 공개 글을 목록·검색·본문 조회가 가능한 **읽기 전용 MCP 서버**로 만들고, 공개 저장소와 Python 패키지로 배포했습니다. 이 글을 개정한 2026년 8월 11일 기준으로 블로그에는 공개 글 78편이 있고, 공개 패키지 `aiarchitect-blog-mcp` v0.1.1에는 검증된 69편의 스냅샷이 들어 있습니다. 블로그 전체 편수와 패키지 편수가 다른 이유는 새 글을 곧바로 포함하지 않고, URL·메타데이터·배포 아티팩트 검증을 통과한 글만 릴리스하기 때문입니다.

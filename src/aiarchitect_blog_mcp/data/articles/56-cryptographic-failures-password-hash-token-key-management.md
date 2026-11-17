@@ -4,29 +4,6 @@
 
 ![Password Hash·Token 검증·AEAD·Versioned Key Rotation을 통과한 데이터와 격리된 암호 실패를 대비한 Cryptographic Failures 방어 수명주기](assets/blog-56-cryptographic-lifecycle-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">먼저 보호 목표를 구분한다</a></li>
-<li><a href="#ai-section-2">A04는 Algorithm보다 Key·Randomness·오류 처리까지 본다</a></li>
-<li><a href="#ai-section-3">Password는 암호화하지 않고 느리게 Hash한다</a></li>
-<li><a href="#ai-section-4">Password 정책과 Hash 정책을 혼동하지 않는다</a></li>
-<li><a href="#ai-section-5">JWT Signature는 암호화가 아니다</a></li>
-<li><a href="#ai-section-6">Access Token과 Refresh Token의 수명주기를 분리한다</a></li>
-<li><a href="#ai-section-7">업무 데이터는 AEAD로 기밀성과 무결성을 함께 보호한다</a></li>
-<li><a href="#ai-section-8">Key를 데이터와 같은 곳에 평문으로 두지 않는다</a></li>
-<li><a href="#ai-section-9">Rotation은 새 Key 생성이 아니라 데이터 전환 과정이다</a></li>
-<li><a href="#ai-section-10">복호화 실패를 Oracle로 만들지 않는다</a></li>
-<li><a href="#ai-section-11">TLS 검증을 끄면 Encryption은 위장에 불과하다</a></li>
-<li><a href="#ai-section-12">Crypto Agility는 임의 Algorithm 선택 기능이 아니다</a></li>
-<li><a href="#ai-section-13">Test와 배포 Gate로 암호 정책을 증명한다</a></li>
-<li><a href="#ai-section-14">침해 대응은 Key 종류마다 달라야 한다</a></li>
-<li><a href="#ai-section-15">실무 체크리스트</a></li>
-<li><a href="#ai-section-16">마무리</a></li>
-<li><a href="#ai-section-17">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 강한 Algorithm 이름을 하나 선택했다고 암호 설계가 끝나는 것은 아닙니다. Password를 AES로 암호화하거나, JWT Signature만 확인하고 Audience를 검증하지 않거나, AES-GCM에서 같은 Key와 IV를 재사용하면 표면적으로는 암호화를 사용해도 보호 목표를 달성하지 못합니다.
 
 Cryptographic Failures는 다음과 같은 설계·구현·운영 실패를 함께 포함합니다.

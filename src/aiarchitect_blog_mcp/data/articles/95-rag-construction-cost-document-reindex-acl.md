@@ -6,28 +6,6 @@ RAG 구축 비용을 물으면 사용자 수와 문서 수부터 묻는 경우�
 
 ![기업 RAG 구축에서 문서 처리, 청킹과 임베딩, 재색인, 권한 동기화, 벡터 저장과 평가가 각각 비용을 만드는 구조](assets/blog-95-rag-cost-drivers-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">RAG 비용은 문서에서 시작해 반복 작업에서 커진다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">견적 전에 문서 재고를 숫자로 만든다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">문서 형식과 품질이 전처리 원가를 바꾼다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">청킹과 임베딩은 파일이 아니라 Chunk 수로 계산한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">재색인 비용은 변경률과 영향 범위가 결정한다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">벡터 저장소는 용량과 검색 경로를 함께 산정한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">문서 단위 권한은 저장뿐 아니라 동기화 비용을 만든다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">평가셋은 선택 항목이 아니라 품질을 증명하는 원가다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 한 건의 운영비를 실행 경로로 나눈다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">PoC·Pilot·운영은 서로 다른 범위로 견적한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">예산이 제한되면 품질 기준이 아니라 범위를 줄인다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">견적 입력표를 채워 같은 조건으로 비교한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">제안서에서 비용 경계를 확인한다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-</ol>
-</blockquote>
-
-<a id="ai-section-1"></a>
-
 ## 1. RAG 비용은 문서에서 시작해 반복 작업에서 커진다
 
 일반 AI 프로젝트 견적에는 기획, 화면, 시스템 통합, 보안, 인프라, 운영 인수처럼 RAG가 아니어도 필요한 항목이 포함됩니다. 이 전체 구조는 [AI 프로젝트 견적 10개 산정 항목](https://aiarchitect.tistory.com/21)에서 다뤘습니다. 이 글에서는 그중 RAG에만 생기는 비용을 분리합니다.
@@ -52,8 +30,6 @@ RAG 비용은 다음 두 묶음으로 나누면 빠진 항목이 보입니다.
 
 ![RAG 비용을 최초 구축비와 반복 운영비로 나누고 수량, 단위 작업, 빈도를 하나의 기준선으로 연결한 도식](assets/blog-95-rag-cost-model.png)
 
-<a id="ai-section-2"></a>
-
 ## 2. 견적 전에 문서 재고를 숫자로 만든다
 
 문서 수는 시작점일 뿐입니다. 견적에 쓸 문서 재고는 **어디에 있고, 어떤 형식이며, 얼마나 바뀌고, 누가 볼 수 있는지**까지 포함해야 합니다.
@@ -75,8 +51,6 @@ RAG 비용은 다음 두 묶음으로 나누면 빠진 항목이 보입니다.
 
 문서 재고표의 목적은 숫자를 크게 만드는 것이 아닙니다. **자동 처리 가능한 범위와 사람의 검수가 필요한 범위를 분리하는 것**입니다.
 
-<a id="ai-section-3"></a>
-
 ## 3. 문서 형식과 품질이 전처리 원가를 바꾼다
 
 텍스트가 들어 있는 PDF와 종이를 스캔한 PDF는 확장자가 같아도 다른 작업입니다. 전자는 본문을 바로 추출할 수 있지만, 후자는 OCR과 회전·기울기 보정, 표 구조 복원이 필요할 수 있습니다. 이미지가 많은 문서에서는 캡션과 본문의 관계를 보존해야 하고, 스프레드시트는 시트·행·열의 위치를 출처로 되짚을 수 있어야 합니다.
@@ -96,8 +70,6 @@ RAG 비용은 다음 두 묶음으로 나누면 빠진 항목이 보입니다.
 
 여기서 검수율도 정해야 합니다. 전건 검수가 필요한 규제 문서와 표본 검수로 충분한 사내 FAQ를 같은 조건으로 계산하면 안 됩니다. 오류가 답변 위험으로 이어지는 정도에 따라 검수 범위를 정합니다.
 
-<a id="ai-section-4"></a>
-
 ## 4. 청킹과 임베딩은 파일이 아니라 Chunk 수로 계산한다
 
 벡터 색인에 들어가는 단위는 파일이 아니라 대개 Chunk입니다. 파일 한 건이 몇 개의 Chunk로 나뉘는지에 따라 임베딩 호출량, Index Record 수, Metadata 용량, 재색인 범위가 함께 바뀝니다.
@@ -116,8 +88,6 @@ RAG 비용은 다음 두 묶음으로 나누면 빠진 항목이 보입니다.
 한국어가 항상 더 비싸다고 단정할 수는 없습니다. 토큰 수는 선택한 Tokenizer와 문서 내용에 따라 달라지고, Embedding 비용은 제품에 따라 Token·문자·호출·Compute 시간 등 다른 단위를 사용할 수 있습니다. 예를 들어 [OpenAI Embedding 공식 문서](https://developers.openai.com/api/docs/guides/embeddings)는 사용량을 입력 Token으로 표시하고 Vector 차원을 별도 Parameter로 조정하지만, 이 방식을 다른 제품에 그대로 적용할 수는 없습니다. 한국어·영어·혼합 문서 표본을 실제 후보 모델로 계측한 값을 사용해야 합니다.
 
 Chunk를 작게 만들면 무조건 좋은 것도 아닙니다. Record가 늘어 저장·쓰기·검색 범위가 커질 수 있고, 지나치게 크면 필요한 근거를 정밀하게 찾기 어려워질 수 있습니다. [한국어 문서 청킹 설계](https://aiarchitect.tistory.com/32)처럼 품질 실험과 비용 계산을 같은 표본에서 수행해야 합니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. 재색인 비용은 변경률과 영향 범위가 결정한다
 
@@ -144,8 +114,6 @@ Chunk를 작게 만들면 무조건 좋은 것도 아닙니다. Record가 늘어
 
 같은 문서를 다시 넣어도 중복 Chunk가 쌓이지 않게 하는 방법은 [RAG 멱등 인덱싱과 중복 Chunk 방지](https://aiarchitect.tistory.com/9)에서 자세히 다뤘습니다.
 
-<a id="ai-section-6"></a>
-
 ## 6. 벡터 저장소는 용량과 검색 경로를 함께 산정한다
 
 Vector의 개수만으로 저장소 비용을 계산하면 Metadata를 놓칩니다. 기업 RAG의 Record에는 Vector 외에도 원문 ID, Chunk ID, 문서 버전, 출처 위치, Tenant, 권한 주체, 보존 상태가 들어갈 수 있습니다.
@@ -168,8 +136,6 @@ Vector의 개수만으로 저장소 비용을 계산하면 Metadata를 놓칩니
 
 후보마다 과금 단위가 다르므로 특정 업체의 단가를 전체 시장의 기준처럼 쓰면 안 됩니다. 동일한 **Record 수·평균 Metadata 크기·Vector 차원·월 Query 수·검색 범위·복제 조건**을 주고 견적을 받아야 합니다.
 
-<a id="ai-section-7"></a>
-
 ## 7. 문서 단위 권한은 저장뿐 아니라 동기화 비용을 만든다
 
 문서 단위 권한을 넣으면 Metadata가 늘어납니다. 실무에서 놓치기 쉬운 것은 Byte보다 **원천 권한을 가져오고, Chunk에 투영하고, 바뀐 권한을 제때 반영하고, 실제로 차단되는지 시험하는 작업**입니다.
@@ -188,8 +154,6 @@ Vector의 개수만으로 저장소 비용을 계산하면 Metadata를 놓칩니
 견적 입력에는 **권한 유형 수, 문서당 평균·상위 ACL 항목 수, 사용자·그룹 수, 월 권한 변경 수, 권한 회수 반영 목표 시간, 차단 시험 Case 수**를 넣습니다. 개인별 ACL이 지나치게 많다면 Group 중심으로 단순화할 수 있는지도 함께 검토합니다.
 
 권한 없는 문서가 모델 입력에 들어가기 전에 차단되어야 한다는 설계 원칙과 격리 패턴은 [멀티테넌트 RAG 보안](https://aiarchitect.tistory.com/25)에 정리했습니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. 평가셋은 선택 항목이 아니라 품질을 증명하는 원가다
 
@@ -213,8 +177,6 @@ RAG를 구축했다는 말은 검색 화면이 열렸다는 뜻이 아닙니다.
 
 평가셋을 빼면 견적은 내려갑니다. 대신 품질이 좋아졌는지, 변경 뒤 나빠졌는지, 인수할 수 있는지를 판정할 수 없게 됩니다. 그러므로 평가를 없애기보다 **업무 위험과 대표 오류를 덮는 최소 평가 범위**를 먼저 합의해야 합니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 질문 한 건의 운영비를 실행 경로로 나눈다
 
 사용자 질문 한 건이 곧 모델 호출 한 번은 아닙니다. RAG 질문은 Query Embedding, 검색, Metadata Filter, 재순위화, Context 조립, 생성, 출처 검증을 거칠 수 있습니다. 복합 질문은 검색을 여러 번 실행하거나 실패 뒤 대체 경로를 사용할 수 있습니다.
@@ -234,8 +196,6 @@ RAG를 구축했다는 말은 검색 화면이 열렸다는 뜻이 아닙니다.
 
 Cache는 비용을 줄일 수 있지만 권한과 최신성 조건이 Key에 들어가야 합니다. 다른 사용자의 결과를 재사용하거나 바뀐 문서의 답을 오래 유지하면 비용 절감이 권한·품질 사고로 바뀝니다. Cache 적중률뿐 아니라 무효화 조건을 견적 범위에 포함합니다.
 
-<a id="ai-section-10"></a>
-
 ## 10. PoC·Pilot·운영은 서로 다른 범위로 견적한다
 
 PoC는 운영 시스템의 할인판이 아닙니다. 기술적으로 가능한지 확인하는 단계와 실제 조직의 권한·변경·부하를 확인하는 단계, 지속 운영 책임을 인수하는 단계는 질문이 다릅니다.
@@ -251,8 +211,6 @@ PoC는 운영 시스템의 할인판이 아닙니다. 기술적으로 가능한�
 PoC 견적이 낮은 이유는 같은 운영 시스템을 싸게 제공해서가 아니라 범위를 의도적으로 미뤘기 때문입니다. 무엇을 미뤘는지 적지 않으면 PoC 뒤의 본 구축 견적이 갑자기 커진 것처럼 보입니다.
 
 각 단계에는 종료 조건이 필요합니다. PoC에서 검색 품질과 실패 범위를 확인하지 못하면 Pilot으로 가지 않고, Pilot에서 권한 회수·삭제·변경 반영과 비용 증가 곡선을 확인하지 못하면 운영 범위를 확정하지 않습니다. 측정 가능한 인수 문장을 만드는 방법은 [AI 프로젝트 성공 기준과 인수 Gate](https://aiarchitect.tistory.com/20)를 참고하십시오.
-
-<a id="ai-section-11"></a>
 
 ## 11. 예산이 제한되면 품질 기준이 아니라 범위를 줄인다
 
@@ -274,8 +232,6 @@ PoC 견적이 낮은 이유는 같은 운영 시스템을 싸게 제공해서가
 6. 품질과 권한 기준을 통과한 뒤 사용자와 원천을 늘립니다.
 
 이렇게 하면 줄인 범위와 남긴 위험이 보입니다. 반대로 "RAG 전체"를 작은 고정 금액에 맞추면 어느 항목이 빠졌는지 알기 어렵습니다.
-
-<a id="ai-section-12"></a>
 
 ## 12. 견적 입력표를 채워 같은 조건으로 비교한다
 
@@ -300,8 +256,6 @@ PoC 견적이 낮은 이유는 같은 운영 시스템을 싸게 제공해서가
 
 견적서에는 각 비용 항목이 어떤 입력값과 연결되는지 표시하게 합니다. 예를 들어 `초기 색인`이라는 한 줄보다 **대상 문서 등급·예상 Chunk 수·Embedding Model·전체 또는 증분 처리 범위·실패 재처리 포함 여부**가 보여야 합니다.
 
-<a id="ai-section-13"></a>
-
 ## 13. 제안서에서 비용 경계를 확인한다
 
 총액보다 먼저 포함·제외 조건을 확인합니다. 특히 다음 질문에 답이 있어야 합니다.
@@ -319,8 +273,6 @@ PoC 견적이 낮은 이유는 같은 운영 시스템을 싸게 제공해서가
 업체를 비교할 때는 이 글의 입력표로 비용 기준을 맞추고, [RAG 구축 업체 선정 8가지 질문](https://aiarchitect.tistory.com/94)의 증빙·시험 기준으로 답변을 검증하십시오. BLOG-95가 **얼마나 필요한가**를 계산한다면 BLOG-94는 **그 범위를 실제로 수행할 수 있는가**를 확인합니다.
 
 가격이 낮은 제안이 틀렸다는 뜻은 아닙니다. 표본 문서가 깨끗하고 변경이 드물며 권한이 단순하고 기존 Platform을 재사용할 수 있다면 합리적으로 낮아질 수 있습니다. 확인할 것은 숫자의 크기가 아니라 **같은 범위를 계산했는가**입니다.
-
-<a id="ai-section-14"></a>
 
 ## 14. 마무리
 

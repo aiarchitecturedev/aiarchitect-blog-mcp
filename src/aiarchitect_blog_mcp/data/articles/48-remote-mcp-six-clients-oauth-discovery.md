@@ -4,24 +4,6 @@
 
 ![여러 AI 클라이언트가 하나의 원격 MCP 서비스 코어와 분리된 인가 경로로 연결되는 구조](assets/blog-48-remote-mcp-multi-client-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">개요: 서버는 하나, 클라이언트는 여럿</a></li>
-<li><a href="#ai-section-2">왜 URL 중심으로 되는가: 메타데이터 디스커버리와 인가 흐름</a></li>
-<li><a href="#ai-section-3">공통 인증 흐름 — 한 번 이해하면 나머지가 같다</a></li>
-<li><a href="#ai-section-4">등록의 세 가지 형태</a></li>
-<li><a href="#ai-section-5">형태 A — 설정 파일형 CLI 등록</a></li>
-<li><a href="#ai-section-6">형태 B — 웹·데스크톱 커스텀 커넥터</a></li>
-<li><a href="#ai-section-7">형태 C — stdio 브리지(원격 HTTP를 로컬 stdio로 중계)</a></li>
-<li><a href="#ai-section-8">원격에서 로컬 파일 업로드 — 사전 서명 티켓</a></li>
-<li><a href="#ai-section-9">운영 공통 — 도구 카탈로그·ID 체인·재시도 코드</a></li>
-<li><a href="#ai-section-10">함정과 트러블슈팅</a></li>
-<li><a href="#ai-section-11">체크리스트와 마무리</a></li>
-<li><a href="#ai-section-12">참고 자료</a></li>
-</ol>
-</blockquote>
-
 내부 기능을 **원격 MCP 서버 (Remote MCP Server, Streamable HTTP)** 로 노출하면, 하나의 서버를 여러 AI 클라이언트가 자연어로 함께 쓸 수 있습니다. Codex, Claude Code, claude.ai, Claude Desktop, ChatGPT — 클라이언트는 제각각이지만 서버는 하나입니다(같은 제품이라도 웹·데스크톱 표면이 커넥터를 공유하기도 합니다). 그런데 막상 붙이려고 하면 "클라이언트마다 등록 방법이 다른데?"라는 벽에 부딪힙니다.
 
 좋은 소식은, **클라이언트와 서버가 호환되는 [MCP Authorization 사양](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization)과 클라이언트 등록 방식을 지원하면, 등록은 대체로 URL 중심으로 수렴**한다는 점입니다. 클라이언트가 서버에 처음 접속하면 **메타데이터 디스커버리 (Discovery)** 가 작동해, 어느 인가 서버로 로그인해야 하는지를 클라이언트가 알아냅니다. 이 글은 그 **공통 인증 흐름을 한 번** 이해한 뒤, **여러 클라이언트의 등록**을 세 가지 형태로 묶어 정리하고, 원격 특유의 파일 업로드와 운영 공통까지 다룹니다.

@@ -4,41 +4,6 @@
 
 ![여러 AI Agent Candidate 경로가 Router와 정책 Gate를 통과해 하나의 검증된 실행 Route로 선택되는 구조](assets/blog-78-enterprise-agent-router-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">Agent Router는 Registry·Gateway·Orchestrator와 다르다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">Discovery·Selection·Delivery를 세 단계로 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">참조 아키텍처는 후보 생성과 실행을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">Routing Request를 검증 가능한 계약으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">Registry는 후보를 반환할 뿐 승자를 고르지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">Agent Card는 Capability Claim이지 품질 증명이 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">공개·확장 Card와 서명·Version·Cache를 함께 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">Hard Gate를 Score보다 먼저 적용한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">Tenant Routing과 Authorization을 혼동하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">Protocol·Mode·Extension·데이터 경계를 검사한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">Candidate Score는 설명 가능한 항목으로 분해한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">품질 평가는 요청 유형별로 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">지연·비용·가용성은 같은 관측 창으로 비교한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">결정적 Tie-break와 안전한 탐색을 함께 설계한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">Plan-time Selection과 Dispatch-time Revalidation을 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">Route Decision Record로 선택 근거를 남긴다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">Stable·Canary·Shadow Routing을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">Fallback은 같은 Skill의 무조건 재호출이 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">Sticky Routing·Capacity·Circuit Breaker를 함께 본다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">Routing Loop와 Delegation 폭발을 차단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">Agent Card Poisoning과 Score Gaming을 방어한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">합성 정상 사례로 선택 과정을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23">합성 장애 사례에서 안전한 실패를 확인한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24">단계적으로 구현한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25">흔한 안티패턴</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26">운영 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27">마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-28">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
-
 전문 Agent가 하나뿐일 때 위임은 단순합니다. Orchestrator가 정해진 대상에게 A2A Task를 보내면 됩니다. 그러나 같은 Skill을 제공하는 Agent가 여러 Version·조직·지역·비용 등급으로 늘어나면 질문이 달라집니다.
 
 - 어느 Agent가 요청한 입력·출력 형식을 지원하는가?

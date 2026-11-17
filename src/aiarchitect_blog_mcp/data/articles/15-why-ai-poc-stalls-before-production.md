@@ -31,33 +31,6 @@ PoC 질문
 
 AI PoC가 운영 단계에서 멈추는 핵심 원인은 모델 성능 하나가 아닙니다. **기술 가능성은 검증했지만 운영 계약 (Operational Contract)은 정의하지 않았기 때문**입니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">PoC와 운영 시스템은 성공의 단위가 다르다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">첫 번째 공백: 성공 기준이 “시연 성공”으로 끝난다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">두 번째 공백: 선별된 Sample이 실제 데이터 분포를 대표하지 않는다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">세 번째 공백: 로그인은 있지만 권한 경계가 없다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">네 번째 공백: AI의 답변과 업무 실행을 같은 위험으로 본다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">다섯 번째 공백: Timeout을 실패로 단정하고 다시 실행한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">여섯 번째 공백: 긴 작업의 상태가 메모리에만 있다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">일곱 번째 공백: AI 품질 평가를 다시 실행할 수 없다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">여덟 번째 공백: Log는 있지만 관측성이 없다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">아홉 번째 공백: 평균 지연과 API 단가만 계산한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">열 번째 공백: Model 장애가 곧 전체 서비스 장애다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">열한 번째 공백: 배포는 있지만 Rollback이 없다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">열두 번째 공백: 운영 책임자가 정해지지 않았다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">PoC 종료 보고서에 반드시 들어가야 할 것</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 준비도 행렬을 사용한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">PoC를 어떻게 설계해야 다시 만들지 않는가</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">NIST AI RMF 관점으로 운영 전환을 다시 본다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 전환 전 최종 체크리스트</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 ## 1. PoC와 운영 시스템은 성공의 단위가 다르다
 
 PoC는 가장 큰 불확실성을 짧게 검증하는 활동입니다.

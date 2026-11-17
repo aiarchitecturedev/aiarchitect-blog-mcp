@@ -4,41 +4,6 @@ Agent가 늘어나면 연결보다 통제가 먼저 무너집니다. 누가 어�
 
 ![AI Agent Control Plane이 분산 Agent와 정책·Identity·Budget·긴급 중지를 중앙 통제하는 구조](assets/blog-76-ai-agent-control-plane-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#1-agent">Agent가 늘어나면 연결보다 통제가 먼저 무너진다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#2-control-plane-data-plane">Control Plane과 Data Plane을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#3-control-plane">Control Plane의 일곱 가지 책임을 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#4-agent-registry">Agent Registry는 검색 목록이 아니라 승인된 상태 저장소다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#5-agent-card">Agent Card 서명과 조직의 신뢰 판단을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#6-admission-pipeline">등록부터 폐기까지 Admission Pipeline을 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#7-clientagentworkload-identity">사용자·Client·Agent·Workload Identity를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#8-mcp-enterprise-managed-authorization">MCP Enterprise-Managed Authorization의 범위를 이해한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#9-credential-broker-token">Credential Broker가 대상 제한 Token을 발급한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#10-policy">Policy 결정과 실행을 분리하되 모든 호출을 중재한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#11-mcp-header-gateway">MCP Header는 Gateway 통제를 돕지만 최종 인가를 대체하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#12-allowlist">권한은 Allowlist 하나가 아니라 조건의 논리곱이다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#13-actionresource-digest">승인은 Action·Resource·인자 Digest에 결박한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#14-budget">Budget은 비용뿐 아니라 행동량을 제한한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#15-budget">병렬 실행의 Budget은 원자적으로 예약한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#16-version-manifest">Version Manifest로 실제 실행 구성을 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#17-shadowcanaryrollback">Shadow·Canary·Rollback의 차이를 지킨다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#18-kill-switch">Kill Switch는 버튼 하나가 아니라 차단 계층이다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#19-task-side-effect">진행 중인 Task와 이미 발생한 Side Effect를 처리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#20-control-plane-fail-openfail-closed">Control Plane 장애의 Fail-open·Fail-closed를 미리 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#21-desiredeffectiveobserved-state">Desired·Effective·Observed State를 비교한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#22-traceauditevaluation">Trace·Audit·Evaluation을 하나의 증거 사슬로 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#23-control-plane">합성 장애 사례로 Control Plane을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#24">단계적으로 도입한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#25">흔한 안티패턴</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#26">운영 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#27">마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#28">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
-
 기업이 첫 번째 AI Agent를 만들 때는 Model, Prompt, RAG와 Tool 연결에 집중합니다. Agent가 한두 개라면 담당자가 설정 파일과 Dashboard를 직접 확인해도 운영할 수 있습니다.
 
 하지만 Agent가 여러 조직으로 확산되면 질문이 달라집니다.

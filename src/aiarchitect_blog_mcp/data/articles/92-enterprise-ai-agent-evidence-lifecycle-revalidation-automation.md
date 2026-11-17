@@ -4,36 +4,6 @@
 
 ![기업 AI Agent의 Release·Model·Prompt·Tool·Dataset·Policy 증거가 시간과 변경에 따라 활성·노후·철회 상태로 전이되고 영향받은 주장만 선택적으로 재검증되는 증거 수명주기 아키텍처](assets/blog-92-ai-agent-evidence-lifecycle-revalidation-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">평가 보고서는 남아 있어도 승인 근거는 낡을 수 있다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">BLOG-91의 Evidence Graph를 운영 수명주기로 확장한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Evidence·Claim·Decision의 수명주기를 분리한다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">증거를 불변 Subject와 Context에 바인딩한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">상태 머신으로 증거의 사용 가능성을 관리한다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">STALE·EXPIRED·REVOKED·SUPERSEDED를 구분한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Evidence Record에 판정에 필요한 최소 필드를 둔다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Freshness는 고정 TTL이 아니라 위험 기반 정책이다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">출처·무결성·내용 타당성을 세 단계로 검증한다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">변경 이벤트를 정규화해 누락 없이 수집한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">의존 그래프로 변경 영향 범위를 계산한다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">무효화 규칙은 Event·Edge·Predicate로 작성한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">최소 재검증은 영향받은 Claim의 공백만 채운다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기존 증거 재사용에는 명시적인 안전 조건이 필요하다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Evidence Pipeline을 Release Gate에 연결한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">동시 변경과 중복 이벤트에도 판정이 흔들리지 않게 한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Runtime Drift와 Incident가 즉시 Claim에 도달하게 한다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">보존·삭제·Legal Hold를 유효성과 분리한다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 지표는 증거 수보다 판정 지연과 공백을 본다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 사례로 Prompt 변경의 최소 재검증을 계산한다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실패하기 쉬운 Evidence Lifecycle 안티패턴을 피한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">네 단계로 증거 수명주기를 도입한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리 — 지속 검증은 전체 재시험이 아니라 근거의 연속성이다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 지난주에 통과한 AI Agent 평가 보고서가 오늘도 저장소에 있습니다. 파일의 Hash와 전자서명도 정상입니다. 그렇다면 이 보고서는 오늘 배포할 Release의 승인 근거로 쓸 수 있을까요?
 
 답은 조건부입니다. 보고서가 평가한 Model·Prompt·Tool Schema·Dataset·Policy와 오늘의 Release가 같아야 합니다. 평가 환경과 운영 Context도 허용 범위 안에 있어야 합니다. 그 사이 새로운 취약점, 운영 Drift, 사고, 정책 변경, 평가기 결함이 발견되지 않았어야 합니다. 유효기간과 Coverage도 현재 Claim을 만족해야 합니다.
@@ -43,8 +13,6 @@
 [BLOG-91](https://aiarchitect.tistory.com/91)에서 만든 Evidence Graph는 승인 시점을 찍은 정지 화면입니다. 이 글은 그 그래프에 시간을 넣습니다. 증거마다 유효 기간과 무효화 조건을 붙이고, Prompt·Model·Tool·Policy가 바뀔 때 어떤 Claim이 흔들리는지 의존 그래프로 계산해, **다시 검증해야 할 최소 범위만 자동으로 뽑아내는 것**이 목표입니다.
 
 이 글의 Agent, 회사, Release, Digest, 평가 수치와 Policy는 모두 교육용 합성 예시입니다. `ACTIVE`, `STALE`, `REVOKED` 같은 상태 이름과 TTL 예시는 이 글이 제안하는 구현 모델이며 W3C PROV, in-toto, SLSA, OSCAL이 정한 공통 상태 열거형이 아닙니다. 이 글의 TTL과 임계값을 그대로 옮겨 쓰지 마십시오. 실제 값은 Claim이 틀렸을 때의 업무 영향, 보안·개인정보·법무 정책, 산업 규제와 계약, 그리고 실제 평가·운영 데이터에서 역산해야 합니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 평가 보고서는 남아 있어도 승인 근거는 낡을 수 있다
 
@@ -67,8 +35,6 @@ Release 변경     Model·Prompt·Tool·Knowledge·Policy Digest 변경
 2. 변경과 사고가 발생하면 영향받은 Evidence와 Claim을 계산합니다.
 3. 현재 Coverage의 공백을 채우는 최소 재검증 계획을 만듭니다.
 4. 재검증이 끝날 때까지 Release Gate와 운영 범위를 보수적으로 조정합니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. BLOG-91의 Evidence Graph를 운영 수명주기로 확장한다
 
@@ -96,8 +62,6 @@ Release Bundle 변경
   → Release Gate 또는 Runtime Policy 반영
 ```
 
-<a id="ai-section-3"></a>
-
 ## 3. Evidence·Claim·Decision의 수명주기를 분리한다
 
 세 객체를 하나의 `PASS/FAIL` 상태로 합치면 변경 영향이 과도하게 전파되거나 위험하게 누락됩니다.
@@ -119,8 +83,6 @@ Decision: HOLD
 ```
 
 상태와 결과를 분리하지 않으면 실패 보고서를 `inactive`로 숨겨 승인 근거에서 사라지게 만드는 심각한 오류가 생길 수 있습니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. 증거를 불변 Subject와 Context에 바인딩한다
 
@@ -146,8 +108,6 @@ context:
 Model API처럼 공급자가 내부 Weight Digest를 제공하지 않는 경우에는 사용할 수 없는 식별자를 꾸며내면 안 됩니다. Provider, Model ID, Version 또는 Snapshot ID, Region, API Parameter, Routing Policy, 호출 시각과 응답 메타데이터처럼 실제로 관찰 가능한 식별자를 남깁니다. Provider가 Alias만 제공한다면 그 불확실성을 Claim의 Assumption과 Freshness Policy에 반영합니다.
 
 Context가 달라지면 같은 Artifact도 다른 위험을 가집니다. 사내 읽기 전용 Pilot에서 얻은 증거는 외부 메일 발송 권한이 있는 운영 Context를 자동으로 지지하지 않습니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. 상태 머신으로 증거의 사용 가능성을 관리한다
 
@@ -183,8 +143,6 @@ Context가 달라지면 같은 Artifact도 다른 위험을 가집니다. 사내
 }
 ```
 
-<a id="ai-section-6"></a>
-
 ## 6. STALE·EXPIRED·REVOKED·SUPERSEDED를 구분한다
 
 네 상태를 모두 `invalid=true`로 합치면 운영자가 무엇을 해야 하는지 알 수 없습니다.
@@ -199,8 +157,6 @@ Context가 달라지면 같은 Artifact도 다른 위험을 가집니다. 사내
 예를 들어 Dataset에 Label Leakage가 발견됐다면 해당 Dataset으로 만든 평가 결과는 `REVOKED`가 적절합니다. 단순히 30일이 지났다면 `EXPIRED`입니다. Prompt가 바뀌어 적용 여부가 불명확해졌다면 `STALE`입니다. 동일 조건에서 더 큰 Sample로 재평가해 기존 결과를 대체했다면 이전 결과는 `SUPERSEDED`로 남깁니다.
 
 삭제는 상태가 아닙니다. `REVOKED` Evidence도 왜 과거 승인이 잘못됐는지 조사하려면 보존해야 합니다.
-
-<a id="ai-section-7"></a>
 
 ## 7. Evidence Record에 판정에 필요한 최소 필드를 둔다
 
@@ -247,8 +203,6 @@ evidence:
 
 여기서 `predicate`는 무엇을 측정했는지, `verdict`는 그 결과가 무엇인지, `status`는 지금 사용할 수 있는지를 분리합니다. `coverage`가 없으면 전체 평균이 Critical Slice의 공백을 숨길 수 있습니다.
 
-<a id="ai-section-8"></a>
-
 ## 8. Freshness는 고정 TTL이 아니라 위험 기반 정책이다
 
 모든 Evidence에 일괄적으로 30일 TTL을 주는 것은 단순하지만 정확하지 않습니다. Freshness Window는 최소한 다음 요소로 결정합니다.
@@ -288,8 +242,6 @@ usable(evidence, now, release) =
   AND issuer_is_trusted
 ```
 
-<a id="ai-section-9"></a>
-
 ## 9. 출처·무결성·내용 타당성을 세 단계로 검증한다
 
 Evidence 검증은 한 번의 서명 확인으로 끝나지 않습니다.
@@ -316,8 +268,6 @@ Evidence 검증은 한 번의 서명 확인으로 끝나지 않습니다.
 W3C PROV-O의 Entity·Activity·Agent 관계는 생성·사용·파생·무효화 이력을 표현하는 데 유용합니다. in-toto Attestation은 Subject와 Predicate를 Statement에 담고 Envelope로 인증하는 구조를 제공합니다. SLSA Provenance는 Software Artifact가 어디서·언제·어떻게 만들어졌는지 추적하는 구체적 형식입니다.
 
 하지만 서명은 발행자와 Payload 무결성을 검증할 뿐, 평가 결론의 진실성이나 현재 유효성을 보장하지 않습니다. SLSA도 Software Build Supply Chain을 직접 대상으로 하므로 AI 품질·안전 판단에는 Prompt·Tool·Dataset·Evaluator용 Custom Predicate와 별도의 Claim 논리가 필요합니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. 변경 이벤트를 정규화해 누락 없이 수집한다
 
@@ -352,8 +302,6 @@ Evidence Lifecycle의 입력은 Git Commit만이 아닙니다.
 
 변경 설명을 자유 텍스트로만 남기면 자동 영향 분석이 어렵습니다. `before/after digest`, 변경 Subject Type, Release, 발생 시각과 상관관계 ID를 구조화합니다.
 
-<a id="ai-section-11"></a>
-
 ## 11. 의존 그래프로 변경 영향 범위를 계산한다
 
 <img src="assets/blog-92-change-impact-revalidation-graph.png" alt="Prompt 변경 이벤트가 Subject Graph와 Predicate를 거쳐 금지 행동·도구 선택 Claim에만 재검증을 요구하고 데이터 보존 Claim의 기존 증거는 재사용하는 변경 영향 분석 그래프" width="470" />
@@ -381,8 +329,6 @@ Prompt Digest가 바뀌면 다음 순서로 탐색합니다.
 6. 재검증이 끝날 때까지 Decision을 `HOLD` 또는 더 좁은 조건부 범위로 전이합니다.
 
 Graph Traversal의 깊이를 무한히 늘리면 모든 변경이 모든 Claim에 도달합니다. Edge Type, Predicate, Context, Release Lineage와 Stop Rule을 사용해 전파 경계를 명확히 해야 합니다.
-
-<a id="ai-section-12"></a>
 
 ## 12. 무효화 규칙은 Event·Edge·Predicate로 작성한다
 
@@ -421,8 +367,6 @@ required_revalidation:
 | `valid_until` 도달 | Evidence → EXPIRED | 없음, 새 승인 또는 재검증 필요 |
 
 자동 규칙에는 버전, 승인자, 발효 시각, 테스트 Fixture와 Rollback이 필요합니다. 잘못된 규칙 하나가 모든 Evidence를 만료시키거나 필요한 전파를 막을 수 있기 때문입니다.
-
-<a id="ai-section-13"></a>
 
 ## 13. 최소 재검증은 영향받은 Claim의 공백만 채운다
 
@@ -464,8 +408,6 @@ Required Coverage
 
 이때는 전체 또는 넓은 회귀 평가가 합리적입니다. “최소”는 비용 최적화 목표가 아니라 증거 충분성을 만족하는 하한입니다.
 
-<a id="ai-section-14"></a>
-
 ## 14. 기존 증거 재사용에는 명시적인 안전 조건이 필요하다
 
 재사용은 기본값이 아니라 다음 조건을 모두 확인한 결과여야 합니다.
@@ -492,8 +434,6 @@ reuse_decision:
 ```
 
 “코드가 조금만 바뀌었다”는 재사용 근거가 아닙니다. 무엇이 동일하고 왜 해당 Claim에 영향을 주지 않는지를 기계와 사람이 함께 검토할 수 있어야 합니다.
-
-<a id="ai-section-15"></a>
 
 ## 15. Evidence Pipeline을 Release Gate에 연결한다
 
@@ -526,8 +466,6 @@ APPROVE only if
 
 Pipeline 장애가 곧 Agent 서비스 장애를 의미할 필요는 없습니다. 다만 새로운 배포 승인을 멈추고, 현재 운영은 마지막 유효 Decision의 범위와 만료 조건 안에서만 지속해야 합니다.
 
-<a id="ai-section-16"></a>
-
 ## 16. 동시 변경과 중복 이벤트에도 판정이 흔들리지 않게 한다
 
 현실에서는 Prompt 변경 직후 Policy 변경과 Incident가 동시에 들어올 수 있습니다. 다음 제어가 없으면 늦게 끝난 평가가 더 새로운 변경을 덮어쓰는 Race Condition이 생깁니다.
@@ -550,8 +488,6 @@ R12 평가 완료
 
 `latest`에 평가 결과를 붙이는 구현은 금지해야 합니다. 결과가 생성된 순간 `latest`가 다른 Release일 수 있습니다.
 
-<a id="ai-section-17"></a>
-
 ## 17. Runtime Drift와 Incident가 즉시 Claim에 도달하게 한다
 
 NIST AI RMF Playbook은 운영 중 기능과 행동을 모니터링하고, 운영 Metric이 배포 전 시험과 어떻게 달라지는지 문서화하는 방안을 제시합니다. 이는 자발적 실무 지침이며 현재 AI RMF 1.0은 개정 중입니다. NIST AI 600-1도 Generative AI의 배포 중 역량·한계 관찰과 Incident 관련 관행을 다룹니다.
@@ -568,8 +504,6 @@ NIST AI RMF Playbook은 운영 중 기능과 행동을 모니터링하고, 운�
 
 EU AI Act의 Article 72는 고위험 AI System Provider에게 수명주기 동안 성능 관련 데이터를 적극적·체계적으로 수집·문서화·분석하는 사후 모니터링 체계를 요구합니다. Article 12는 고위험 AI의 자동 Log 기록 역량을 다룹니다. 적용 대상과 의무는 System 역할·위험 분류·관할과 시행 시점에 따라 달라지므로, 이 글의 Pipeline을 법적 적합성의 충분조건으로 해석하면 안 됩니다.
 
-<a id="ai-section-18"></a>
-
 ## 18. 보존·삭제·Legal Hold를 유효성과 분리한다
 
 `valid_until`이 지났다고 Artifact를 삭제하면 과거 Decision을 재구성할 수 없습니다. 반대로 보존 기간이 남았다고 현재 Gate에 사용할 수 있는 것도 아닙니다.
@@ -584,8 +518,6 @@ EU AI Act의 Article 72는 고위험 AI System Provider에게 수명주기 동�
 개인정보나 기밀 입력이 Evidence Artifact에 포함된다면 무기한 보존도 위험합니다. 원본 Payload와 판정 Metadata를 분리하고, 최소 수집·암호화·접근 통제·지역성·삭제 증명을 설계합니다. 필요한 경우 원문 대신 Digest, 비식별화된 Sample, 재현 가능한 Query와 접근 승인 기록을 보존합니다.
 
 NIST OSCAL Assessment Results는 Assessment의 범위·시각·활동·관찰·Finding·Risk와 관련 Evidence를 기계 판독 가능한 구조로 표현하고, 결과 만료도 모델링할 수 있는 패턴을 제공합니다. 다만 OSCAL은 보안·개인정보 통제 평가를 주된 범위로 하므로 AI Assurance 전체를 대신하는 표준은 아닙니다.
-
-<a id="ai-section-19"></a>
 
 ## 19. 운영 지표는 증거 수보다 판정 지연과 공백을 본다
 
@@ -612,8 +544,6 @@ Critical Release 변경의 Impact Analysis: CI Gate 안에서 완료
 Expired-in-Use Count: 0
 모든 활성 Decision의 Evidence Coverage 조회 가능: 100%
 ```
-
-<a id="ai-section-20"></a>
 
 ## 20. 합성 사례로 Prompt 변경의 최소 재검증을 계산한다
 
@@ -663,8 +593,6 @@ gate:
 
 이 방식은 전체 회귀 평가보다 작지만, 단순한 Changed-file Test보다 강합니다. 변경 파일이 아니라 Claim과 Predicate의 공백을 기준으로 범위를 정했기 때문입니다.
 
-<a id="ai-section-21"></a>
-
 ## 21. 실패하기 쉬운 Evidence Lifecycle 안티패턴을 피한다
 
 | 안티패턴 | 문제 | 개선 |
@@ -681,9 +609,6 @@ gate:
 | Confidence 점수 하나로 승인 | Coverage·상충·Risk Acceptance 은폐 | Claim별 Evidence와 Decision 분리 |
 
 가장 위험한 안티패턴은 “평가가 실행됐다”를 “현재 Release가 입증됐다”로 바꾸는 것입니다. Job 성공은 Evidence Producer의 실행 상태일 뿐 Assurance 결론이 아닙니다.
-
-<a id="ai-section-22"></a>
-
 
 **실제 사례 — 이 블로그에서 겪은 재현 실패 (2026년 9월)**
 
@@ -726,8 +651,6 @@ gate:
 
 처음부터 전사 Evidence Graph를 만들 필요는 없습니다. 피해 영향이 큰 두세 개 Claim과 하나의 Agent Release Line부터 시작해, 실제 변경과 사고를 통해 Edge와 규칙을 검증하는 편이 안전합니다.
 
-<a id="ai-section-23"></a>
-
 ## 23. 마무리 — 지속 검증은 전체 재시험이 아니라 근거의 연속성이다
 
 AI Agent는 Code만 바뀌는 Software가 아닙니다. Model Route, Prompt, Tool, RAG Corpus, Memory, Policy, Identity와 운영 환경이 독립적으로 변합니다. 따라서 한 번 만든 평가 보고서와 승인 문서는 빠르게 현실과 멀어질 수 있습니다.
@@ -739,8 +662,6 @@ Evidence Lifecycle의 핵심은 세 문장으로 정리할 수 있습니다.
 3. 영향받은 Claim의 Coverage 공백만 신뢰 가능한 방법으로 다시 검증합니다.
 
 좋은 Continuous Assurance는 모든 테스트를 매번 다시 돌리는 시스템이 아닙니다. **어떤 근거가 왜 낡았고, 무엇은 아직 재사용할 수 있으며, 어떤 재검증이 끝나야 어느 범위의 운영을 승인할 수 있는지**를 끊김 없이 설명하는 시스템입니다.
-
-<a id="ai-section-24"></a>
 
 ## 24. 공식 참고자료
 

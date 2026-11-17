@@ -4,45 +4,6 @@ AI Agent에 API Key를 그대로 넘기면 그 값은 Prompt와 Log, 대화 이�
 
 ![신뢰 경계 밖의 AI Agent와 중앙 Credential Broker, 보호된 Secret Vault, 목적지별 단기 자격 증명이 분리된 업무 시스템으로 전달되는 밝은 엔터프라이즈 보안 구조](assets/blog-24-ai-agent-credential-broker-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">먼저 Credential과 Secret을 구분한다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential 위험은 권한·재사용성·수명으로 평가한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">모델은 Credential을 볼 필요가 없다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">신뢰 경계를 네 영역으로 나눈다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential Broker의 책임을 명확히 한다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Secret Manager와 Credential Broker를 구분한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">장기 Secret은 단기 Credential 발급에만 사용한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단기 Token의 수명은 위험과 복구 능력으로 정한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audience와 Resource를 Downstream별로 좁힌다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Token Passthrough 대신 교환·재발급한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Delegation과 Impersonation을 구분한다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Workload Identity로 Broker 자체를 인증한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Sender-constrained Token으로 Replay를 줄인다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Broker는 Secret Handle을 Capability로 오해하지 않는다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential을 Tool 실행 직전에 주입한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Queue에는 Token이 아니라 재검증 가능한 Context를 저장한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Token Cache Key를 보안 Context 전체로 만든다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Refresh Token은 Access Token보다 강하게 보호한다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실패 정책은 위험 등급별로 정한다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Rotation은 새 값 발급보다 전체 전환 과정이다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Revocation은 발급 시스템과 실행 시스템을 연결한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Secret Masking은 생성 지점에서 시작한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Field 이름과 값 형태를 함께 검사한다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Prompt·Trace·Error·Tool Result를 별도로 검사한다</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Secret 값 대신 Digest와 Metadata를 감사한다</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Secret 노출을 Source부터 Runtime까지 검사한다</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential 정책을 기계적으로 검사한다</a></li>
-<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Negative Test로 유출과 재사용을 검증한다</a></li>
-<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential 노출 사고 대응 절차를 준비한다</a></li>
-<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 전 체크리스트</a></li>
-<li><a href="#ai-section-31" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-32" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. 모델은 작업만 제안하고 신뢰할 수 있는 실행 계층이 목적지별 단기 Credential을 발급·주입하는 AI Agent 보안 구조*
 
 AI Agent가 업무를 수행하려면 여러 시스템에 접근해야 합니다.

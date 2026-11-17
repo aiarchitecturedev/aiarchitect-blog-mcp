@@ -2,41 +2,6 @@
 
 AI Agent가 오작동하면 Process를 종료해도 사고가 끝나지 않습니다. 이미 위임된 하위 Task, 발급된 단기 Credential, 생성된 Ticket과 외부 전송이 그대로 남기 때문입니다. 이 글은 Goal Hijack과 Tool 오용, 권한 초과, 무한 Loop, 비용 폭주, 다중 Agent 전파를 탐지하고 Run·Task·Credential·Agent Version 단위로 격리한 뒤, Side Effect를 확정·복구하고 검증된 구성만 다시 활성화하는 Incident Response 아키텍처를 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Agent 사고는 잘못된 답변보다 넓다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Incident·Defect·Near Miss·Policy Violation을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기존 Incident Response에 Agent 실행 경계를 더한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Incident Control Loop를 Runtime 밖에 둔다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">사고 전에 Inventory·Owner·Playbook을 준비한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Incident Graph로 실행과 업무 영향을 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">탐지 신호를 다섯 종류로 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Goal Hijack과 Prompt Injection은 행동 변화로 찾는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool·Side Effect 이상을 Downstream에서 확인한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Loop·Fan-out·비용 폭주는 행동 Budget으로 차단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">다중 Agent 전파와 공급망 사고를 별도 추적한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Severity는 영향·확산·가역성으로 판정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자동 대응과 Human Decision의 경계를 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Kill Switch는 최소 피해 범위부터 적용한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Cancel·Revoke·Route Disable·Quarantine을 함께 실행한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">A2A Task 취소를 중단 완료로 오해하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP Tool은 호출 전·실행 중·업무 Commit을 각각 막는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential·Grant·Approval을 사고 범위에 맞게 철회한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Side Effect Ledger로 실제 피해를 확정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Compensation은 Rollback이 아니라 새 업무다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">증거를 보존하되 Prompt와 개인정보를 과잉 수집하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Incident 상태 머신과 명령의 멱등성을 설계한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">내부·외부 Communication을 기술 대응과 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Recovery는 재시작이 아니라 재승인이다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">사고를 Contract·Evaluation·Red Team 회귀 사례로 바꾼다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 사고 사례로 전체 Playbook을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단계적으로 구현하고 정기 Drill한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 체크리스트와 마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 회의 요약 Agent가 갑자기 업무 Ticket을 반복 생성하기 시작했습니다. 원인은 Model 장애일 수도 있고, 검색된 문서의 간접 Prompt Injection일 수도 있으며, 잘못 배포된 Tool Schema나 탈취된 Workload Credential일 수도 있습니다.
 
 운영자가 Agent Process만 종료하면 사고가 끝날까요?

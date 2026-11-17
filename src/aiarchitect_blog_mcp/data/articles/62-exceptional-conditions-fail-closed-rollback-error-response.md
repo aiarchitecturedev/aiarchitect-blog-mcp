@@ -4,40 +4,6 @@
 
 ![비정상 신호를 신뢰 경계에서 차단하고 트랜잭션 상태를 안전한 체크포인트로 되돌리는 Secure Coding 구조](assets/blog-62-exceptional-conditions-secure-coding-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">먼저 용어와 실패 의미를 구분한다</a></li>
-<li><a href="#ai-section-2">A10은 오류 화면이 아니라 시스템 상태를 다룬다</a></li>
-<li><a href="#ai-section-3">Exceptional Condition Inventory를 먼저 만든다</a></li>
-<li><a href="#ai-section-4">Fail Closed는 모든 장애에 서비스를 끄라는 뜻이 아니다</a></li>
-<li><a href="#ai-section-5">입력 경계에서 일찍 거부하고 상태 변경을 시작하지 않는다</a></li>
-<li><a href="#ai-section-6">빈 Catch와 넓은 Catch는 실패 의미를 지운다</a></li>
-<li><a href="#ai-section-7">계층 경계에서 Exception을 의미 있는 계약으로 변환한다</a></li>
-<li><a href="#ai-section-8">Global Handler는 마지막 안전망이지 업무 정책의 대체물이 아니다</a></li>
-<li><a href="#ai-section-9">RFC 9457 Problem Details를 Debug Dump로 사용하지 않는다</a></li>
-<li><a href="#ai-section-10">Transaction Rollback 기본 규칙을 오해하지 않는다</a></li>
-<li><a href="#ai-section-11">Exception을 삼키면 Transaction이 Commit될 수 있다</a></li>
-<li><a href="#ai-section-12">Local Transaction과 Remote Side Effect를 혼동하지 않는다</a></li>
-<li><a href="#ai-section-13">Retry는 실패를 숨기는 반복문이 아니다</a></li>
-<li><a href="#ai-section-14">Timeout, Deadline과 Cancellation을 끝까지 전달한다</a></li>
-<li><a href="#ai-section-15">Resource는 try-with-resources로 예외 경로에서도 정리한다</a></li>
-<li><a href="#ai-section-16">부분 변경 사이에도 업무 불변식을 지킨다</a></li>
-<li><a href="#ai-section-17">외부 응답의 Status와 Body를 모두 검증한다</a></li>
-<li><a href="#ai-section-18">Exceptional Condition을 Resource 제한으로 예방한다</a></li>
-<li><a href="#ai-section-19">보안 결정 Service의 장애를 허용으로 바꾸지 않는다</a></li>
-<li><a href="#ai-section-20">Fallback은 승인된 의미만 제공해야 한다</a></li>
-<li><a href="#ai-section-21">오류 응답, Log와 Alert의 정보를 분리한다</a></li>
-<li><a href="#ai-section-22">멀티테넌트 오류 경계에서 존재 정보도 격리한다</a></li>
-<li><a href="#ai-section-23">Negative Test와 Fault Injection으로 예외 경로를 실행한다</a></li>
-<li><a href="#ai-section-24">예외 체인의 건강 상태를 관측한다</a></li>
-<li><a href="#ai-section-25">흔한 오해를 Review에서 제거한다</a></li>
-<li><a href="#ai-section-26">Code Review Checklist</a></li>
-<li><a href="#ai-section-27">마무리</a></li>
-<li><a href="#ai-section-28">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 정상 경로가 안전하다는 사실만으로 시스템이 안전해지지는 않습니다. Database Timeout, 권한 Service 장애, 예상하지 못한 Status Code, Disk 부족과 Null 값처럼 정상 전제를 깨는 상황에서 시스템이 **어떤 상태를 남기고 무엇을 허용하는지**가 실제 보안 경계를 결정합니다.
 
 ![Exceptional Condition을 예상·탐지·분류하고 격리·복구·안전한 응답과 관측으로 연결하는 여섯 단계](assets/blog-62-secure-exception-lifecycle.png)

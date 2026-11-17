@@ -4,25 +4,6 @@ AI Agent 도입 준비도를 서류 체크리스트로 확인하면 대개 전�
 
 ![데이터·연동·권한·보안·인수의 다섯 준비도 신호가 증거 검증 코어와 안전한 PoC 게이트로 수렴하는 AI Agent 도입 준비도 아키텍처](assets/blog-69-ai-agent-readiness-gate-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">준비도는 서류가 아니라 검증 가능한 스펙이다</a></li>
-<li><a href="#ai-section-2">준비도 5축: 데이터·연동·권한·보안·인수</a></li>
-<li><a href="#ai-section-3">데이터 준비도 — 데이터 계약과 PII 분류를 스키마로</a></li>
-<li><a href="#ai-section-4">API·연동 준비도 — 멱등성·타임아웃·재시도를 계약으로</a></li>
-<li><a href="#ai-section-5">권한·인가 준비도 — 정책·결정·승인·실행·감사를 하나의 체인으로</a></li>
-<li><a href="#ai-section-6">보안 경계 준비도 — 시크릿 핸들·유출면·Egress 게이트</a></li>
-<li><a href="#ai-section-7">인수 기준을 Readiness Predicate로</a></li>
-<li><a href="#ai-section-8">Negative Test — “준비 안 됨”을 걸러내는 테스트</a></li>
-<li><a href="#ai-section-9">준비도 게이트 — 4상태 판정과 다음 단계 매핑</a></li>
-<li><a href="#ai-section-10">안티패턴 — 준비도를 서류로만 확인할 때</a></li>
-<li><a href="#ai-section-11">도입 준비도 진단 체크리스트</a></li>
-<li><a href="#ai-section-12">맺음말</a></li>
-<li><a href="#ai-section-13">참고 자료</a></li>
-</ol>
-</blockquote>
-
 기업 AI Agent 도입 로드맵에서 PoC 앞에 놓이는 단계가 **준비도 진단 (Readiness Assessment)** 입니다. [기업 AI Agent 도입 로드맵 6단계](https://aiarchitect.tistory.com/65)에서 3단계로 다룬 그 진단을, 이 글은 서류가 아니라 **검증 가능한 스펙**으로 구체화합니다.
 
 준비도 진단은 흔히 "데이터 준비됐나요? / API 열려 있나요? / 권한 정리됐나요?"라는 문답 체크리스트로 끝납니다. 문제는 그 답이 대부분 자기보고라는 점입니다. "네, 준비됐습니다"는 검증이 아닙니다. 준비가 덜 된 채 PoC에 들어가면, 기술적 시연은 되지만 운영 전환에서 데이터·권한·인증을 다시 설계하게 됩니다.

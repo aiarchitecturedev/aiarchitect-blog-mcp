@@ -4,25 +4,6 @@
 
 ![여섯 가지 시스템 속성이 업무 구조와 실행 권한, 게이트 상태를 판정하는 코어로 수렴하는 AI Agent 자동화 적합도 아키텍처](assets/blog-70-ai-agent-fitness-assessment-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">적합도는 가치가 아니라 시스템 속성으로 판정한다</a></li>
-<li><a href="#ai-section-2">판정 6축 개요</a></li>
-<li><a href="#ai-section-3">결정성과 자율성 — 규칙·단발 판단·자율 실행을 구분한다</a></li>
-<li><a href="#ai-section-4">성공 관측성 — 기계 검증·사람 평가·미정의</a></li>
-<li><a href="#ai-section-5">액션 — 부작용과 영향도를 분리한다</a></li>
-<li><a href="#ai-section-6">상태·멱등성 — 재시도·중복 실행에 안전한가</a></li>
-<li><a href="#ai-section-7">예외 분기 폭 — 롱테일이 넓으면 사람이 남는다</a></li>
-<li><a href="#ai-section-8">데이터·권한 경계 — 경계 없는 접근은 적합이 아니라 위험</a></li>
-<li><a href="#ai-section-9">판정 → base_pattern × execution_mode</a></li>
-<li><a href="#ai-section-10">적합도는 점수가 아니라 게이트다</a></li>
-<li><a href="#ai-section-11">안티패턴과 적합도 체크리스트</a></li>
-<li><a href="#ai-section-12">맺음말</a></li>
-<li><a href="#ai-section-13">참고 자료</a></li>
-</ol>
-</blockquote>
-
 기업 AI Agent 도입 로드맵에서 업무 후보를 발굴한 다음 단계가 **적합성 판단**입니다. [기업 AI Agent 도입 로드맵 6단계](https://aiarchitect.tistory.com/65)에서 2단계로 다룬 그 판단을, 이 글은 "가치가 큰가"가 아니라 **"이 업무의 시스템 속성이 어떤 자동화 방식을 정당화하는가"** 라는 기술 기준으로 다룹니다.
 
 적합성 판단은 흔히 기대 효과·비용 절감 같은 가치 매트릭스로 흐릅니다. 그러나 가치가 크다고 Agent가 맞는 것은 아닙니다. 규칙으로 끝나는 업무에 Agent를 얹으면 비결정성만 늘고, **판단이 필요해도 단발 LLM 호출로 충분한 업무를 자율 Agent로 만들면** 통제 비용만 늘며, 결과의 업무적 정확성을 판정할 수 없는 업무는 자동화 자체가 검증 불가능합니다.

@@ -25,6 +25,7 @@ from aiarchitect_blog_mcp.corpus import (  # noqa: E402
     extract_body,
     is_published,
     parse_metadata,
+    strip_publishing_scaffolding,
 )
 
 # 기본 소스는 저장소 루트의 blogs/(없으면 인자로 지정). 내부 저장소 경로를 하드코딩하지 않는다.
@@ -181,7 +182,11 @@ def main(src: Path, include_unpublished: bool = False) -> int:
 
     bodies: dict[str, str] = {}
     for path in files:
-        body = extract_body(path.read_text(encoding="utf-8")).rstrip() + "\n"
+        # 소스는 티스토리에 그대로 붙여 넣는 형태라 목차 장치(인라인 CSS·앵커)를 품고 있다.
+        # 번들은 에이전트가 읽는 것이므로 여기서 걷어낸다 — 본문의 약 10%가 그 잡음이다.
+        body = strip_publishing_scaffolding(
+            extract_body(path.read_text(encoding="utf-8"))
+        ).rstrip() + "\n"
         if not body.startswith("# ") or parse_metadata(body):
             print(f"❌ 정제 본문 프리플라이트 실패: {path.name}", file=sys.stderr)
             return 1

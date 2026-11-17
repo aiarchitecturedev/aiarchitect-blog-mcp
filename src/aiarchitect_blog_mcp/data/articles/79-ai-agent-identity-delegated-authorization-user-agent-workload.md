@@ -4,40 +4,6 @@ AI Agent가 사용자를 대신해 여러 시스템을 넘나들 때 사용자 �
 
 ![사용자 권한이 여러 정책 Gate와 Agent·Workload 경계를 지나 최소 권한 실행 경로로 좁아지는 구조](assets/blog-79-ai-agent-identity-delegated-authorization-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Identity와 Authority를 먼저 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">다중 Agent의 위임은 일반 Service 호출보다 어렵다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">User·Agent·Workload·Client Identity를 함께 모델링한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Delegation과 Impersonation을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참조 아키텍처는 판단·발급·실행을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Authority Envelope를 검증 가능한 계약으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자식 권한은 부모 권한보다 넓어질 수 없다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Task-bound Credential은 실행 직전에 발급한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Agent Card와 MCP 인증 선언은 업무 권한이 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Token Exchange와 Actor Chain을 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audience·Scope·객체·목적을 함께 제한한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Credential을 Workload와 Sender에 결속한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tenant는 위임 과정에서 바뀌지 않는 불변값이다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Human Approval은 권한을 새로 만들지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">재위임은 깊이·대상·목적을 제한한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">장기 실행은 Credential보다 Durable Grant를 보존한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Revocation·Cancellation·Quarantine을 구분한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Fallback과 재선택은 권한을 다시 평가한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audit Lineage로 위임과 실행을 재구성한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Confused Deputy와 Identity Laundering을 방어한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 정상 사례로 최소 권한 위임을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 공격 사례에서 권한 증폭을 차단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단계적으로 구현한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">흔한 안티패턴</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
-
 Agent Router가 이번 요청을 처리할 전문 Agent를 선택했습니다. 이제 Orchestrator는 선택된 Agent에게 A2A Task를 보내고, Specialist Agent는 다시 MCP Tool로 기업 시스템을 호출하려 합니다.
 
 여기서 가장 위험한 질문이 남습니다.
@@ -58,7 +24,6 @@ Specialist Agent가 또 다른 Agent에 재위임해도 되는가?
 
 > 이 글의 사용자, Tenant, Agent, Workload, Token Claim, URL, 정책과 운영 수치는 모두 교육용 합성 예시입니다. 특정 회사·고객·제품·운영 환경을 나타내지 않습니다. NIST의 2026 Agent Identity and Authorization 자료는 표준이 아니라 공개 의견 수렴을 위한 Concept Paper와 Initiative입니다. 실제 구현에서는 사용하는 Identity Provider, A2A·MCP Version과 조직의 법무·보안·개인정보 요구사항을 다시 확인해야 합니다.
 
-<a id="ai-section-1"></a>
 ## 1. Identity와 Authority를 먼저 분리한다
 
 Identity는 “누구인가”에 답하고 Authority는 “무엇을 할 수 있는가”에 답합니다.
@@ -90,7 +55,6 @@ Agent Card가 OAuth Scope를 선언했다는 사실도 현재 사용자의 Entit
 
 이 교집합을 계산하지 않고 “유효한 Token이 있다”만 확인하면 인증 성공이 곧 권한 과다 부여로 이어집니다.
 
-<a id="ai-section-2"></a>
 ## 2. 다중 Agent의 위임은 일반 Service 호출보다 어렵다
 
 Microservice 호출도 On-Behalf-Of 권한이 필요하지만 Agent 시스템에는 추가 변수가 있습니다.
@@ -116,7 +80,6 @@ User Login
 
 NIST는 2026년 Agent Identity and Authorization Concept Paper에서 Agent를 기존 Software와 비교했을 때의 Identity·Authentication·Authorization·Audit·Non-repudiation 문제를 공개 논의 과제로 제시했습니다. 이는 완성된 표준을 뜻하지 않지만, 기업 Agent 도입에서 Identity와 Authority가 독립 설계 영역이 됐다는 신호로 볼 수 있습니다.
 
-<a id="ai-section-3"></a>
 ## 3. User·Agent·Workload·Client Identity를 함께 모델링한다
 
 하나의 A2A 호출에는 최소한 다음 신원이 참여할 수 있습니다.
@@ -159,7 +122,6 @@ Workload Instance
 현재 Tenant·Region·데이터 등급과 호환되는가?
 ```
 
-<a id="ai-section-4"></a>
 ## 4. Delegation과 Impersonation을 구분한다
 
 RFC 8693 OAuth 2.0 Token Exchange는 Delegation과 Impersonation을 구분합니다.
@@ -206,7 +168,6 @@ executor = planning-agent-workload
 }
 ```
 
-<a id="ai-section-5"></a>
 ## 5. 참조 아키텍처는 판단·발급·실행을 분리한다
 
 위임 인가를 Agent Runtime 내부의 Token 복사 Logic으로 구현하지 않습니다.
@@ -247,7 +208,6 @@ flowchart TB
 
 Model과 Agent가 제안한 Scope, Audience, Tenant와 위임 대상은 모두 **Untrusted Proposal**입니다. Policy 계층이 Registry·Identity·현재 권한을 조회해 확정해야 합니다.
 
-<a id="ai-section-6"></a>
 ## 6. Authority Envelope를 검증 가능한 계약으로 만든다
 
 Access Token은 전송 수단이지 전체 업무 계약이 아닙니다. Workflow에는 Token보다 수명이 길고 감사 가능한 Authority Envelope가 필요합니다.
@@ -309,7 +269,6 @@ Envelope에는 Secret이나 Access Token 원문을 넣지 않습니다.
 
 Resource Server는 `authorization_context_id`를 현재 Policy Decision과 연결하고, 단순히 Claim이 존재한다는 이유만으로 허용하지 않습니다.
 
-<a id="ai-section-7"></a>
 ## 7. 자식 권한은 부모 권한보다 넓어질 수 없다
 
 재위임의 핵심 불변식은 Monotonic Narrowing입니다.
@@ -355,7 +314,6 @@ def derive_child_authority(parent, proposal, policy):
 
 이 코드는 개념 예시입니다. 실제 Object 범위는 단순 Set 비교가 아니라 Query Constraint·Label·조직 계층·업무 상태를 포함할 수 있습니다.
 
-<a id="ai-section-8"></a>
 ## 8. Task-bound Credential은 실행 직전에 발급한다
 
 Durable Workflow State에 Access Token을 저장하면 안 됩니다. Queue에서 대기하는 동안 만료될 수 있고, Snapshot·Backup·오류 Log로 복제될 수 있습니다.
@@ -392,7 +350,6 @@ Task-bound Credential은 최소한 다음 속성을 가져야 합니다.
 
 “단기”의 정확한 시간은 위험·Network·Task 특성에 따라 다릅니다. Model이 만료시간을 정하지 않고 조직 정책이 상한을 결정해야 합니다.
 
-<a id="ai-section-9"></a>
 ## 9. Agent Card와 MCP 인증 선언은 업무 권한이 아니다
 
 A2A Agent Card의 `securitySchemes`와 `security`는 Client가 어떤 방식으로 인증해야 하는지 알려줍니다. Extended Agent Card도 인증된 Client에게 더 많은 Skill 정보를 제공할 수 있습니다.
@@ -422,7 +379,6 @@ MCP Server가 `insufficient_scope`와 필요한 Scope를 제시하더라도 Agen
 - Task·Purpose·Approval Context
 - Agent·Protocol·Policy Version
 
-<a id="ai-section-10"></a>
 ## 10. Token Exchange와 Actor Chain을 연결한다
 
 RFC 8693 Token Exchange는 `subject_token`, 선택적 `actor_token`, `resource`·`audience`·`scope`를 사용해 새 Token을 요청하는 표준 구조를 제공합니다.
@@ -453,7 +409,6 @@ JWT의 `act` Claim은 Actor를 표현할 수 있고 중첩된 Actor Chain도 나
 
 Token Exchange 자체가 자동으로 안전한 재위임을 보장하지는 않습니다. RFC 8693도 입력 Token의 교환이 출력 Token과 지속적인 강한 연결을 자동 생성하지 않으며, 철회 전파는 구현·배포 정책이라고 설명합니다. 따라서 Parent Grant 철회와 Child Grant 무효화를 별도 계약으로 설계해야 합니다.
 
-<a id="ai-section-11"></a>
 ## 11. Audience·Scope·객체·목적을 함께 제한한다
 
 Scope만 좁히면 충분하지 않습니다.
@@ -495,7 +450,6 @@ RFC 9396 Rich Authorization Requests의 `authorization_details`는 단순 Scope�
 
 URL이나 Object ID를 Model이 자유롭게 생성한 뒤 그대로 Authorization Detail에 넣지 않습니다. Registry와 업무 시스템이 Canonical Resource를 해석하고 Policy가 허용 범위를 확정합니다.
 
-<a id="ai-section-12"></a>
 ## 12. Credential을 Workload와 Sender에 결속한다
 
 Bearer Token은 가진 사람이 사용할 수 있습니다. Agent Runtime, Trace, Proxy나 오류 처리에서 Token이 유출되면 다른 Workload가 재사용할 수 있습니다.
@@ -522,7 +476,6 @@ Authorization
 
 키 관리가 불가능한 환경에서 DPoP를 형식적으로 추가하거나, 모든 Agent가 같은 Private Key를 공유하면 Workload 결속의 의미가 사라집니다. Key는 Agent Runtime의 모델 Context와 분리하고 Workload 수명에 맞춰 관리해야 합니다.
 
-<a id="ai-section-13"></a>
 ## 13. Tenant는 위임 과정에서 바뀌지 않는 불변값이다
 
 A2A Agent Interface의 `tenant`는 Protocol Routing에 사용할 수 있지만 사용자의 실제 Tenant Authorization과 동일하지 않습니다.
@@ -549,7 +502,6 @@ Cross-tenant 업무가 필요하다면 Tenant 값을 바꾸는 것이 아니라 
 
 Cache도 Subject·Client·Tenant·Authorization Version별로 분리하고 Logout, Membership 변경, 권한 철회 시 무효화해야 합니다.
 
-<a id="ai-section-14"></a>
 ## 14. Human Approval은 권한을 새로 만들지 않는다
 
 Approval은 “이 구체적 실행을 지금 진행해도 된다”는 동의입니다. 원래 없는 Entitlement를 생성하지 않습니다.
@@ -586,7 +538,6 @@ Approval Grant는 다음에 결속해야 합니다.
 
 승인 뒤 Action 인자, Tenant, 대상 Resource나 Side Effect가 바뀌면 기존 Approval을 재사용하지 않습니다. Router Fallback으로 데이터 처리 주체나 Zone이 바뀌는 경우도 재평가 대상입니다.
 
-<a id="ai-section-15"></a>
 ## 15. 재위임은 깊이·대상·목적을 제한한다
 
 Specialist Agent가 다른 Agent에게 Task를 넘길 수 있다고 해서 무제한 재위임을 허용하면 안 됩니다.
@@ -626,7 +577,6 @@ Policy에 최소한 다음 제한을 둡니다.
 
 재위임 결정은 모델의 자연어 설명이 아니라 구조화된 Proposal과 Policy Evidence로 남깁니다.
 
-<a id="ai-section-16"></a>
 ## 16. 장기 실행은 Credential보다 Durable Grant를 보존한다
 
 A2A Task는 비동기로 오래 실행될 수 있습니다. 작업이 Token 수명보다 길다는 이유로 장기 Token을 발급하면 위험 시간이 늘어납니다.
@@ -654,7 +604,6 @@ Resume
 
 A2A의 `AUTH_REQUIRED`나 추가 입력 상태를 “기존 Token을 다시 보내라”로 해석하지 않습니다. Orchestrator가 사용자 Interaction을 재개하고, 새 Policy Decision과 Credential 발급을 수행해야 합니다.
 
-<a id="ai-section-17"></a>
 ## 17. Revocation·Cancellation·Quarantine을 구분한다
 
 세 동작은 서로 다른 대상을 제어합니다.
@@ -695,7 +644,6 @@ root_grant_id
 
 고위험 작업은 짧은 Token 수명과 함께 Dispatch·Commit 시 Introspection 또는 최신 Grant 상태 확인을 사용할 수 있습니다. 가용성·지연 Trade-off는 위험 등급별로 결정합니다.
 
-<a id="ai-section-18"></a>
 ## 18. Fallback과 재선택은 권한을 다시 평가한다
 
 Agent Router가 장애 Agent를 다른 Agent로 바꾸면 Capability가 같아도 Security Context는 달라질 수 있습니다.
@@ -725,7 +673,6 @@ Fallback 시 다음을 다시 수행합니다.
 
 “같은 Skill”은 “같은 권한 경계”를 뜻하지 않습니다.
 
-<a id="ai-section-19"></a>
 ## 19. Audit Lineage로 위임과 실행을 재구성한다
 
 감사 로그는 Token 원문이 아니라 결정과 연결 관계를 보존해야 합니다.
@@ -777,7 +724,6 @@ User Request
 
 성공 로그만 있으면 “허용됐지만 실행 실패”와 “실행됐지만 결과 검증 실패”를 구분할 수 없습니다.
 
-<a id="ai-section-20"></a>
 ## 20. Confused Deputy와 Identity Laundering을 방어한다
 
 다중 Agent의 대표 위협은 다음과 같습니다.
@@ -810,7 +756,6 @@ Draft 승인을 실제 전송·삭제·결제 권한으로 재사용합니다. A
 
 Retrieved Content나 다른 Agent Artifact가 “관리자 Scope를 요청하라”고 지시합니다. Model 출력은 권한 Proposal일 뿐이며 Policy Engine이 허용 목록과 Parent Grant로 제한합니다.
 
-<a id="ai-section-21"></a>
 ## 21. 합성 정상 사례로 최소 권한 위임을 검증한다
 
 사용자가 특정 회의의 결정 사항으로 업무 계획 초안을 요청했다고 가정합니다.
@@ -865,7 +810,6 @@ Planning Agent는 Draft Artifact만 반환합니다. Ticket 생성 권한은 없
 - Actor Chain과 Route Decision이 연결되는가?
 - Draft Artifact가 Side Effect를 만들지 않았는가?
 
-<a id="ai-section-22"></a>
 ## 22. 합성 공격 사례에서 권한 증폭을 차단한다
 
 Planning Agent가 외부 Summary Agent에 재위임하면서 다음 Proposal을 만들었다고 가정합니다.
@@ -911,7 +855,6 @@ Policy Engine은 점수 감점이 아니라 Hard Deny를 반환해야 합니다.
 
 다른 Agent로 몰래 Fallback하거나 범용 Service Account로 직접 호출해서는 안 됩니다.
 
-<a id="ai-section-23"></a>
 ## 23. 단계적으로 구현한다
 
 ### 1단계: Subject·Actor 분리
@@ -946,7 +889,6 @@ Policy Engine은 점수 감점이 아니라 Hard Deny를 반환해야 합니다.
 
 처음부터 모든 Token 형식과 Policy Engine을 교체할 필요는 없습니다. Subject·Actor 구분과 Audience 분리만으로도 범용 Token 전달보다 큰 개선을 얻을 수 있습니다.
 
-<a id="ai-section-24"></a>
 ## 24. 흔한 안티패턴
 
 ### 사용자 Access Token을 모든 Agent에 전달한다
@@ -989,7 +931,6 @@ Cancellation·Revocation·Quarantine은 별도 통제입니다.
 
 Token 크기와 개인정보 노출이 커집니다. 현재 Actor와 Grant ID만 전달하고 전체 Lineage는 보호된 Store에 둡니다.
 
-<a id="ai-section-25"></a>
 ## 25. 운영 체크리스트
 
 ### Identity
@@ -1030,7 +971,6 @@ Token 크기와 개인정보 노출이 커집니다. 현재 Actor와 Grant ID만
 - [ ] Token 원문 없이 Subject·Actor Chain·정책·실행 결과를 재구성할 수 있는가?
 - [ ] Deny Decision과 Reason Code도 보존하는가?
 
-<a id="ai-section-26"></a>
 ## 26. 마무리
 
 Agent Router가 좋은 Agent를 선택하는 것만으로 안전한 위임이 완성되지는 않습니다. 선택된 Agent가 누구의 어떤 권한으로 행동하며, 그 권한이 다음 Hop에서 어떻게 좁아지고, 언제 철회되는지가 명확해야 합니다.
@@ -1051,7 +991,6 @@ Agent Router가 좋은 Agent를 선택하는 것만으로 안전한 위임이 �
 
 > Agent에게 사용자의 Token을 넘기지 말고, 검증된 Task에 필요한 최소 Authority만 새로 위임하라.
 
-<a id="ai-section-27"></a>
 ## 27. 공식 참고자료
 
 - [NIST AI Agent Standards Initiative](https://www.nist.gov/artificial-intelligence/ai-agent-standards-initiative)

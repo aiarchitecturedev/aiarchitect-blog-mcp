@@ -4,41 +4,6 @@ AI Agent 통합에서는 API 응답이 스키마에 맞는지 확인하는 것�
 
 ![선언된 Agent Contract와 실제 Runtime 동작이 중앙 검증 Gate에서 비교되어 적합·부적합 경로로 분리되는 구조](assets/blog-80-ai-agent-contract-testing-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Agent 통합에는 API 테스트보다 넓은 계약이 필요하다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Contract Test와 AI Evaluation을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">검증 범위를 6계층으로 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Contract Bundle을 단일 검증 단위로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Version과 Digest로 검증 대상을 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Agent Card의 정적 선언을 먼저 검사한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">A2A Interface와 Capability를 실제 호출로 대조한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Skill과 Content Mode 계약을 예제로 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">A2A Task를 상태 머신으로 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Streaming·Push·Cancel은 별도 시나리오로 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Error Contract는 Code·Condition·Retry를 함께 본다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">MCP Tool 목록과 Schema Snapshot을 대조한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Input·Output을 JSON Schema로 양방향 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool Annotation은 실행 관찰로 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Authorization과 Tenant 격리를 계약에 포함한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Side Effect·멱등성·승인을 결과와 함께 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">시간과 복구 동작도 계약이다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">호환성 변경을 유형별로 판정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Consumer-driven Contract로 실제 기대를 보존한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Negative Test를 정상 사례만큼 중요하게 다룬다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Fixture와 Test Double의 경계를 통제한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Contract Matrix로 조합 폭발을 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Registry Admission과 Release Gate를 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Runtime Drift를 탐지하고 격리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 정상·실패 사례로 전체 흐름을 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단계적으로 구현한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 체크리스트와 마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
-
 Agent Registry에 새 Specialist Agent가 등록됐습니다. Agent Card에는 `work-planning` Skill, JSON 입력·출력, Streaming, OAuth가 선언돼 있습니다. 이 Agent가 실제로 같은 계약을 지키는지는 어떻게 확인할까요?
 
 연결 성공만 확인하는 테스트는 다음 문제를 놓칩니다.
@@ -59,7 +24,6 @@ readOnlyHint=true인 Tool이 외부 업무 Record를 변경한다.
 
 > 이 글의 Agent, Tenant, URL, Payload, Version, 지연 시간과 판정 결과는 모두 교육용 합성 예시입니다. 특정 회사·고객·제품·운영 환경을 나타내지 않습니다. A2A와 MCP는 계속 진화하므로 실제 구현에서는 고정한 Protocol Version의 공식 Specification과 SDK Conformance Test를 다시 확인해야 합니다.
 
-<a id="ai-section-1"></a>
 ## 1. Agent 통합에는 API 테스트보다 넓은 계약이 필요하다
 
 일반 API Contract Test는 요청 Method, Path, Header, Body와 응답 Schema를 확인합니다. Agent 통합도 이 기반이 필요하지만, 계약의 범위가 더 넓습니다.
@@ -88,7 +52,6 @@ Agent Contract
 
 HTTP 200만 확인하면 Protocol 연결성은 알 수 있지만 업무 호환성은 증명하지 못합니다.
 
-<a id="ai-section-2"></a>
 ## 2. Contract Test와 AI Evaluation을 분리한다
 
 두 검증은 목적과 판정 방식이 다릅니다.
@@ -113,7 +76,6 @@ Contract FAIL + Evaluation PASS
 
 따라서 Contract Gate를 먼저 통과한 실행만 품질 Evaluation 대상으로 승격하는 것이 안전합니다.
 
-<a id="ai-section-3"></a>
 ## 3. 검증 범위를 6계층으로 나눈다
 
 계약을 한 종류의 Schema Test로 축소하지 않습니다.
@@ -146,7 +108,6 @@ flowchart TB
 
 이 분류를 사용하면 “테스트가 실패했다”가 아니라 **어떤 계약 계층이 깨졌는지** 운영자가 바로 판단할 수 있습니다.
 
-<a id="ai-section-4"></a>
 ## 4. Contract Bundle을 단일 검증 단위로 만든다
 
 Agent Card, Schema와 Test Case를 각 Repository에 흩어 두면 어떤 조합이 배포됐는지 재구성하기 어렵습니다. 검증 입력을 Versioned Contract Bundle로 묶습니다.
@@ -190,7 +151,6 @@ Bundle에는 Secret이나 실제 고객 Payload를 넣지 않습니다. 합성 F
 }
 ```
 
-<a id="ai-section-5"></a>
 ## 5. Version과 Digest로 검증 대상을 고정한다
 
 `latest`를 대상으로 한 테스트 결과는 재현할 수 없습니다. 최소 네 Version을 고정해야 합니다.
@@ -215,7 +175,6 @@ agent_card_snapshot:
 
 Registry가 승인한 Card Digest와 Dispatch 시 관찰한 Digest가 다르면 Router는 새 선언을 자동 신뢰하지 않고 재검증 상태로 전환해야 합니다.
 
-<a id="ai-section-6"></a>
 ## 6. Agent Card의 정적 선언을 먼저 검사한다
 
 A2A Agent Card는 Agent의 Identity, Capability, Skill, Interface와 인증 요구사항을 기술하는 발견 문서입니다. 정적 검사는 다음을 확인합니다.
@@ -243,7 +202,6 @@ expect:
 
 Schema가 유효하다는 사실만으로 Agent가 선언을 실제 지원한다는 뜻은 아닙니다. 정적 검사는 다음 동적 Test의 입력을 확정하는 첫 단계입니다.
 
-<a id="ai-section-7"></a>
 ## 7. A2A Interface와 Capability를 실제 호출로 대조한다
 
 Agent가 세 Interface를 선언했다면 모든 조합을 무조건 테스트하지 않고, Registry가 활성화할 Interface마다 최소 Conformance Scenario를 실행합니다.
@@ -267,7 +225,6 @@ AgentInterface
 
 Card 선언과 실제 응답이 다르면 “문서 오류”로 낮춰 보지 않습니다. Router의 선택과 Client 동작을 바꾸는 **호환성 결함**입니다.
 
-<a id="ai-section-8"></a>
 ## 8. Skill과 Content Mode 계약을 예제로 고정한다
 
 Skill Description은 자연어라서 Schema만으로 검증하기 어렵습니다. 따라서 대표 요청·응답 Example과 금지 사례를 함께 둡니다.
@@ -300,7 +257,6 @@ skill_contract:
 
 자연어 Skill 설명을 기계적 권한 근거로 사용해서는 안 됩니다. 권한·Side Effect는 별도 구조화된 정책과 Invariant로 검증합니다.
 
-<a id="ai-section-9"></a>
 ## 9. A2A Task를 상태 머신으로 검증한다
 
 A2A Task는 상태를 가진 Protocol 객체입니다. 각 응답 JSON이 유효해도 불가능한 순서로 전이하면 Consumer는 복구할 수 없습니다.
@@ -347,7 +303,6 @@ terminal Task에 추가 Message 전송
 timestamp 역행 또는 동일 Event 중복 처리 실패
 ```
 
-<a id="ai-section-10"></a>
 ## 10. Streaming·Push·Cancel은 별도 시나리오로 검증한다
 
 동기 Send Message가 성공해도 비동기 Capability가 같은 계약을 지킨다고 가정할 수 없습니다.
@@ -376,7 +331,6 @@ timestamp 역행 또는 동일 Event 중복 처리 실패
 
 비동기 계약은 최종 상태만 보지 않고 **Event 순서와 종료 후 부작용**까지 관찰해야 합니다.
 
-<a id="ai-section-11"></a>
 ## 11. Error Contract는 Code·Condition·Retry를 함께 본다
 
 오류 계약은 `message` 문자열 일치가 아닙니다.
@@ -403,7 +357,6 @@ error_contract:
 
 MCP에서는 Tool 실행 중 발생한 업무 오류와 Tool 자체를 찾지 못한 Protocol 오류를 구분해야 합니다. 업무 오류를 모두 JSON-RPC Internal Error로 반환하면 Model과 Orchestrator가 수정 가능한 입력 오류인지 인프라 장애인지 판단하기 어렵습니다.
 
-<a id="ai-section-12"></a>
 ## 12. MCP Tool 목록과 Schema Snapshot을 대조한다
 
 MCP Client가 관찰한 `tools/list` 결과를 Contract Bundle의 Snapshot과 비교합니다.
@@ -456,7 +409,6 @@ MCP `2026-07-28`에서는 요청별 Credential에 따라 호출자가 볼 수 �
 
 Schema Snapshot의 순서나 Description 공백처럼 의미 없는 차이는 정규화하고, 실제 Consumer 호환성에 영향을 주는 Semantic Diff를 별도 계산합니다.
 
-<a id="ai-section-13"></a>
 ## 13. Input·Output을 JSON Schema로 양방향 검증한다
 
 MCP `2026-07-28`은 Tool `inputSchema`와 `outputSchema`에 JSON Schema Draft 2020-12를 사용할 수 있습니다. Contract Test는 두 방향을 모두 검사해야 합니다.
@@ -496,7 +448,6 @@ expect:
 
 외부 `$ref`를 검증 시 임의 Network로 자동 조회하면 SSRF와 재현성 문제가 생길 수 있습니다. Bundle 안에 허용된 Schema를 함께 넣고, Reference 깊이·검증 시간·Payload 크기를 제한합니다.
 
-<a id="ai-section-14"></a>
 ## 14. Tool Annotation은 실행 관찰로 검증한다
 
 MCP Tool Annotation의 `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`는 이름 그대로 Hint입니다. 특히 신뢰하지 않는 Server의 Annotation만으로 실행 허용을 결정하면 안 됩니다.
@@ -530,7 +481,6 @@ openWorldHint=false + 허용 목록 밖 Network 호출
 
 Annotation은 Policy 입력 후보일 뿐이며, 신뢰 등급·Publisher·관찰 증거를 함께 평가해야 합니다.
 
-<a id="ai-section-15"></a>
 ## 15. Authorization과 Tenant 격리를 계약에 포함한다
 
 인증 성공만 테스트하지 않습니다. 각 Operation의 권한 경계를 Matrix로 만듭니다.
@@ -558,7 +508,6 @@ expect:
 
 Agent Card의 `tenant` Routing 값은 업무 데이터 인가를 대신하지 않습니다. Routing과 Authorization을 별도 Test로 검증해야 합니다.
 
-<a id="ai-section-16"></a>
 ## 16. Side Effect·멱등성·승인을 결과와 함께 검증한다
 
 Tool이나 Agent가 반환한 JSON만 확인하면 실제 업무 상태를 놓칩니다. Contract Harness는 격리된 업무 Store, Outbox와 외부 호출 기록을 함께 관찰합니다.
@@ -587,7 +536,6 @@ invariants:
 
 A2A 1.0에서 Send Message의 중복 검출은 `messageId`를 활용할 수 있지만 Operation 자체의 멱등성은 선택적입니다. 따라서 Protocol 중복 검출과 업무 Side Effect의 멱등성을 같은 것으로 보지 않고, 쓰기 Tool·업무 API에는 별도의 Business Idempotency Key와 결과 Ledger를 계약으로 둡니다.
 
-<a id="ai-section-17"></a>
 ## 17. 시간과 복구 동작도 계약이다
 
 Agent 통합은 시간이 흐르면서 상태가 바뀝니다. 다음도 검증 가능한 계약으로 선언합니다.
@@ -612,7 +560,6 @@ temporal_contract:
 
 수치는 교육용 예시이며 실제 SLO와 실행 특성에 맞게 정합니다. 중요한 것은 평균 시간만 보는 것이 아니라 **시간 초과 후의 상태와 부작용**을 함께 판정하는 것입니다.
 
-<a id="ai-section-18"></a>
 ## 18. 호환성 변경을 유형별로 판정한다
 
 모든 JSON 변경이 Breaking Change는 아니며, 필드 추가가 항상 안전한 것도 아닙니다.
@@ -638,7 +585,6 @@ Candidate Producer
   = Deployable 여부
 ```
 
-<a id="ai-section-19"></a>
 ## 19. Consumer-driven Contract로 실제 기대를 보존한다
 
 Provider가 작성한 Agent Card와 Schema만 검사하면 실제 Orchestrator가 의존하는 세부 조건을 놓칠 수 있습니다. Consumer-driven Contract는 Consumer Test가 기대하는 Interaction을 기록하고 Provider에서 재생합니다.
@@ -666,7 +612,6 @@ Agent 통합에서는 Pact 개념을 그대로 복사하기보다 다음까지 �
 
 Contract는 Consumer가 실제 사용하는 Interaction만 보존하므로, Provider의 모든 기능을 대신하는 기능 테스트가 아닙니다. Protocol Conformance Suite와 함께 사용해야 합니다.
 
-<a id="ai-section-20"></a>
 ## 20. Negative Test를 정상 사례만큼 중요하게 다룬다
 
 Happy Path만 통과한 Agent는 운영에 충분하지 않습니다. 특히 보안과 복구 계약은 실패 입력에서 드러납니다.
@@ -700,7 +645,6 @@ Negative Test는 “오류가 났는가”만 보지 않습니다.
 Audit Event가 생성됐는가?
 ```
 
-<a id="ai-section-21"></a>
 ## 21. Fixture와 Test Double의 경계를 통제한다
 
 Contract Test는 빠르고 결정적이어야 하지만, 모든 의존성을 Mock으로 바꾸면 실제 Provider 동작과 멀어집니다.
@@ -729,7 +673,6 @@ tenant-fixture-b / run-fixture-002
 
 실제 고객 Data와 Production Credential을 Test Fixture로 복사하지 않습니다.
 
-<a id="ai-section-22"></a>
 ## 22. Contract Matrix로 조합 폭발을 관리한다
 
 모든 조합의 전체 E2E Test는 비용이 큽니다. 위험 기반 Matrix를 만듭니다.
@@ -763,7 +706,6 @@ coverage_policy:
 
 테스트 수보다 중요한 것은 **어떤 위험을 어떤 조합이 커버하는지 추적 가능하게 만드는 것**입니다.
 
-<a id="ai-section-23"></a>
 ## 23. Registry Admission과 Release Gate를 연결한다
 
 Contract Test는 개발팀 보고서로 끝나지 않고 Control Plane의 상태 전이와 연결해야 합니다.
@@ -813,7 +755,6 @@ Registry에는 단순 `verified=true` 대신 다음 증거를 연결합니다.
 
 Artifact나 Card Digest가 바뀌면 기존 증거를 재사용하지 않습니다.
 
-<a id="ai-section-24"></a>
 ## 24. Runtime Drift를 탐지하고 격리한다
 
 CI를 통과한 뒤에도 Configuration, Feature Flag, Dependency와 Model 경로 때문에 실제 동작이 달라질 수 있습니다.
@@ -849,7 +790,6 @@ drift_policy:
 Observe → Warn → Stop Canary → Disable Route → Quarantine Version
 ```
 
-<a id="ai-section-25"></a>
 ## 25. 합성 정상·실패 사례로 전체 흐름을 검증한다
 
 ### 정상 사례: 업무 계획 Draft 생성
@@ -911,7 +851,6 @@ Production Consumer: draft 분기 사용 중
 조치: Expand-and-Contract 없이 배포 차단
 ```
 
-<a id="ai-section-26"></a>
 ## 26. 단계적으로 구현한다
 
 ### 1단계: 계약 수집
@@ -947,7 +886,6 @@ Production Consumer: draft 분기 사용 중
 
 처음부터 모든 Binding과 Skill을 완벽히 덮으려 하지 말고, 고위험 Side Effect와 현재 Production Consumer부터 시작합니다.
 
-<a id="ai-section-27"></a>
 ## 27. 운영 체크리스트와 마무리
 
 ### 선언·Version
@@ -991,7 +929,6 @@ Side Effect와 복구 동작이 선언과 일치하는가?
 
 이 질문에 결정적 증거로 답할 수 있어야 Registry와 Router가 Agent를 안전하게 선택할 수 있습니다. Contract Test가 통합 가능성을 지키고, Evaluation이 결과 품질을 지키며, 두 Gate가 함께 운영 가능한 Agent 생태계를 만듭니다.
 
-<a id="ai-section-28"></a>
 ## 28. 공식 참고자료
 
 - A2A Protocol Specification: https://a2a-protocol.org/latest/specification/

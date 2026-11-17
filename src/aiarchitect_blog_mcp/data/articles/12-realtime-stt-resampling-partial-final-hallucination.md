@@ -4,31 +4,6 @@
 
 ![마이크 입력이 오디오 정규화와 실시간 추론을 거쳐 신뢰할 수 있는 확정 자막으로 수렴하는 대표 이미지](assets/blog-12-realtime-stt-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실제 입력 Sample Rate를 확인한다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audio Contract를 먼저 고정한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">AudioWorklet Callback 크기를 가정하지 않는다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">48kHz에서 16kHz로 안전하게 변환한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Channel과 PCM Encoding을 정규화한다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Capture Chunk와 Inference Window를 분리한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Partial과 Final의 계약을 분리한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">안정된 Prefix를 합의한 뒤 확정한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Audio Frame으로 시간축을 계산한다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">여러 Gate로 환각을 억제한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">한국어 고유명사와 문장 경계를 조정한다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Backpressure에서 오래된 음성을 제한한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자막 저장에 상태 전이와 멱등성을 둔다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">지연과 정확도를 함께 관측한다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">고정 Audio와 실제 Browser를 함께 시험한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 전 점검 체크리스트</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. 서로 다른 입력 시간축과 바뀌는 가설을 하나의 신뢰 가능한 Final 자막 흐름으로 정리합니다.*
 
 파일 하나를 끝까지 받은 뒤 처리하는 STT(Speech-to-Text, 음성 인식)는 입력 형식을 정규화하고 모델을 한 번 실행하면 됩니다.

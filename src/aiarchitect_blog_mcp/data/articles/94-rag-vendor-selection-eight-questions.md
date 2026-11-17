@@ -4,28 +4,6 @@ RAG 구축 업체를 고를 때 업체 검토는 시연 중심으로 끝나기 �
 
 ![RAG 구축 업체 선정에서 시연 단계의 검증 항목과 운영 단계에서 실제로 문제가 되는 항목의 간극을 대비해 보여주는 도식](assets/blog-94-rag-vendor-selection-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">데모는 통과했는데 운영에서 무너지는 이유</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">확인 단계를 나누고 미팅 전에 준비한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 1 — 우리 데이터와 사용자 권한은 어디서 어떤 기준으로 통제됩니까</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 2 — 우리 문서에서 무엇이 얼마나 추출되고 바뀌면 언제 반영됩니까</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 3 — 답변의 근거를 어디까지 되짚을 수 있습니까</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 4 — 정확도를 무엇으로 재고 바꾼 뒤 어떻게 다시 검증합니까</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 5 — 실패와 장애에 어떤 동작과 복구 책임을 약속합니까</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 6 — 운영 비용은 무엇에 비례해 늘어납니까</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 7 — 인수 기준과 PoC 종료 조건을 계약서에 어떻게 씁니까</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">질문 8 — 우리 팀이 이어받으려면 무엇이 필요합니까</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업체가 제시한 구축 사례를 검증하는 여섯 가지</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">판정표와 증빙 통과 기준</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-<a id="ai-section-1"></a>
-
 ## 1. 데모는 통과했는데 운영에서 무너지는 이유
 
 시연과 운영은 시험 조건이 다릅니다. 시연은 업체가 고른 문서, 업체가 예상한 질문, 한 명의 사용자, 고정된 시점에서 이뤄집니다. 운영 환경은 조직마다 다르지만, 문서 포맷이 섞이고 사용자마다 권한이 갈리고 문서가 계속 바뀐다는 점에서 시연 조건과 멀어지는 경우가 많습니다.
@@ -43,8 +21,6 @@ RAG 구축 업체를 고를 때 업체 검토는 시연 중심으로 끝나기 �
 ![시연에서 확인되는 항목과 운영에서 실제 위험이 되는 항목이 어긋나 있고 그 간극을 증빙과 단계별 확인으로 메우는 흐름](assets/blog-94-demo-vs-operation-gap.png)
 
 프로젝트 성공 기준 자체를 어떻게 정의하는지는 [AI 프로젝트 성공 기준 8가지](https://aiarchitect.tistory.com/20)에서 따로 다뤘습니다. 이 글은 그 기준을 **업체에 요구하고 확인하는 방법**에 집중합니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. 확인 단계를 나누고 미팅 전에 준비한다
 
@@ -78,8 +54,6 @@ RAG 구축 업체를 고를 때 업체 검토는 시연 중심으로 끝나기 �
 
 이 항목들이 비어 있으면 업체가 제안서를 자기 편한 전제로 채우고, 그 전제는 계약 후 추가 비용이나 일정 변경으로 이어질 수 있습니다. 우리 조직의 데이터·연동·권한 준비 상태를 검증 가능한 형태로 점검하려면 [AI Agent 도입 준비도 진단](https://aiarchitect.tistory.com/69)을 함께 보시기 바랍니다.
 
-<a id="ai-section-3"></a>
-
 ## 3. 질문 1 — 우리 데이터와 사용자 권한은 어디서 어떤 기준으로 통제됩니까
 
 가장 먼저 물어야 할 질문입니다. RAG에서 권한 사고는 화면이 아니라 그 앞 단계에서 납니다. 사용자가 볼 수 없는 문서라도 그 내용이 AI에 전달되면, 요약이나 추론을 거쳐 답변에 섞여 나올 수 있습니다.
@@ -105,8 +79,6 @@ RAG 구축 업체를 고를 때 업체 검토는 시연 중심으로 끝나기 �
 
 설계 관점의 상세는 [멀티테넌트 RAG 보안](https://aiarchitect.tistory.com/25)에 정리해 두었습니다.
 
-<a id="ai-section-4"></a>
-
 ## 4. 질문 2 — 우리 문서에서 무엇이 얼마나 추출되고 바뀌면 언제 반영됩니까
 
 RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되기도 합니다. 스캔 PDF, 표, 이미지 안의 글자, 오래된 포맷, 첨부파일은 일부 내용이 누락된 채 색인될 수 있습니다. 그 다음 문제가 갱신입니다. 폐기된 규정이나 지난 분기 가격표가 계속 인용되는 것은 원본은 지웠는데 색인에 남아 있기 때문입니다.
@@ -127,8 +99,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 
 중복과 갱신 처리 방식은 [RAG 운영 설계: 멱등 인덱싱](https://aiarchitect.tistory.com/9)에서 다뤘습니다.
 
-<a id="ai-section-5"></a>
-
 ## 5. 질문 3 — 답변의 근거를 어디까지 되짚을 수 있습니까
 
 출처는 신뢰의 문제이자 책임의 문제입니다. 답이 틀렸을 때 어디서 왔는지 확인할 수 없으면 원인을 고칠 수 없고, 담당자는 그 답을 업무에 쓰기 어렵습니다.
@@ -143,8 +113,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 **좋은 신호** — 문서 형식에 맞는 재현 가능한 위치를 제시합니다. PDF는 페이지와 절, 스프레드시트는 시트와 셀, 메일과 게시판은 원문 링크와 작성 시점입니다. 근거를 찾지 못했을 때 출처 없이 답하지 않는다는 점도 함께 말합니다.
 
 **위험 신호** — 문서 제목만 보여주거나, 출처가 실제 근거와 무관하게 붙는 경우입니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. 질문 4 — 정확도를 무엇으로 재고 바꾼 뒤 어떻게 다시 검증합니까
 
@@ -175,8 +143,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 
 한 가지 계약 조건을 미리 정해 두십시오. 업체의 기존 벤치마크나 평가 도구까지 우리 소유가 될 필요는 없지만, **이 프로젝트의 인수용 질문·정답·채점 기준·결과·버전 이력은 우리가 열람하고 반출하고 재사용할 수 있어야 합니다.** 업체를 바꿔도 같은 기준으로 비교할 수 있어야 하기 때문입니다.
 
-<a id="ai-section-7"></a>
-
 ## 7. 질문 5 — 실패와 장애에 어떤 동작과 복구 책임을 약속합니까
 
 운영 전에 반드시 대비해야 하는 상황입니다. 근거를 못 찾았을 때와 시스템이 멈췄을 때를 나눠 물어야 합니다.
@@ -195,8 +161,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 
 **위험 신호** — 위험도와 무관하게 "그래도 답은 나옵니다"로 일관하거나, 장애 시 연락 체계와 복구 책임이 계약에 없는 경우입니다.
 
-<a id="ai-section-8"></a>
-
 ## 8. 질문 6 — 운영 비용은 무엇에 비례해 늘어납니까
 
 계약 시점의 월 비용보다 **증가 곡선**이 중요합니다.
@@ -213,8 +177,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 **위험 신호** — 월 정액 하나만 제시하고 초과 조건을 말하지 않는 경우입니다. 문서가 자주 바뀌는 조직이라면 재색인 관련 비용이 예상보다 커질 수 있으므로, 제안서에 그 항목이 있는지 확인하십시오.
 
 견적을 구성하는 항목 전반과 시나리오 작성법은 [AI 프로젝트 견적 10개 산정 항목](https://aiarchitect.tistory.com/21)에서 다뤘습니다.
-
-<a id="ai-section-9"></a>
 
 ## 9. 질문 7 — 인수 기준과 PoC 종료 조건을 계약서에 어떻게 씁니까
 
@@ -233,8 +195,6 @@ RAG 실패는 검색 이전, 문서를 읽어 들이는 단계에서 시작되�
 PoC 계약에는 다음 다섯 가지를 넣어 두십시오. 평가 질문 세트는 발주자가 제공하고 결과에 대한 재사용 권리를 확보한다, 권한 시험 케이스를 포함하고 전건 통과를 조건으로 한다, 문서 갱신과 삭제 반영을 시험 항목에 넣는다, 근거를 찾지 못한 경우의 동작을 명시한다, **PoC 결과가 기준에 미달했을 때 중단·축소·재산정 중 무엇을 하는지 정한다**. 마지막 항목이 없으면 PoC가 형식적인 통과 의례가 됩니다.
 
 PoC가 운영으로 넘어가지 못하는 전형적인 원인은 [AI PoC가 운영 단계에서 멈추는 이유](https://aiarchitect.tistory.com/15)에 정리했습니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. 질문 8 — 우리 팀이 이어받으려면 무엇이 필요합니까
 
@@ -264,8 +224,6 @@ PoC가 운영으로 넘어가지 못하는 전형적인 원인은 [AI PoC가 운
 
 **위험 신호** — "저희가 계속 운영해 드립니다"만 반복하는 경우입니다. 위탁 운영 자체는 문제가 아니지만, 이관이 **불가능한** 구조인지 **선택하지 않은** 것인지는 구분해야 합니다.
 
-<a id="ai-section-11"></a>
-
 ## 11. 업체가 제시한 구축 사례를 검증하는 여섯 가지
 
 업체가 제시하는 구축 사례는 성공한 장면 중심으로 제시되기 쉽습니다. 사례를 들을 때는 다음 여섯 가지를 물어보십시오.
@@ -278,8 +236,6 @@ PoC가 운영으로 넘어가지 못하는 전형적인 원인은 [AI PoC가 운
 6. **익명화된 인수 보고서나 고객 확인 같은 증빙이 가능합니까** — 실명 공개 없이도 제출할 수 있는 형태입니다
 
 고객사 실명을 밝히기 어려운 것은 흔한 일입니다. 다만 **실명을 못 밝히는 것과 내용을 설명하지 못하는 것은 다릅니다.** 익명화한 상태에서 답할 수 있는 항목이 하나도 없다면 확인이 더 필요합니다. 반대로 재식별 위험이나 고객 계약 때문에 일부 항목만 답하지 못하는 것은 실패가 아니라 대체 증빙이나 미평가로 처리하는 편이 공정합니다.
-
-<a id="ai-section-12"></a>
 
 ## 12. 판정표와 증빙 통과 기준
 
@@ -322,8 +278,6 @@ PoC가 운영으로 넘어가지 못하는 전형적인 원인은 [AI PoC가 운
 ### 가중치는 조직마다 다르게 잡는다
 
 규제 업종이라면 데이터 처리 위치와 삭제가, 고객 응대 시스템이라면 최신성과 가용성이 차단 기준일 수 있습니다. **우리 조직에서 한 번이라도 어긋나면 안 되는 항목을 두세 개 먼저 정하고, 그 항목은 다른 점수로 상쇄하지 않는다**고 규칙을 세워 두십시오.
-
-<a id="ai-section-13"></a>
 
 ## 13. 마무리
 

@@ -4,28 +4,6 @@
 
 ![해결된 의존성과 Source가 하나의 불변 Artifact로 결합되고 SBOM·Provenance·서명 증거를 갖춘 뒤 검증 Gate를 통과하며 악성 구성요소는 격리되는 Software Supply Chain 보안 흐름](assets/blog-55-software-supply-chain-evidence-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">A03는 오래된 Library보다 넓은 문제다</a></li>
-<li><a href="#ai-section-2">먼저 공급망 경계를 그린다</a></li>
-<li><a href="#ai-section-3">의존성은 선언 Version이 아니라 해결 결과로 관리한다</a></li>
-<li><a href="#ai-section-4">Repository를 Allowlist하고 Dependency Confusion을 차단한다</a></li>
-<li><a href="#ai-section-5">SBOM은 Build 시점의 해결 결과에서 만든다</a></li>
-<li><a href="#ai-section-6">Vulnerability Scan은 발견 이후의 정책이 더 중요하다</a></li>
-<li><a href="#ai-section-7">한 번 Build하고 환경 사이에서는 Promotion한다</a></li>
-<li><a href="#ai-section-8">서명과 Provenance는 기대한 Identity까지 검증한다</a></li>
-<li><a href="#ai-section-9">배포 Gate는 모든 증거를 같은 Digest로 묶는다</a></li>
-<li><a href="#ai-section-10">CI/CD를 Application보다 약하게 두지 않는다</a></li>
-<li><a href="#ai-section-11">자동화 Test는 실패 경로를 증명해야 한다</a></li>
-<li><a href="#ai-section-12">탐지·대응은 이미 배포된 Artifact까지 연결한다</a></li>
-<li><a href="#ai-section-13">흔하지만 불충분한 대응</a></li>
-<li><a href="#ai-section-14">실무 체크리스트</a></li>
-<li><a href="#ai-section-15">마무리</a></li>
-<li><a href="#ai-section-16">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 우리 코드가 안전해도 빌드에 들어온 라이브러리, Plugin, Base Image 또는 CI Action이 바뀌면 최종 Artifact는 달라집니다. 배포 파일이 정상적인 Source와 승인된 Build에서 만들어졌는지 확인하지 않으면, 취약한 의존성뿐 아니라 변조된 Build 과정도 운영에 들어갈 수 있습니다.
 
 Software Supply Chain 보안은 `CVE Scan을 통과했는가`라는 한 가지 질문으로 끝나지 않습니다.

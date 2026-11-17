@@ -10,21 +10,6 @@
 
 아래 주제 허브는 기술 이름보다 **지금 해결하려는 문제**를 기준으로 글을 찾도록 구성했습니다. 처음 방문했다면 관심 있는 경로에서 한 편을 고르고, 글 안의 관련 글을 따라가면 됩니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">이 블로그가 다루는 문제</a></li>
-<li><a href="#ai-section-2">AI Agent·MCP와 업무 자동화</a></li>
-<li><a href="#ai-section-3">RAG·STT와 데이터 파이프라인</a></li>
-<li><a href="#ai-section-4">SDK·테스트와 릴리스 엔지니어링</a></li>
-<li><a href="#ai-section-5">Secure Coding과 보안 운영</a></li>
-<li><a href="#ai-section-6">처음 읽는 추천 경로</a></li>
-<li><a href="#ai-section-7">작성 원칙</a></li>
-<li><a href="#ai-section-8">이 블로그가 다루지 않는 것</a></li>
-<li><a href="#ai-section-9">참고 자료</a></li>
-</ol>
-</blockquote>
-
 ## 1. 이 블로그가 다루는 문제
 
 - AI Agent와 MCP를 이용한 업무 자동화

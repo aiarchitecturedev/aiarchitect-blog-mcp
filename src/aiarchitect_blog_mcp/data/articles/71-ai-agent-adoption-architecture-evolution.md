@@ -4,31 +4,11 @@ PoC에서 동작한 AI Agent를 운영에 올릴 때 바뀌는 것은 모델이 
 
 ![단일 PoC 코어가 영속 상태·비동기 작업·정책·관측성·안전한 배포 계층을 갖춘 운영 아키텍처로 진화하는 모습](assets/blog-71-ai-agent-production-evolution-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">합성 시나리오 설정</a></li>
-<li><a href="#ai-section-2">동기 → 비동기: 요청-응답에서 작업 큐로</a></li>
-<li><a href="#ai-section-3">인메모리 상태 → 영속 상태: 재시작에 견디는 실행</a></li>
-<li><a href="#ai-section-4">재시도·멱등성·아웃박스</a></li>
-<li><a href="#ai-section-5">광범위 권한 → 최소 권한·승인 경계</a></li>
-<li><a href="#ai-section-6">단일 모델 호출 → 폴백·서킷 브레이커</a></li>
-<li><a href="#ai-section-7">로그 → 관측성: 추적·평가·감사</a></li>
-<li><a href="#ai-section-8">수동 배포 → 버전·롤백·섀도우</a></li>
-<li><a href="#ai-section-9">진화 요약: 관심사별 before → after</a></li>
-<li><a href="#ai-section-10">PoC에서 미리 설계하면 재작업이 주는 것</a></li>
-<li><a href="#ai-section-11">맺음말</a></li>
-<li><a href="#ai-section-12">참고 자료</a></li>
-</ol>
-</blockquote>
-
 기업 AI Agent 도입 로드맵의 마지막 구간은 **운영 전환**입니다. [기업 AI Agent 도입 로드맵 6단계](https://aiarchitect.tistory.com/65)에서 5·6단계로 다룬 그 전환을, 이 글은 성공 사례담이 아니라 **아키텍처가 어떻게 바뀌는가**로 다룹니다. 무엇이 좋아졌는지가 아니라, **어떤 실패 모드가 어떤 구조 변경을 강제하는지**를 봅니다.
 
 PoC와 운영은 최적화 대상이 다릅니다. PoC는 "이게 되는가"를 빠르게 보이도록 최적화하고, 운영은 "실패해도 안전한가·복구되는가·감사되는가"로 최적화합니다. 그래서 시연이 된 아키텍처를 그대로 켜면, 첫 타임아웃·재시도·권한 사고에서 구조를 다시 설계하게 됩니다([AI PoC가 운영 단계에서 멈추는 이유](https://aiarchitect.tistory.com/15)).
 
 > 이 글은 공개된 분산 시스템·Agent 운영 패턴을 조합한 **교육용 가상 시나리오**입니다. 단일 또는 복수 고객 프로젝트를 재구성한 사례 연구가 아니며, 특정 고객·회사·제품이나 실제 운영 성과 수치를 나타내지 않습니다. 구조·값·이름은 모두 예시이고 상호 참조 링크만 실제 URL입니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 합성 시나리오 설정
 
@@ -46,8 +26,6 @@ PoC 아키텍처는 대개 이렇게 단순합니다.
 *PoC 구조 — 빠른 가설 검증에는 유리하지만 상태·권한·복구 경계가 한 실행에 붙어 있습니다.*
 
 이 구조가 운영에서 만나는 실패 모드를 하나씩 따라가며 바꿉니다. 각 절은 **실패 모드 → before → after → 보장할 불변조건**으로 봅니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. 동기 → 비동기: 요청-응답에서 작업 큐로
 
@@ -67,8 +45,6 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 
 *운영 실행 경로 — 접수·실행·결과 사용 가능 상태를 분리해 타임아웃과 중복 요청을 통제합니다.*
 
-<a id="ai-section-3"></a>
-
 ## 3. 인메모리 상태 → 영속 상태: 재시작에 견디는 실행
 
 - **실패 모드**: 워커가 재배포·크래시로 재시작되면 진행 중이던 다단계 작업이 사라집니다. 어디까지 했는지 알 수 없어 처음부터 다시 하거나, 부분 실행된 채 방치됩니다.
@@ -79,8 +55,6 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 ```json
 { "job_id": "job-…", "step": "tool_call:create_ticket", "state": "executing", "operation_id": "op-…", "lease_owner": "worker-3", "lease_expires_at": "…", "fencing_token": 42, "schema_version": 2, "attempt": 1 }
 ```
-
-<a id="ai-section-4"></a>
 
 ## 4. 재시도·멱등성·아웃박스: at-least-once 위에서 중복 효과를 조건부로 억제
 
@@ -95,16 +69,12 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 | 쓰기 중복 | 가능 | 멱등 키 + 소비자 dedup |
 | 부수효과 | 인라인 실행 | 아웃박스로 분리(동일 트랜잭션 기록) |
 
-<a id="ai-section-5"></a>
-
 ## 5. 광범위 권한 → 최소 권한·승인 경계
 
 - **실패 모드**: PoC의 관리자 토큰을 그대로 켜면, 프롬프트 인젝션이나 오작동이 곧바로 광범위한 시스템 변경으로 이어집니다.
 - **before**: 단일 관리자 자격 증명, 모든 액션 무인 실행.
 - **after**: 테넌트·사용자·자원 단위 **최소 권한**, 자격 증명은 브로커가 단기 토큰으로 주입([자격 증명 관리](https://aiarchitect.tistory.com/24)). 중요·파괴 액션은 사용자·테넌트·대상·정규화된 인자·정책 버전·만료에 묶인 **승인 바인딩**을 거치고 결정·승인·실행·감사가 하나의 체인으로 남습니다([엔터프라이즈 권한 설계](https://aiarchitect.tistory.com/19)). 비동기라면 **실행 직전에 권한을 재검증**합니다(승인 시점과 실행 시점이 다르므로).
 - **불변조건**: 실행 시점에 유효한 최소 권한 없이, 그리고 정책상 승인이 필요한 쓰기는 유효한 승인 없이, 실행되지 않는다.
-
-<a id="ai-section-6"></a>
 
 ## 6. 단일 모델 호출 → 폴백·서킷 브레이커
 
@@ -113,8 +83,6 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 - **after**: 제공자를 **교체 가능한 어댑터**로 두고([멀티 LLM Agent Core](https://aiarchitect.tistory.com/13)), 타임아웃·서킷 브레이커·폴백 경로와 **품질 저하 모드(graceful degradation)** 를 둡니다. 다만 모델 교체는 의미적으로 투명하지 않으므로 **capability 매트릭스·품질 평가·데이터 반출 정책·비용 한도**를 함께 정하고, **Tool 부수효과를 실행한 뒤에는 폴백으로 재실행하지 않습니다**(중복 효과 방지). 예: 액션 Agent가 불가하면 읽기 전용 답변으로 축소.
 - **불변조건**: 폴백은 이미 확정된 부수효과를 재실행하지 않는다.
 
-<a id="ai-section-7"></a>
-
 ## 7. 로그 → 관측성: 추적·평가·감사
 
 - **실패 모드**: "가끔 이상한 답을 한다"는 신고가 오는데, 표준출력 로그만으로는 어느 단계·어느 도구·어느 입력에서 틀어졌는지 재구성할 수 없습니다.
@@ -122,16 +90,12 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 - **after**: 요청→계획→도구 호출→응답을 잇는 **분산 추적(trace)**, 회귀를 잡는 **오프라인 평가 세트**, 누가·무엇을·언제 실행했는지의 **감사 이벤트**를 분리해 남깁니다. 단 trace·평가 세트에도 프롬프트·검색 결과·Tool 인자 같은 민감정보가 들어가므로, 로그뿐 아니라 **trace·평가 데이터의 마스킹·접근 권한·보존 기간**을 함께 정합니다.
 - **불변조건**: 관측 데이터 어디에도 시크릿·미마스킹 PII가 남지 않는다.
 
-<a id="ai-section-8"></a>
-
 ## 8. 수동 배포 → 버전·롤백·섀도우
 
 - **실패 모드**: 프롬프트·모델·도구 스키마를 바꿔 배포했는데 품질이 나빠져도, 되돌릴 버전과 절차가 없어 장애가 길어집니다.
 - **before**: 프롬프트·설정을 손으로 바꿔 즉시 반영, 롤백 불가.
 - **after**: 프롬프트·정책·도구 스키마를 **버전 아티팩트**로 관리하고, 이전 버전과의 호환을 확인한 **롤백** 절차를 둡니다. 새 버전 검증에는 **섀도우와 카나리를 구분**합니다 — 섀도우는 복제 트래픽을 흘리되 **쓰기 부수효과를 차단**하고, 카나리는 실제 일부 트래픽이므로 **중단 기준과 kill switch**가 필요합니다. 단, 롤백은 코드·설정을 되돌릴 뿐 **이미 발생한 외부 액션·데이터 변경을 되돌리지는 못하므로** 보상 트랜잭션을 따로 설계합니다.
 - **불변조건**: 모든 활성 버전은 되돌릴 수 있고, 섀도우 트래픽은 외부 상태를 바꾸지 않는다.
-
-<a id="ai-section-9"></a>
 
 ## 9. 진화 요약: 관심사별 before → after
 
@@ -151,8 +115,6 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 
 *운영 진화 묶음 — 내구성, 권한, 관측, 배포를 순서대로 연결하고 운영 증거를 다음 변경에 반영합니다.*
 
-<a id="ai-section-10"></a>
-
 ## 10. PoC에서 미리 설계하면 재작업이 주는 것
 
 운영 전환의 재작업은 흔히 "PoC에서 결정을 미룬 지점"에서 생깁니다. 다음은 PoC 단계에서 인터페이스만이라도 미리 그어두면 이후 구조 변경 범위를 줄일 수 있는 지점입니다.
@@ -163,8 +125,6 @@ GET  /jobs/{id}  → { state: queued|running|succeeded|failed,
 - 단계마다 **상관 ID(correlation id)** 를 로깅해 이후 추적으로 승격 가능하게 하기.
 
 이 준비가 전환을 자동으로 끝내주지는 않지만, 후속 구조 변경을 "재설계"가 아니라 "확장"에 가깝게 만들어 줍니다.
-
-<a id="ai-section-11"></a>
 
 ## 맺음말
 

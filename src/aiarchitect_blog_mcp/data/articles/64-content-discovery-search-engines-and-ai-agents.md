@@ -4,24 +4,6 @@
 
 ![하나의 콘텐츠 코어가 검색엔진 측정과 크롤, 인용 친화 구조, MCP 직접 연결의 네 경로로 확장되는 콘텐츠 발견 아키텍처](assets/blog-64-content-discovery-search-ai-agents-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">검색과 생성형 AI를 함께 봐야 하는 이유</a></li>
-<li><a href="#ai-section-2">발견의 네 트랙</a></li>
-<li><a href="#ai-section-3">1단계 — 소유와 측정: 검색엔진에 등록하기</a></li>
-<li><a href="#ai-section-4">2단계 — 크롤·URL 발견: 사이트맵과 robots</a></li>
-<li><a href="#ai-section-5">검색엔진별 현실 — 구글, 네이버, 그리고 Bing</a></li>
-<li><a href="#ai-section-6">3단계 — 인용 친화 구조: AI가 데려오기 쉽게 (GEO)</a></li>
-<li><a href="#ai-section-7">4단계 — 직접 연결: 콘텐츠를 MCP 서버로</a></li>
-<li><a href="#ai-section-8">네 트랙을 잇는 공통 토대</a></li>
-<li><a href="#ai-section-9">흔한 함정</a></li>
-<li><a href="#ai-section-10">측정과 반복 — 노출을 자산으로</a></li>
-<li><a href="#ai-section-11">체크리스트와 마무리</a></li>
-<li><a href="#ai-section-12">참고 자료</a></li>
-</ol>
-</blockquote>
-
 좋은 글을 써도 아무도 못 찾으면 없는 글과 같습니다. 발견(Discovery) 경로는 예전부터 검색·소셜·커뮤니티·추천·직접 방문 등 여럿이었지만, 최근 크게 달라진 것은 사람들이 정보를 **검색엔진**과 **생성형 AI**(AI 검색·어시스턴트) 양쪽에서 찾는다는 점입니다. 누군가는 구글·네이버에 검색하고, 누군가는 ChatGPT·Perplexity·Copilot에게 묻습니다. **이 글은 여러 경로 중 이 두 경로에 집중**해, 콘텐츠 노출을 어떻게 설계할지 다룹니다.
 
 이 글은 제가 이 블로그의 **검색 노출을 설정하고, AI 연결 가능성까지 정리한 과정**을 **재사용 가능한 네 트랙**으로 묶은 것입니다. 앞의 두 단계(소유·측정, 크롤·URL 발견)는 전통적인 검색엔진 최적화 (Search Engine Optimization, SEO)이고, 세 번째(인용 친화 구조)는 **생성 엔진 최적화 (Generative Engine Optimization, GEO)** 에 가깝습니다. 네 번째는 콘텐츠를 **읽기 전용 MCP 서버**로 만들어 명시적으로 연결된 에이전트에 제공하는 **선택적 도구 통합** 단계입니다. 참고로 이 블로그의 MCP 연결은 **현재 로컬(stdio)에서 검증한 단계**까지이며, 공개 원격 배포는 별도 후속 단계입니다.
