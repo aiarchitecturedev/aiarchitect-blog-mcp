@@ -94,6 +94,14 @@ def _term_count(text: str, term: str) -> int:
     return len(_term_pattern(term).findall(text))
 
 
+def _adjacent_phrases(terms: list[str]) -> tuple[tuple[str, ...], ...]:
+    """인접한 질의어 쌍을 구(句) 개념으로 만든다. "a b c" → ("a b",), ("b c",).
+
+    떨어진 쌍("a c")은 만들지 않는다 — 붙여 쓴 말만 구로 본다.
+    """
+    return tuple(dict.fromkeys((" ".join(pair),) for pair in zip(terms, terms[1:])))
+
+
 # 입력 검증 상한(방어적 클램프)
 MAX_LIST_LIMIT = 200
 MAX_SEARCH_LIMIT = 50
@@ -437,6 +445,16 @@ class Corpus:
         # 같은 개념을 가리키는 질의어 둘("observability 관측성")은 **하나로 합친다** —
         # 따로 두면 같은 개념이 두 번 가산돼 한쪽 표기만 쓴 글이 부당하게 밀린다.
         concepts = tuple(dict.fromkeys(expand(t) for t in terms))
+        # 인접한 질의어 쌍을 **구(句)로도** 센다. "감사 로그"를 띄어 치면 두 낱말이 따로
+        # 세어져 둘이 흩어져 있는 글까지 올라온다(실측: 상위 10건 중 구를 담은 글 평균 4편).
+        #
+        # 구는 **필터가 아니라 BM25의 추가 항**이다. 구성 낱말보다 희귀하므로 IDF가 저절로
+        # 큰 가중치를 준다 — 임의의 보너스 상수를 둘 필요가 없다. 빈도를 더하기만 하므로
+        # **점수를 잃는 글은 없다.** 구를 담은 글이 올라올 뿐이다.
+        #
+        # 구는 **쓴 그대로** 센다(동의어로 넓히지 않는다). 표기 조합까지 펼치면 경우의 수가
+        # 폭발하고, 낱말 단위 개념 점수가 이미 그 일을 하고 있다.
+        concepts += _adjacent_phrases(terms)
         candidates = [
             r for r in self.records
             if not category or r["category"] == category or category in r["category"]
