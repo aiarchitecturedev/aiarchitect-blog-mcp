@@ -248,6 +248,13 @@ _MARKDOWN_TOC = re.compile(r"^>[ \t]*\*\*목차\*\*[ \t]*\n(?:^>.*\n)*", re.M)
 _SECTION_CROSSREF = re.compile(r"\[([^\]]+)\]\(#ai-section-\d+\)")
 _BLANK_RUN = re.compile(r"\n{3,}")
 
+# 게시용 HTML 주석(`<!-- Tistory 게시 도식: … -->`). 렌더에는 안 보이지만 번들 본문에는
+# 그대로 남아 `get_article` 응답으로 나가고 검색 빈도에도 들어간다.
+# 🔴 양식을 외우지 않고 **주석 전부**를 걷는다 — 주석은 정의상 읽히라고 쓴 것이 아니고,
+# 새 양식이 들어와도 이 규칙은 그대로 맞는다(목차·이미지에서 양식을 외웠다가 두 번 놓쳤다).
+# 코드 블록 안은 글이 설명하는 예제이므로 `_strip_outside_code` 밖에서 보호된다.
+_HTML_COMMENT = re.compile(r"<!--.*?-->", re.S)
+
 # 본문 이미지는 전부 상대경로 `assets/...` 라 번들에서는 어느 쪽으로도 열리지 않는다.
 # 🔴 원문의 CDN 주소를 구워 넣는 길은 막혀 있다 — 서명·만료가 붙은 링크라서(실측:
 # `expires` 13일 뒤) 배포본에 넣으면 작동하는 척하다 죽는다. 지금처럼 죽은 링크보다 나쁘다.
@@ -318,6 +325,8 @@ def _drop_generated_toc(match: re.Match[str]) -> str:
 
 
 def _strip_outside_code(segment: str) -> str:
+    # 주석을 먼저 걷는다 — 주석 처리된 장치가 뒤 단계에 걸려 되살아나지 않도록.
+    segment = _HTML_COMMENT.sub("", segment)
     segment = _TOC_BLOCK.sub("", segment)
     segment = _MARKDOWN_TOC.sub(_drop_generated_toc, segment)
     segment = _EMPTY_ANCHOR.sub("", segment)

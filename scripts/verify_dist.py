@@ -42,6 +42,14 @@ _IMG_SRC = re.compile(r"""\bsrc\s*=\s*["']([^"']*)["']""", re.I)
 _LIVE_SRC = re.compile(r"^(?:https?:|data:)", re.I)
 
 
+def _html_comments(text: str) -> list[str]:
+    """코드 블록 밖에 남은 게시용 HTML 주석(렌더에는 안 보이지만 본문으로 나간다)."""
+    return [
+        " ".join(m.group(0).split())[:80]
+        for m in re.finditer(r"<!--.*?-->", _FENCE.sub("", text), re.S)
+    ]
+
+
 def _dead_images(text: str) -> list[str]:
     """코드 블록 밖에 남은, 열리지 않는 이미지 참조."""
     outside = _FENCE.sub("", text)
@@ -101,6 +109,7 @@ def _check_archive(label: str, names: list[str], read: object) -> int:
 
     scaffolded = {}
     dead_images = {}
+    html_comments = {}
     for name in body_names:
         raw = read(name).decode("utf-8")
         text = raw.lower()
@@ -110,6 +119,9 @@ def _check_archive(label: str, names: list[str], read: object) -> int:
         dead = _dead_images(raw)
         if dead:
             dead_images[Path(name).name] = dead[:2]
+        comments = _html_comments(raw)
+        if comments:
+            html_comments[Path(name).name] = comments[:2]
     if scaffolded:
         return _fail(
             f"{label}: 게시용 목차 장치가 번들에 남아 있음 {scaffolded} — "
@@ -122,9 +134,15 @@ def _check_archive(label: str, names: list[str], read: object) -> int:
             f"옛 스크립트로 빌드한 아티팩트다. `rm -rf dist && uv build` 다시"
         )
 
+    if html_comments:
+        return _fail(
+            f"{label}: 게시용 HTML 주석이 번들에 남아 있음 {html_comments} — "
+            f"옛 스크립트로 빌드한 아티팩트다. `rm -rf dist && uv build` 다시"
+        )
+
     print(
-        f"✅ {label}: {count}편 "
-        f"(인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글, 게시용 장치 0, 죽은 이미지 0)"
+        f"✅ {label}: {count}편 (인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글, "
+        f"게시용 장치 0, 죽은 이미지 0, HTML 주석 0)"
     )
     return 0
 
