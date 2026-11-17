@@ -60,6 +60,29 @@ def _term_pattern(term: str) -> re.Pattern[str]:
     return re.compile(_TERM_BOUNDARY + re.escape(term))
 
 
+# 띄어쓰기만 다른 형태를 찾는 패턴 — 질의 전용 표기(`synonyms.QUERY_FORMS`)의 도출 가드.
+# 글자 사이에 공백·줄바꿈이 끼어도 같은 말로 본다("검색 증강 생성" ← 질의 "검색증강생성").
+#
+# 🔴 **공백을 통째로 지운 텍스트에서 찾으면 안 된다.** 지우는 순간 낱말 경계가 사라져
+# "접근 권한 위임"이 "접근권한위임"이 되고, 선두 경계 규칙이 **정당한 도출까지 막는다**
+# (`권한위임`의 앞 글자가 '근'이 돼 버린다). 원문에서 띄어 쓴 형태를 찾아야 경계가 보존된다.
+# 글자 사이 공백을 4자로 제한해 문단을 가로지르는 우연한 일치를 막는다.
+_SPACING_GAP = r"\s{0,4}"
+
+
+@lru_cache(maxsize=256)
+def _spaced_pattern(term: str) -> re.Pattern[str]:
+    return re.compile(_TERM_BOUNDARY + _SPACING_GAP.join(re.escape(ch) for ch in term))
+
+
+def has_spaced_variant(text: str, term: str) -> bool:
+    """`term`을 띄어 쓴 형태가 text에 있는가(term 자신도 포함).
+
+    "그렇게 쓰는 말이 실제로 있다"는 증거다 — 오타(`관측셩`)에는 이런 증거가 없다.
+    """
+    return bool(_spaced_pattern(term).search(text))
+
+
 def _term_count(text: str, term: str) -> int:
     """소문자 텍스트에서 term의 출현 횟수(선두 경계 규칙 적용).
 

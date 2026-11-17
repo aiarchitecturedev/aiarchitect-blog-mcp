@@ -51,6 +51,8 @@ def search_articles(query: str, category: str | None = None, limit: int = 10) ->
     각 결과는 id/제목/분류/태그/원문 URL/스니펫을 포함한다.
     주요 기술 용어는 영문·한글 표기가 하나의 개념으로 묶여 있어(observability = 관측성)
     어느 쪽으로 물어도 결과가 같다 — 같은 뜻을 두 표기로 나눠 검색할 필요가 없다.
+    한글 복합어는 붙여 써도 된다(`검색증강생성`·`감사로그`). 붙여 쓰면 구(句) 전체로
+    일치시키므로 낱말을 띄어 치는 것보다 정확하다.
 
     Args:
         query: 검색어(공백 구분 다중 토큰 가능). 예: "MCP OAuth PKCE".
