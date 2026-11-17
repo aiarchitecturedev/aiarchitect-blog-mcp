@@ -4,31 +4,6 @@ Injection 방어를 입력값 검증으로만 접근하면 막지 못하는 경�
 
 ![외부 데이터는 검증·형식화·구조 분리 Gate를 통과하고 문법으로 위장한 입력은 격리되는 Injection 방어 경계](assets/blog-57-injection-interpreter-boundary-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">Source보다 Sink를 먼저 Inventory한다</a></li>
-<li><a href="#ai-section-2">Validation, Parameterization, Encoding의 역할을 섞지 않는다</a></li>
-<li><a href="#ai-section-3">SQL은 값을 Bind하고 Query 구조를 고정한다</a></li>
-<li><a href="#ai-section-4">동적 정렬·검색 조건은 Allowlist와 Typed Builder로 만든다</a></li>
-<li><a href="#ai-section-5">JPA와 ORM이 자동으로 Injection을 막아주지는 않는다</a></li>
-<li><a href="#ai-section-6">Tenant 조건은 Client Query가 아니라 Server 인가 Context가 소유한다</a></li>
-<li><a href="#ai-section-7">NoSQL은 문자열이 없어도 Operator Injection이 발생한다</a></li>
-<li><a href="#ai-section-8">OS Command는 호출하지 않는 것이 최우선 방어다</a></li>
-<li><a href="#ai-section-9">ProcessBuilder도 고정 명령·검증된 Argument·자원 제한이 필요하다</a></li>
-<li><a href="#ai-section-10">Template에서는 Template Code와 Model Data를 분리한다</a></li>
-<li><a href="#ai-section-11">Template 이름과 Fragment 선택도 구조 값이다</a></li>
-<li><a href="#ai-section-12">Second-order Injection은 저장 시점이 아니라 사용 시점에 터진다</a></li>
-<li><a href="#ai-section-13">오류·Log·관측성도 Injection 경계를 유지한다</a></li>
-<li><a href="#ai-section-14">Test는 Payload 목록보다 불변식을 검증한다</a></li>
-<li><a href="#ai-section-15">정적 검사와 배포 Gate를 Sink 중심으로 만든다</a></li>
-<li><a href="#ai-section-16">사고 대응은 Interpreter별 영향 범위를 좁힌다</a></li>
-<li><a href="#ai-section-17">실무 체크리스트</a></li>
-<li><a href="#ai-section-18">마무리</a></li>
-<li><a href="#ai-section-19">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 Injection은 특수문자 몇 개를 막는 문제가 아닙니다. 외부에서 온 Data가 Database, Shell, Template Engine 같은 Interpreter의 **구조나 명령으로 재해석되는 경로**가 생기면 발생합니다.
 
 같은 입력도 어디에 도달하느냐에 따라 위험이 달라집니다.

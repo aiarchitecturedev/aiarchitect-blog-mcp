@@ -207,6 +207,70 @@ def extract_body(text: str) -> str:
     return "\n".join(body).strip()
 
 
+# --- 게시용 비계(scaffolding) 제거 ---------------------------------------
+#
+# 소스 글은 티스토리에 그대로 붙여 넣을 수 있게 **목차 장치**를 품고 있다. 읽는 사람에게는
+# 목차지만, 번들에서는 본문의 9%를 차지하는 잡음이다 — 인라인 CSS(`box-sizing`·`#f6f9fc`·
+# `data-ke-style`)가 검색어로 세어지고, `get_article`은 그 속성을 그대로 에이전트에게 돌려준다.
+# 목차 항목은 본문 섹션 제목의 **중복**이라 지워도 잃는 내용이 없다.
+#
+# 글은 두 양식으로 갈린다. 둘 다 같은 목차를 만들기 위한 장치다:
+#   A) `<h2 id="ai-section-N" style="…">제목</h2>`  — 제목이 HTML 안에 있다(11편)
+#   B) `<a id="ai-section-N"></a>` + 마크다운 `## 제목` — 빈 앵커만 따로 있다(17편)
+# A는 **제목이 내용이므로 지우면 안 된다** — 마크다운 헤딩으로 되돌린다. B는 내용이 없어 지운다.
+#
+# 🔴 **코드 블록 안은 건드리지 않는다.** `<version>`·`<artifactId>`·`<plugin>`(Maven POM),
+# `<CustomerRow>`·`<string>`(XML 예제), `<br>`(HTML 설명) 164개가 펜스 안에 있다.
+# 태그로 보고 지우면 **예제가 조용히 깨진다**. 펜스 밖에만 적용한다.
+_FENCED_BLOCK = re.compile(r"^```.*?^```", re.S | re.M)
+# ⚠️ 목차를 감싼 요소는 글마다 다르다 — 대부분 <blockquote>지만 <div>인 글도 있다(63번).
+# 태그 이름을 고정하면 그런 글이 조용히 빠져나간다. 역참조로 여는/닫는 태그를 맞춘다.
+_TOC_BLOCK = re.compile(
+    r"<(blockquote|div)[^>]*\bid=[\"']aiarchitect-toc[\"'].*?</\1>[ \t]*\n?", re.S | re.I
+)
+_EMPTY_ANCHOR = re.compile(r"<a\s+id=[\"']ai-section-\d+[\"']\s*>\s*</a>[ \t]*\n?", re.I)
+# 헤딩 안에 중첩 태그는 없다(실측 0건) — 안쪽을 그대로 제목으로 쓴다.
+_HTML_HEADING = re.compile(r"<h([23])\b[^>]*>(.*?)</h\1>", re.S | re.I)
+# 세 번째 양식 — 순수 마크다운 인용블록 목차(5편). HTML이 아니라 CSS 잡음은 없지만,
+# 섹션 제목을 중복시키고 `#ai-section-N`은 티스토리 밖에서 죽은 링크다.
+# 🔴 생성된 앵커를 담은 것만 지운다 — 사람이 손으로 쓴 「목차」 인용블록까지 지우지 않도록.
+_MARKDOWN_TOC = re.compile(r"^>[ \t]*\*\*목차\*\*[ \t]*\n(?:^>.*\n)*", re.M)
+# 본문 안의 절 상호참조 `[11절](#ai-section-11)`. 앵커 대상을 걷어냈으므로 링크는 깨진다 —
+# **글자는 내용이므로 남기고** 링크 문법만 푼다.
+_SECTION_CROSSREF = re.compile(r"\[([^\]]+)\]\(#ai-section-\d+\)")
+_BLANK_RUN = re.compile(r"\n{3,}")
+
+
+def _drop_generated_toc(match: re.Match[str]) -> str:
+    return "" if "#ai-section-" in match.group(0) else match.group(0)
+
+
+def _strip_outside_code(segment: str) -> str:
+    segment = _TOC_BLOCK.sub("", segment)
+    segment = _MARKDOWN_TOC.sub(_drop_generated_toc, segment)
+    segment = _EMPTY_ANCHOR.sub("", segment)
+    segment = _SECTION_CROSSREF.sub(r"\1", segment)
+    segment = _HTML_HEADING.sub(
+        lambda m: "#" * int(m.group(1)) + " " + " ".join(m.group(2).split()), segment
+    )
+    return _BLANK_RUN.sub("\n\n", segment)
+
+
+def strip_publishing_scaffolding(text: str) -> str:
+    """게시용 목차 장치를 걷어낸 본문. 코드 블록은 손대지 않는다.
+
+    멱등하다 — 이미 걷어낸 본문에 다시 적용해도 그대로다(번들 재빌드가 안정적이어야 한다).
+    """
+    out: list[str] = []
+    pos = 0
+    for fence in _FENCED_BLOCK.finditer(text):
+        out.append(_strip_outside_code(text[pos:fence.start()]))
+        out.append(fence.group(0))
+        pos = fence.end()
+    out.append(_strip_outside_code(text[pos:]))
+    return "".join(out).strip()
+
+
 def build_record(path: Path) -> dict:
     """마크다운 파일 → 인덱스 레코드(메타데이터)."""
     text = path.read_text(encoding="utf-8")

@@ -4,26 +4,6 @@ SDK를 여러 플랫폼에 배포하다 보면 버전 번호 하나가 서로 �
 
 ![공통 API 계약이 SDK 소스와 불변 패키지 코어로 변환되고 호환성 매트릭스를 통과한 네 플랫폼 SDK가 패키지 Registry로 배포되는 릴리스 자동화 이미지](assets/blog-46-sdk-release-automation-hero.png)
 
-> **목차**
->
-> 1. [SDK Release는 파일 업로드가 아니라 호환성 약속이다](#ai-section-1)
-> 2. [Version 하나로 모든 것을 표현하지 않는다](#ai-section-2)
-> 3. [SemVer는 Public API와 호환성 차원을 먼저 선언해야 한다](#ai-section-3)
-> 4. [독립 Package Version을 Release Train으로 묶는다](#ai-section-4)
-> 5. [Deprecation과 API 기준선을 함께 운영한다](#ai-section-5)
-> 6. [플랫폼별 호환성 검사를 하나의 Gate에 연결한다](#ai-section-6)
-> 7. [Java·Android·Gradle Package는 Metadata까지 제품이다](#ai-section-7)
-> 8. [Swift Package는 Tag·Manifest·Binary를 함께 검증한다](#ai-section-8)
-> 9. [npm Package는 files와 exports가 공개 경계다](#ai-section-9)
-> 10. [Build Once와 Release Manifest로 동일 Byte를 보증한다](#ai-section-10)
-> 11. [Release 권한·단기 신원·증거를 분리한다](#ai-section-11)
-> 12. [Prerelease·Staging·Post-publish를 분리한다](#ai-section-12)
-> 13. [실패한 Release는 Roll-forward한다](#ai-section-13)
-> 14. [전체 Release Gate](#ai-section-14)
-> 15. [구현·운영 체크리스트](#ai-section-15)
-> 16. [마무리](#ai-section-16)
-> 17. [함께 읽기와 공식 참고 자료](#ai-section-17)
-
 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK가 모두 준비되면 다음 문제는 배포입니다.
 
 소스 코드가 정상적으로 Build됐다는 사실만으로 고객이 안전하게 업그레이드할 수 있는 것은 아닙니다. 같은 기능이 네 Package에 모두 들어갔는지, 기존 고객의 Binary가 깨지지 않는지, 실제 Registry에서 받은 Artifact가 검증한 파일과 같은지, 어떤 서비스 API와 호환되는지를 함께 증명해야 합니다.
@@ -32,7 +12,7 @@ Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK가 �
 
 이 글에서는 특정 고객·제품·내부 Registry·계정을 제외한 합성 예시로 SDK 버전 정책과 배포 Pipeline을 설계합니다.
 
-<h2 id="ai-section-1" style="scroll-margin-top: 72px;">1. SDK Release는 파일 업로드가 아니라 호환성 약속이다</h2>
+## 1. SDK Release는 파일 업로드가 아니라 호환성 약속이다
 
 Package를 Registry에 올리는 작업만 자동화하면 다음 문제가 남습니다.
 
@@ -59,7 +39,7 @@ Package를 Registry에 올리는 작업만 자동화하면 다음 문제가 남�
 
 ![공통 계약과 Release Manifest가 Java·Android·Swift·JavaScript Package를 독립 Version으로 묶고 Evidence Gate를 거쳐 Compatibility Matrix를 만드는 구조](assets/blog-46-release-train-system.png)
 
-<h2 id="ai-section-2" style="scroll-margin-top: 72px;">2. Version 하나로 모든 것을 표현하지 않는다</h2>
+## 2. Version 하나로 모든 것을 표현하지 않는다
 
 멀티플랫폼 SDK에는 최소 세 종류의 Version이 있습니다.
 
@@ -88,7 +68,7 @@ JavaScript SDK 5.1.0
 
 네 Package와 서비스의 특정 조합을 함께 검증한 식별자입니다. 독립 Version을 유지하더라도 같은 Release Train의 Manifest에서 하나의 조합으로 추적할 수 있습니다.
 
-<h2 id="ai-section-3" style="scroll-margin-top: 72px;">3. SemVer는 Public API와 호환성 차원을 먼저 선언해야 한다</h2>
+## 3. SemVer는 Public API와 호환성 차원을 먼저 선언해야 한다
 
 Semantic Versioning 2.0.0은 Version을 `MAJOR.MINOR.PATCH` 형태로 관리합니다.
 
@@ -146,7 +126,7 @@ Java·Kotlin은 Source가 다시 Compile되면 성공해도 기존 Binary가 새
 
 Version Gate는 한 종류의 Diff만 보고 결론을 내리지 않습니다.
 
-<h2 id="ai-section-4" style="scroll-margin-top: 72px;">4. 독립 Package Version을 Release Train으로 묶는다</h2>
+## 4. 독립 Package Version을 Release Train으로 묶는다
 
 모든 SDK에 같은 `3.2.0`을 부여하는 Lockstep 방식과 독립 Version 방식에는 각각 장단점이 있습니다.
 
@@ -207,7 +187,7 @@ SDK가 서버 Capability를 협상할 수 있다면 단순 Version 비교보다 
 
 ![Contract Version과 플랫폼별 Package Version, Service API Range가 Release Train을 거쳐 Compatibility Matrix와 Capability Rules로 연결되는 호환성 모델](assets/blog-46-version-compatibility-model.png)
 
-<h2 id="ai-section-5" style="scroll-margin-top: 72px;">5. Deprecation과 API 기준선을 함께 운영한다</h2>
+## 5. Deprecation과 API 기준선을 함께 운영한다
 
 API를 바로 삭제하지 않고 `deprecated`로 표시해도 대체 경로와 제거 시점을 알 수 없으면 고객은 이동하지 않습니다.
 
@@ -262,7 +242,7 @@ api-baseline/
 
 API Snapshot 파일이 변경됐다는 이유만으로 Breaking Change가 정당화되지는 않습니다.
 
-<h2 id="ai-section-6" style="scroll-margin-top: 72px;">6. 플랫폼별 호환성 검사를 하나의 Gate에 연결한다</h2>
+## 6. 플랫폼별 호환성 검사를 하나의 Gate에 연결한다
 
 ### Java·Kotlin
 
@@ -296,7 +276,7 @@ Type Declaration이 같아도 Event Timing이나 기본 Credential 정책이 달
 
 ![직전 Release 기준선과 현재 변경을 Source·Binary, Behavior, Wire, Build, Package 관점에서 비교하고 통합 Report와 의미 검토를 거쳐 MAJOR·MINOR·PATCH를 결정하는 Gate](assets/blog-46-compatibility-semver-gate.png)
 
-<h2 id="ai-section-7" style="scroll-margin-top: 72px;">7. Java·Android·Gradle Package는 Metadata까지 제품이다</h2>
+## 7. Java·Android·Gradle Package는 Metadata까지 제품이다
 
 JAR·AAR 파일 하나만 전달하면 Coordinate, Version과 Dependency 정보를 잃습니다. Maven 호환 Repository에 POM과 Metadata를 함께 배포합니다.
 
@@ -408,7 +388,7 @@ Release 전에는 Gradle TestKit 또는 새 소비자 Project에서 실제 배�
 
 Library Module과 Gradle Plugin의 Version은 독립적으로 관리할 수 있습니다. 다만 Plugin이 특정 SDK Library Version을 자동으로 연결한다면 그 범위를 POM·Dependency Constraint·Compatibility Matrix에 명시하고, Plugin만 성공한 부분 배포를 전체 Release 성공으로 표시하지 않습니다.
 
-<h2 id="ai-section-8" style="scroll-margin-top: 72px;">8. Swift Package는 Tag·Manifest·Binary를 함께 검증한다</h2>
+## 8. Swift Package는 Tag·Manifest·Binary를 함께 검증한다
 
 Swift Package Manager의 Version 기반 Dependency는 SemVer를 따릅니다. Package Release에는 Git Tag만 존재하는 것이 아니라 해당 Tag의 `Package.swift`, Source와 지원 Platform 정책이 일치해야 합니다.
 
@@ -449,7 +429,7 @@ Release Gate에서 확인할 항목은 다음과 같습니다.
 
 Source Package와 Binary Package를 동시에 제공한다면 두 Distribution의 기능·Symbol·Version을 같은 Manifest에 연결합니다.
 
-<h2 id="ai-section-9" style="scroll-margin-top: 72px;">9. npm Package는 `files`와 `exports`가 공개 경계다</h2>
+## 9. npm Package는 `files`와 `exports`가 공개 경계다
 
 JavaScript SDK는 Source Repository가 정상이어도 npm Tarball이 잘못 구성될 수 있습니다.
 
@@ -499,7 +479,7 @@ npm pack
 
 ![Release Source에서 Java·Android Library, Gradle Plugin, Swift Package, JavaScript Package가 각 Registry를 거쳐 Clean Consumer Project로 설치 검증되는 배포 구조](assets/blog-46-platform-package-distribution.png)
 
-<h2 id="ai-section-10" style="scroll-margin-top: 72px;">10. Build Once와 Release Manifest로 동일 Byte를 보증한다</h2>
+## 10. Build Once와 Release Manifest로 동일 Byte를 보증한다
 
 Test 환경과 Production Registry에서 각각 Build하면 같은 Tag라도 다른 Dependency, Timestamp나 Toolchain으로 Artifact가 달라질 수 있습니다.
 
@@ -555,7 +535,7 @@ Release Note와 Compatibility Matrix는 이 Manifest를 바탕으로 생성합�
 
 ![보호된 Tag에서 한 번 Build한 불변 Artifact가 Evidence, Staging, 승인 Gate, Production과 Post-publish Test를 통과하며 실패 시 새 Version으로 Roll-forward되는 릴리스 흐름](assets/blog-46-build-once-release-gate.png)
 
-<h2 id="ai-section-11" style="scroll-margin-top: 72px;">11. Release 권한·단기 신원·증거를 분리한다</h2>
+## 11. Release 권한·단기 신원·증거를 분리한다
 
 Pull Request Build가 Package Publish Credential을 가져서는 안 됩니다.
 
@@ -604,7 +584,7 @@ GitHub Artifact Attestation 같은 기능은 Build Artifact와 Source·Workflow�
 
 고객에게 공개할 Evidence와 내부에 보관할 Evidence를 분리합니다. 공개 Evidence에도 내부 Runner 이름, 사설 Repository URL, Secret 환경 변수 값이 포함되지 않도록 검사합니다.
 
-<h2 id="ai-section-12" style="scroll-margin-top: 72px;">12. Prerelease·Staging·Post-publish를 분리한다</h2>
+## 12. Prerelease·Staging·Post-publish를 분리한다
 
 SemVer의 Prerelease 식별자를 사용하면 정식 Version보다 앞선 후보를 표현할 수 있습니다.
 
@@ -641,7 +621,7 @@ Post-publish Test는 Workspace의 Module을 직접 참조하지 않습니다.
 
 이 단계가 실패하면 Release를 성공으로 표시하지 않고 고객 공지와 Roll-forward 절차를 시작합니다.
 
-<h2 id="ai-section-13" style="scroll-margin-top: 72px;">13. 실패한 Release는 Roll-forward한다</h2>
+## 13. 실패한 Release는 Roll-forward한다
 
 공개 Package Version은 불변으로 취급합니다.
 
@@ -693,7 +673,7 @@ Maven Central처럼 공개 후 Component 수정·삭제를 허용하지 않는 R
 
 API Diff, Issue와 Manifest에서 초안을 만들 수 있지만 최종 영향 설명은 사람이 검토합니다. 내부 Ticket 제목이나 고객 식별정보가 공개 Note에 섞이지 않도록 필터링합니다.
 
-<h2 id="ai-section-14" style="scroll-margin-top: 72px;">14. 전체 Release Gate</h2>
+## 14. 전체 Release Gate
 
 Gate의 실패 조건을 미리 정합니다.
 
@@ -712,7 +692,7 @@ Gate의 실패 조건을 미리 정합니다.
 
 일부 SDK Publish가 실패하면 성공한 Package를 지울 수 없을 수 있습니다. Release Train 상태를 `PARTIAL`로 기록하고 누락 Package를 새 Version으로 보완할지, 기존 성공 Version을 다음 Train에 연결할지 명시적으로 결정합니다.
 
-<h2 id="ai-section-15" style="scroll-margin-top: 72px;">15. 구현·운영 체크리스트</h2>
+## 15. 구현·운영 체크리스트
 
 ### Version과 호환성
 
@@ -756,7 +736,7 @@ Gate의 실패 조건을 미리 정합니다.
 - [ ] Release Note가 고객 영향과 Migration을 설명하는가
 - [ ] Manifest·Compatibility Matrix·문서 상태가 일치하는가
 
-<h2 id="ai-section-16" style="scroll-margin-top: 72px;">16. 마무리</h2>
+## 16. 마무리
 
 멀티플랫폼 SDK의 Release는 네 개의 Publish 명령을 한 Workflow에 넣는 것으로 완성되지 않습니다. **공통 계약과 독립 Package Version을 연결하고, 실제 Artifact가 호환성과 출처 증거를 통과한 뒤 같은 Byte로 배포되는 구조가 필요합니다.**
 
@@ -775,7 +755,7 @@ Gate의 실패 조건을 미리 정합니다.
 
 ---
 
-<h2 id="ai-section-17" style="scroll-margin-top: 72px;">17. 함께 읽기와 공식 참고 자료</h2>
+## 17. 함께 읽기와 공식 참고 자료
 
 ### 함께 읽기
 

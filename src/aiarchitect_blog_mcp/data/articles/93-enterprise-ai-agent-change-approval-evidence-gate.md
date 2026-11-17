@@ -4,39 +4,6 @@ AI Agent의 Prompt 한 줄을 바꾸는 일은 코드 배포처럼 보이지만 
 
 ![기업 AI Agent의 불변 Change Set이 Risk Tier와 Evidence Gate를 거쳐 자동·사람 승인으로 분기되고 단계적 배포 또는 Rollback으로 연결되는 변경 승인 자동화 아키텍처](assets/blog-93-ai-agent-change-approval-evidence-gate-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">검증 통과와 변경 승인은 같은 판정이 아니다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">BLOG-91·92의 결과를 승인 입력으로 연결한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">변경부터 Rollback까지 하나의 결정 흐름으로 만든다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Change Set을 불변 Subject로 고정한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">변경 승인과 배포 Promotion을 분리한다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Risk Tier는 파일 종류가 아니라 업무 피해로 정한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Impact·Likelihood·Exposure·Authority·Reversibility로 위험을 설명한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Evidence Profile을 Tier별 계약으로 정의한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">판정 입력을 하나의 Decision Snapshot으로 동결한다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Gate Result와 Approval Decision을 분리한다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Blocking Rule은 평균 점수로 상쇄하지 않는다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자동 승인은 좁고 관찰 가능한 범위에만 허용한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">사람 승인은 증거의 공백을 대신 채우지 않는다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업무 분리와 이중 승인을 위험에 맞게 적용한다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Decision Record를 Artifact Digest에 바인딩한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인에는 유효기간과 철회 조건이 필요하다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Exception은 영구 우회가 아니라 기한부 위험 수용이다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">긴급 변경은 통제를 생략하지 않고 순서를 바꾼다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Promotion Contract로 단계별 노출을 제한한다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">관찰 구간의 사후조건을 다음 승인의 증거로 만든다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Rollback은 실행 가능성과 업무 복구를 함께 계약한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 명령의 재전송과 경합을 멱등 계약으로 흡수한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 사고는 기존 승인을 즉시 재평가하게 한다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">합성 사례로 Prompt·Tool 변경 승인을 계산한다</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실패하기 쉬운 변경 승인 안티패턴을 피한다</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">다섯 단계로 도입하고 결정 품질을 측정한다</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 AI Agent의 Prompt 회귀 평가가 통과했고, Tool Contract Test도 성공했으며, Red Team의 Critical Finding은 없습니다. 그렇다면 운영 배포를 자동 승인해도 될까요?
 
 아직은 알 수 없습니다. 그 증거가 **현재 변경 대상과 정확히 결합됐는지**, 변경이 노출되는 Tenant와 권한 범위가 무엇인지, 실패했을 때 되돌릴 수 있는지, 남은 위험을 누가 어떤 기간 동안 수용하는지까지 확인해야 합니다. 평가 결과는 승인 판단의 입력이지 승인 자체가 아닙니다.
@@ -46,8 +13,6 @@ AI Agent의 Prompt 회귀 평가가 통과했고, Tool Contract Test도 성공�
 증거가 갖춰졌고([BLOG-91](https://aiarchitect.tistory.com/91)), 그 증거가 아직 살아 있다는 것까지 확인했다면([BLOG-92](https://aiarchitect.tistory.com/92)), 남은 질문은 하나입니다. **그래서 이 변경을 지금 내보낼 것인가.** 이 글은 배포 여부와 범위를 정하는 그 판정을 담당자의 임의적 재량에만 맡기지 않고 계약으로 만듭니다. Change Set을 불변 단위로 고정하고, Risk Tier마다 요구 증거를 미리 정해 두고, 자동 승인·사람 승인·기한부 예외·단계적 배포·Rollback을 하나의 결정 흐름으로 묶습니다.
 
 이 글의 회사, Agent, 수치, Digest, Policy와 승인 기록은 모두 교육용 합성 예시입니다. `TIER-1`부터 `TIER-4`, `PASS`, `HOLD`, `APPROVED_WITH_EXCEPTION` 같은 이름은 이 글이 제안하는 구현 모델이며 NIST, ISO, W3C, in-toto 또는 SLSA가 정한 공통 열거형이 아닙니다. 이 글의 4단계 Tier는 출발점일 뿐입니다. 실제 Tier 경계와 승인 권한은 그 변경이 잘못됐을 때의 업무 피해와 복구 가능성을 먼저 보고, 조직이 따르는 보안·개인정보·법무 정책과 산업 규제·계약, 그리고 실제 운영 데이터를 함께 반영해 정해야 합니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 검증 통과와 변경 승인은 같은 판정이 아니다
 
@@ -63,8 +28,6 @@ Promotion Decision = 다음 노출 단계로 이동할지에 대한 운영 결�
 예를 들어 정확도와 안전성 평가는 모두 통과했어도 Rollback이 검증되지 않은 파괴적 Tool 변경은 승인할 수 없습니다. 반대로 낮은 위험의 내부 검색 Prompt 변경은 자동화된 회귀 평가와 좁은 Canary 조건만으로 승인할 수 있습니다. 핵심은 시험 개수를 늘리는 것이 아니라 **변경 위험과 필요한 증거, 승인 권한, 배포 범위를 같은 계약으로 묶는 것**입니다.
 
 NIST AI RMF 1.0은 위험 수준과 조직의 Risk Tolerance에 따라 관리 활동의 강도를 정하고, 의도한 목적 달성 여부와 개발·배포 진행 여부를 판단하도록 안내합니다. 변경 승인 자동화는 이 원칙을 Release Pipeline에서 실행 가능한 규칙으로 옮기는 작업입니다.
-
-<a id="ai-section-2"></a>
 
 ## 2. BLOG-91·92의 결과를 승인 입력으로 연결한다
 
@@ -83,8 +46,6 @@ BLOG-93은 기존 평가와 거버넌스 기능을 다시 만들지 않습니다
 | [Evidence Lifecycle과 Revalidation](https://aiarchitect.tistory.com/92) | Freshness·Invalidation·최소 재검증 | 현재 유효한 Evidence Set과 Coverage Gap |
 
 경계는 명확해야 합니다. BLOG-92의 Revalidation Engine은 어떤 증거가 낡았고 무엇을 다시 시험할지 계산합니다. BLOG-93의 Decision Engine은 재검증 결과를 포함한 현재 Evidence Set을 받아 **어떤 승인 경로와 배포 범위를 허용할지** 결정합니다.
-
-<a id="ai-section-3"></a>
 
 ## 3. 변경부터 Rollback까지 하나의 결정 흐름으로 만든다
 
@@ -115,8 +76,6 @@ Change Request
 2. **변경 후 루프**: Canary 관찰 결과로 다음 Promotion 또는 Rollback을 판단합니다.
 
 변경 전 시험이 운영의 모든 상호작용을 재현하지 못하므로 두 루프를 모두 가져야 합니다. 다만 “운영에서 보자”는 이유로 Critical Precondition을 Canary에 미루면 안 됩니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. Change Set을 불변 Subject로 고정한다
 
@@ -151,8 +110,6 @@ Change Set이 승인 후 수정되면 기존 Decision은 재사용할 수 없습
 
 in-toto Attestation과 SLSA의 `subject`·Digest 결합은 Artifact와 Provenance가 다른 대상에 대체되는 것을 막는 데 유용한 패턴입니다. AI Agent에서는 Container뿐 아니라 Prompt·Tool·Policy·Knowledge와 운영 Profile까지 같은 Change Set에 묶어야 승인 대상을 재현할 수 있습니다.
 
-<a id="ai-section-5"></a>
-
 ## 5. 변경 승인과 배포 Promotion을 분리한다
 
 `APPROVED`를 곧바로 “전면 배포 완료”로 해석하면 승인 범위가 무제한으로 커집니다. 최소한 다음 결정을 분리합니다.
@@ -167,8 +124,6 @@ in-toto Attestation과 SLSA의 `subject`·Digest 결합은 Artifact와 Provenanc
 예를 들어 Release Approval의 Scope가 `내부 Pilot 1%`라면 이를 근거로 전 고객 100% 배포를 할 수 없습니다. 5%, 25%, 100%는 각각 독립된 Promotion Decision이 필요합니다. 앞 단계의 관찰 Evidence가 다음 단계의 입력이 됩니다.
 
 이 분리는 [BLOG-87 Release Governance](https://aiarchitect.tistory.com/87)의 Progressive Delivery를 승인 모델과 결합합니다. 배포 도구가 Traffic만 늘리는 것이 아니라, 정확한 Decision ID와 허용된 Scope를 확인한 뒤 다음 단계로 이동하게 합니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. Risk Tier는 파일 종류가 아니라 업무 피해로 정한다
 
@@ -186,8 +141,6 @@ in-toto Attestation과 SLSA의 `subject`·Digest 결합은 Artifact와 Provenanc
 Tier는 Agent 전체에 영구 부착되는 Label이 아닙니다. **특정 Change Set과 요청된 Scope의 조합**에 대한 판정입니다. 같은 Agent라도 내부 Shadow는 TIER-2, 외부 고객 100% Promotion은 TIER-3가 될 수 있습니다.
 
 Inherent Risk Tier를 낮추려면 위험을 말로 축소하지 말고 요청 Scope를 실제로 줄여야 합니다. 예를 들어 외부 쓰기 Tool을 Scope에서 제외하고 Synthetic Data와 내부 Cohort 1%로 제한하면 Inherent Risk를 다시 계산할 수 있습니다. 반면 Kill Switch와 Rollback은 원래 위험을 없애는 것이 아니라 탐지·중지·복구 능력으로 Residual Risk를 낮추는 통제입니다.
-
-<a id="ai-section-7"></a>
 
 ## 7. Impact·Likelihood·Exposure·Authority·Reversibility로 위험을 설명한다
 
@@ -224,8 +177,6 @@ risk_classification:
 이 단계에서 정하는 것은 통제 적용 전의 `Inherent Change Risk Tier`입니다. 이 Tier가 필요한 Evidence Profile과 승인 독립성의 하한을 선택합니다. Evidence Gate가 통제 효과와 실패 가능성을 확인한 뒤에는 미완화 위험을 `Residual Risk`로 다시 계산합니다. 최종 Approval Decision이 수용하는 대상은 Inherent Risk가 아니라 특정 Scope·기간에 남은 Residual Risk입니다.
 
 [BLOG-70 AI Agent 적합도 판정](https://aiarchitect.tistory.com/70)의 가역성과 예외 구조, [BLOG-16 승인 정책](https://aiarchitect.tistory.com/16)의 행동 위험 등급을 이 분류기의 입력으로 재사용할 수 있습니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. Evidence Profile을 Tier별 계약으로 정의한다
 
@@ -268,8 +219,6 @@ evidence_profile:
 
 Profile이 바뀌면 Version을 올립니다. 과거 Decision은 당시 어떤 규칙으로 승인됐는지 재현할 수 있어야 합니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 판정 입력을 하나의 Decision Snapshot으로 동결한다
 
 Gate가 실행되는 동안 Evidence가 갱신되거나 Policy가 바뀌면 같은 요청이 서로 다른 결과를 만들 수 있습니다. 판정 시작 시 입력의 Version과 Digest를 동결합니다.
@@ -291,8 +240,6 @@ decision_snapshot:
 Snapshot 안의 Evidence는 [BLOG-92 Evidence Lifecycle](https://aiarchitect.tistory.com/92)이 `ACTIVE`로 판정한 현재 Set이어야 합니다. 다만 `ACTIVE`라는 상태만 믿지 말고 Subject·Context·Coverage가 현재 Claim과 일치하는지 Gate에서 다시 확인합니다.
 
 평가 도중 새 Critical Finding이 들어오면 조용히 무시하지 않습니다. 현재 Snapshot을 `SUPERSEDED` 또는 `ABORTED`로 닫고 새 Snapshot에서 재판정합니다. 이는 결정을 느리게 만드는 중복이 아니라 서로 다른 시점의 사실을 섞지 않는 일관성 장치입니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. Gate Result와 Approval Decision을 분리한다
 
@@ -320,8 +267,6 @@ Approval Decision
 `APPROVED_CONDITIONAL`은 모든 Blocking Gate가 통과한 상태에서 더 좁은 Scope, 추가 관찰 또는 Capability 제한을 붙이는 결정입니다. `APPROVED_WITH_EXCEPTION`은 `EXCEPTION_REQUIRED`인 Requirement에 대해 별도의 `RISK_ACCEPTED` Record로 잔여 위험을 기한부 수용한 경우에만 사용합니다. 두 상태를 같은 의미로 섞지 않습니다.
 
 `INCONCLUSIVE`와 `ERROR`를 실패가 아닌 통과로 처리해서는 안 됩니다. Evidence가 부족하거나 평가기가 고장 난 상태는 안전하다는 증거가 아닙니다. 기본 정책은 `HOLD`이며, 예외 승인을 허용하려면 별도의 Risk Acceptance 계약이 필요합니다.
-
-<a id="ai-section-11"></a>
 
 ## 11. Blocking Rule은 평균 점수로 상쇄하지 않는다
 
@@ -354,8 +299,6 @@ gate_rules:
 
 또한 Candidate 절대값뿐 아니라 Baseline 대비 변화, 표본 수, 신뢰 구간, Critical Slice별 최저값을 봅니다. 자세한 평가 구조는 [BLOG-74 AI Agent 평가 아키텍처](https://aiarchitect.tistory.com/74)에서 다룹니다.
 
-<a id="ai-section-12"></a>
-
 ## 12. 자동 승인은 좁고 관찰 가능한 범위에만 허용한다
 
 자동 승인의 목적은 사람을 없애는 것이 아니라 **반복 가능하고 낮은 위험의 판정을 일관되게 처리하는 것**입니다. 다음 조건을 모두 만족하는 범위부터 시작합니다.
@@ -383,8 +326,6 @@ ELSE route_to_human_or_hold
 
 자동 승인 Policy 자체도 Version·검토자·유효기간·변경 이력을 가진 통제 대상입니다. Rule을 바꾼 사람이 자신의 변경을 즉시 그 새 Rule로 승인할 수 없도록 업무 분리를 적용합니다.
 
-<a id="ai-section-13"></a>
-
 ## 13. 사람 승인은 증거의 공백을 대신 채우지 않는다
 
 사람 승인이 필요한 이유는 모든 판단을 자동화할 수 없기 때문입니다. 새로운 업무 피해, 모호한 법적·윤리적 영향, 잔여 위험 수용, 복구 불가능한 Side Effect처럼 조직 책임이 필요한 판단은 사람이 맡아야 합니다.
@@ -405,8 +346,6 @@ ELSE route_to_human_or_hold
 
 고위험 승인에서 LLM이 요약을 도울 수는 있지만, 최종 승인 책임자나 Policy Evaluator로 가장해서는 안 됩니다. 요약의 출처와 누락 가능성을 표시하고, 결정에 사용한 구조화 필드는 원본에서 검증합니다.
 
-<a id="ai-section-14"></a>
-
 ## 14. 업무 분리와 이중 승인을 위험에 맞게 적용한다
 
 모든 변경에 두 명의 서명을 요구하면 형식적인 승인만 늘어납니다. 반대로 요청자, 평가자, Policy 관리자, 승인자, 배포 실행자가 모두 같은 권한을 가지면 통제의 독립성이 사라집니다.
@@ -422,8 +361,6 @@ ELSE route_to_human_or_hold
 TIER-1과 TIER-2는 자동화 또는 단일 승인, TIER-3는 독립 승인, TIER-4는 서로 다른 책임 영역의 다중 승인을 요구하는 식으로 강화할 수 있습니다. NIST SP 800-53의 Configuration Change Control은 변경 검토·승인·기록·감독과 영향 분석을 요구하며, 고위험 변경의 이중 승인 설계에 참고할 수 있습니다.
 
 기계 Identity에도 같은 원칙을 적용합니다. Gate Service는 Evidence를 발행하지 않고, Deployment Controller는 임의 Decision을 만들 수 없으며, Policy Repository 변경은 서명된 Review를 거쳐야 합니다.
-
-<a id="ai-section-15"></a>
 
 ## 15. Decision Record를 Artifact Digest에 바인딩한다
 
@@ -467,8 +404,6 @@ W3C PROV-O의 Entity·Activity·Agent와 생성·사용·귀속 관계는 Change
 
 Deployment Controller는 `result`만 확인하지 않습니다. 요청한 Artifact Digest, Environment, Cohort, Traffic, Capability가 `authorized_scope` 안에 있는지 검증합니다. 하나라도 다르면 실행을 거부합니다.
 
-<a id="ai-section-16"></a>
-
 ## 16. 승인에는 유효기간과 철회 조건이 필요하다
 
 승인은 영구 자격이 아닙니다. 다음 중 하나가 발생하면 만료 또는 재판정해야 합니다.
@@ -497,8 +432,6 @@ Policy 변경         Risk Tolerance·Threshold·규제·계약 변경
 ```
 
 철회 전파는 비동기 알림에만 의존하지 않습니다. Deployment Controller와 Runtime Control Plane이 짧은 유효기간의 Capability Token이나 최신 Decision 상태를 확인하도록 설계해, 이미 철회된 승인이 계속 사용되는 시간을 제한합니다.
-
-<a id="ai-section-17"></a>
 
 ## 17. Exception은 영구 우회가 아니라 기한부 위험 수용이다
 
@@ -548,8 +481,6 @@ Exception도 승인 대상과 같은 불변 Subject, 판정에 사용한 Snapsho
 
 Exception 만료 시 자동 연장하지 않습니다. 미충족 Rule이 해결되지 않았다면 `HOLD` 또는 Rollback으로 이동하고, 새 위험 수용이 필요하면 새로운 Exception과 승인을 만듭니다.
 
-<a id="ai-section-18"></a>
-
 ## 18. 긴급 변경은 통제를 생략하지 않고 순서를 바꾼다
 
 운영 사고 중에는 정상 승인 대기 시간이 더 큰 피해를 만들 수 있습니다. Break-glass 경로는 필요하지만, 자유로운 우회 계정이 되어서는 안 됩니다.
@@ -568,8 +499,6 @@ Incident 선언
 긴급 변경에서도 Subject Digest, 요청자·승인자 Identity, 이유, Scope, 실행 시간, Rollback Plan과 감사 기록은 남깁니다. 생략 가능한 것은 정상 경로의 일부 대기와 비차단 Evidence이지, 대상 식별과 책임 기록이 아닙니다.
 
 Break-glass 권한은 평상시 비활성화하고, Incident ID와 짧은 TTL에 결합하며, 사용 즉시 독립 채널로 알립니다. 사후 검토 기한을 넘기면 해당 변경을 유지하는 승인이 자동 만료되도록 합니다.
-
-<a id="ai-section-19"></a>
 
 ## 19. Promotion Contract로 단계별 노출을 제한한다
 
@@ -606,8 +535,6 @@ promotion_contract:
 
 `RETAIN`은 실패가 아닙니다. 최소 표본이 부족하면 현재 안전한 Scope를 유지하며 더 관찰할 수 있습니다. 반면 Critical 불변조건 위반은 표본을 더 모으지 않고 즉시 Rollback해야 합니다.
 
-<a id="ai-section-20"></a>
-
 ## 20. 관찰 구간의 사후조건을 다음 승인의 증거로 만든다
 
 Canary Dashboard를 사람이 잠깐 보고 “문제없음”이라고 판단하면 재현할 수 없습니다. 관찰 결과를 구조화된 Evidence로 발행합니다.
@@ -636,8 +563,6 @@ observation_evidence:
 Metric 자체뿐 아니라 Telemetry Completeness도 확인해야 합니다. Logging Pipeline이 끊긴 동안 오류가 0건이었다는 관측은 안전의 증거가 아닙니다. 관측 공백이 크면 `INCONCLUSIVE`로 처리합니다.
 
 업무 효과가 늦게 나타나는 경우 관찰 구간도 분리합니다. 즉시 권한 위반은 초 단위로 Rollback할 수 있지만, 잘못 생성한 계약 요약이 며칠 뒤 발견될 수 있다면 전면 Promotion 전에 지연 품질 표본과 사람 검토를 추가합니다.
-
-<a id="ai-section-21"></a>
 
 ## 21. Rollback은 실행 가능성과 업무 복구를 함께 계약한다
 
@@ -683,8 +608,6 @@ rollback_contract:
 
 Rollback Contract도 복원할 Target뿐 아니라 어떤 Candidate와 Change Set, 승인 Scope에 대한 계약인지 고정합니다. 비가역적 효과가 있다면 “Rollback 가능”이라고 표시하지 않습니다. `PARTIAL`로 분류하고, 보상 작업과 책임자, 허용 가능한 손실 범위를 Risk Tier에 반영합니다. 자세한 Progressive Delivery와 State 복구는 [BLOG-87](https://aiarchitect.tistory.com/87)에서 다룹니다.
 
-<a id="ai-section-22"></a>
-
 ## 22. 승인 명령의 재전송과 경합을 멱등 계약으로 흡수한다
 
 변경 승인 시스템도 분산 시스템입니다. 같은 Change Set의 중복 Event, 오래 걸리는 평가 중 새 Commit, 동시에 실행되는 Promotion과 Rollback을 처리해야 합니다.
@@ -707,8 +630,6 @@ REVOKE / ROLLBACK > FREEZE / HOLD > RETAIN > PROMOTE
 
 장기 실행 Agent Task도 고려합니다. Task 시작 시 Release Digest와 Decision Scope를 고정하고, 중간 Promotion이 기존 Task의 Prompt·Tool을 섞지 않게 합니다. Critical Revocation이면 명시된 중단·격리 Policy에 따라 처리합니다.
 
-<a id="ai-section-23"></a>
-
 ## 23. 운영 사고는 기존 승인을 즉시 재평가하게 한다
 
 승인 후에도 새로운 반증이 들어옵니다. [BLOG-90 Continuous Assurance](https://aiarchitect.tistory.com/90)의 Finding, [BLOG-92](https://aiarchitect.tistory.com/92)의 Evidence Revocation, 운영 SLO와 Incident Event를 Decision Graph에 연결합니다.
@@ -726,8 +647,6 @@ Runtime Signal / Incident / Finding
 Severity만으로 자동 Rollback을 결정하지 않습니다. Signal 신뢰도, 영향받은 Subject 일치, 현재 Scope, 탐지 지연과 오탐 비용을 함께 봅니다. 다만 권한 우회, 민감정보 외부 전송, 파괴적 Tool 오작동처럼 미리 정한 Critical Invariant는 즉시 Capability를 차단해야 합니다.
 
 운영 중 조치는 기존 Record를 수정하지 않고 새 사건과 결정으로 연결합니다. 그래야 “왜 05:14에 5% Canary가 중지됐는가”를 Finding, Telemetry, Rule, Revocation, Rollback 실행까지 추적할 수 있습니다.
-
-<a id="ai-section-24"></a>
 
 ## 24. 합성 사례로 Prompt·Tool 변경 승인을 계산한다
 
@@ -774,8 +693,6 @@ Rollback Trigger    unauthorized publish > 0 또는 task success LCB < 0.94
 
 이 사례의 핵심은 자동 승인 여부가 Prompt 변경이라는 이름에 의해 결정되지 않는다는 점입니다. 실제 권한, 노출, 가역성, Evidence, 관찰과 Scope 계약이 함께 결정합니다.
 
-<a id="ai-section-25"></a>
-
 ## 25. 실패하기 쉬운 변경 승인 안티패턴을 피한다
 
 ### CI가 초록색이면 곧바로 전면 배포한다
@@ -813,8 +730,6 @@ Tool Side Effect와 Memory·Knowledge·Schema 변경이 남습니다. Release·C
 ### 자동 승인 Rule을 아무나 즉시 수정한다
 
 Policy 변경이 가장 쉬운 우회 경로가 됩니다. Policy도 Review·서명·Version·업무 분리를 가진 Release 대상이어야 합니다.
-
-<a id="ai-section-26"></a>
 
 ## 26. 다섯 단계로 도입하고 결정 품질을 측정한다
 
@@ -866,8 +781,6 @@ Incident·Finding·Drift가 영향받은 Decision을 재평가하게 하고, 오
 ```
 
 첫 번째 질문은 Assurance와 승인 책임을, 두 번째 질문은 운영 통제와 복구 가능성을 만듭니다. 두 답이 같은 Decision Graph에 연결될 때 변경 속도와 거버넌스는 서로의 반대말이 아니게 됩니다.
-
-<a id="ai-section-27"></a>
 
 ## 27. 공식 참고자료
 

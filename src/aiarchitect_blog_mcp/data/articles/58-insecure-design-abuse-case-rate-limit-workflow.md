@@ -4,33 +4,6 @@ Insecure Design은 구현 버그가 아니라 기능이 설계대로 동작할 �
 
 ![명시된 업무 통제를 통과하는 정상 흐름과 차단되는 Skip·Replay·Race·대량 악용 경로를 보여주는 보안 설계 구조](assets/blog-58-insecure-design-workflow-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">설계 결함과 구현 결함을 구분한다</a></li>
-<li><a href="#ai-section-2">기능 요구사항을 업무 불변식으로 바꾼다</a></li>
-<li><a href="#ai-section-3">Threat Modeling을 Sprint의 설계 활동으로 둔다</a></li>
-<li><a href="#ai-section-4">Abuse Case를 짧고 Test 가능한 문장으로 만든다</a></li>
-<li><a href="#ai-section-5">UI 순서가 아니라 Server 상태 기계로 Workflow를 강제한다</a></li>
-<li><a href="#ai-section-6">보안 관련 값은 Server가 다시 계산한다</a></li>
-<li><a href="#ai-section-7">민감한 Transaction은 확인한 내용과 실행할 내용을 묶는다</a></li>
-<li><a href="#ai-section-8">Concurrency는 공격자가 선택할 수 있는 입력이다</a></li>
-<li><a href="#ai-section-9">Idempotency는 중복 실행 방지 계약이다</a></li>
-<li><a href="#ai-section-10">Rate Limit은 로그인 앞단이 아니라 Feature별 설계다</a></li>
-<li><a href="#ai-section-11">제한 자체가 새로운 DoS 수단이 되지 않게 한다</a></li>
-<li><a href="#ai-section-12">자원 Budget을 API 계약에 포함한다</a></li>
-<li><a href="#ai-section-13">실패 상태와 보상 흐름도 정상 흐름만큼 설계한다</a></li>
-<li><a href="#ai-section-14">설계 결정을 실행 가능한 산출물로 남긴다</a></li>
-<li><a href="#ai-section-15">Negative Test는 순서·반복·동시성·규모를 바꾼다</a></li>
-<li><a href="#ai-section-16">Release Gate는 보안 설계의 존재와 증거를 확인한다</a></li>
-<li><a href="#ai-section-17">운영에서는 결과보다 불변식 위반 시도를 관측한다</a></li>
-<li><a href="#ai-section-18">사고 대응은 누락된 설계를 찾아 닫는다</a></li>
-<li><a href="#ai-section-19">실무 체크리스트</a></li>
-<li><a href="#ai-section-20">마무리</a></li>
-<li><a href="#ai-section-21">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 Insecure Design은 보안 Header 하나를 빠뜨리거나 조건문 하나를 잘못 작성한 문제와 다릅니다. 필요한 통제 자체가 요구사항과 설계에 없으면 코드를 정확히 구현해도 시스템은 안전하지 않습니다.
 
 예를 들어 다음 코드는 모두 정상 동작할 수 있습니다.

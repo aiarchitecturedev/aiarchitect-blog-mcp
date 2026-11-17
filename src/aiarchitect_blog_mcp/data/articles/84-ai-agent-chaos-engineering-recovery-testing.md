@@ -2,42 +2,6 @@
 
 AI Agent Chaos Engineering의 목적은 장애를 터뜨리는 것이 아니라 복구가 작동함을 증명하는 것입니다. Model 지연과 RAG 오류, MCP Tool 실패, 다른 Agent의 무응답이 한 요청 안에서 겹치기 때문에, 확인할 것은 그때 업무가 안전하게 축소·취소되고 남은 Side Effect가 정리되는지입니다. 이 글은 Steady State와 Blast Radius, Abort Condition, Recovery Gate로 실험 범위를 통제하며 Model·RAG·MCP·A2A 장애와 자동 복구를 검증하는 방법을 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">AI Agent Chaos Engineering은 무작위 장애가 아니다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Fault Injection·Chaos·Game Day·Recovery Testing을 구분한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Component Health보다 업무 결과를 실험 대상으로 삼는다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Steady State를 사용자·업무·시스템 신호로 정의한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Invariant와 실험 가설을 분리한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">실제 사고와 Near Miss에서 Fault Model을 만든다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">실험 명세를 Versioned Contract로 관리한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Blast Radius를 Tenant·Task·Capability·시간으로 제한한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Precondition·Abort Condition·Kill Switch를 독립시킨다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Control Group과 Experiment Group을 비교한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Fault Injection을 Agent 실행 경계에 배치한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Model 장애는 Transport·Capacity·Semantic으로 나눈다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">RAG 장애는 지연보다 Evidence 왜곡이 더 위험하다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">MCP Read와 Write의 실패 의미를 다르게 시험한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">A2A 장기 Task의 정체·취소·Late Result를 시험한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Retry Storm·Queue 포화·Recovery Storm을 함께 검증한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Graceful Degradation과 Human Handoff를 결과 계약으로 검증한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">취소 이후 실행과 Orphan Task를 끝까지 추적한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Recovery를 감지·격리·복원·조정·확신 회복으로 나눈다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Recovery Gate는 Traffic 복귀 전 Evidence를 요구한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Side Effect Ledger로 Effect Unknown을 조정한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">실험 Trace와 Evidence Package를 남긴다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Shadow·Staging·Canary·Production 순으로 승격한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Release Gate와 정기 실험을 분리해 자동화한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">Game Day는 사람과 Runbook도 함께 시험한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">합성 사례로 MCP Write 응답 유실을 검증한다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">실패한 실험은 신뢰성 Backlog와 회귀 시험으로 바꾼다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">단계적으로 구현하고 실험 성숙도를 높인다</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">운영 체크리스트와 마무리</li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;">공식 참고자료</li>
-</ol>
-</blockquote>
-
 회의 분석 Agent의 Resilience 설계가 완료됐습니다.
 
 ```text

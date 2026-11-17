@@ -4,31 +4,6 @@
 
 ![업무 후보 발굴부터 준비도, PoC, Pilot을 거쳐 통제된 운영 확장으로 이어지는 기업 AI Agent 도입 로드맵](assets/blog-65-enterprise-ai-agent-adoption-roadmap-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">AI Agent 도입은 모델 선정이 아니라 업무 설계에서 시작한다</a></li>
-<li><a href="#ai-section-2">모든 AI 업무에 Agent가 필요한 것은 아니다</a></li>
-<li><a href="#ai-section-3">전체 로드맵은 여섯 단계와 다섯 개 Stage Gate로 운영한다</a></li>
-<li><a href="#ai-section-4">1단계 — 업무 후보를 사용자 행동과 결과로 작성한다</a></li>
-<li><a href="#ai-section-5">2단계 — Agent 적합성과 가치·실현 가능성·위험으로 우선순위를 정한다</a></li>
-<li><a href="#ai-section-6">3단계 — 데이터·통합·권한·운영 준비도를 진단한다</a></li>
-<li><a href="#ai-section-7">4단계 — 성공 계약을 먼저 만들고 PoC는 가장 큰 가설만 검증한다</a></li>
-<li><a href="#ai-section-8">PoC에서 반드시 포함할 실패 사례와 Negative Test</a></li>
-<li><a href="#ai-section-9">5단계 — Pilot은 실제 사용자와 제한된 권한으로 운영한다</a></li>
-<li><a href="#ai-section-10">운영형 Architecture와 Stage Gate 5를 함께 설계한다</a></li>
-<li><a href="#ai-section-11">6단계 — 운영 전환은 한 번의 Launch가 아니라 통제된 확산이다</a></li>
-<li><a href="#ai-section-12">조직 역할을 기술팀 한 곳에 몰아넣지 않는다</a></li>
-<li><a href="#ai-section-13">단계 계약으로 불확실성과 비용을 함께 관리한다</a></li>
-<li><a href="#ai-section-14">자주 실패하는 도입 안티패턴</a></li>
-<li><a href="#ai-section-15">상담 전에 준비하면 좋은 열 가지</a></li>
-<li><a href="#ai-section-16">도입 로드맵 최종 체크리스트</a></li>
-<li><a href="#ai-section-17">마무리</a></li>
-<li><a href="#ai-section-18">함께 읽으면 좋은 글</a></li>
-<li><a href="#ai-section-19">참고 자료</a></li>
-</ol>
-</blockquote>
-
 기업에서 AI Agent 도입을 검토하면 “어떤 LLM·RAG·MCP·멀티 Agent를 써야 하는가?”부터 묻기 쉽습니다. 모두 필요한 질문이지만 첫 번째 질문은 아닙니다.
 
 기업 AI Agent 도입의 출발점은 **어떤 모델을 선택할지**가 아니라 **누구의 어떤 업무를 어떤 조건에서 개선할지**입니다. 업무와 책임 경계가 정해지지 않은 상태에서 기술부터 선택하면, 시연은 빠르게 만들 수 있어도 운영 전환 단계에서 범위·권한·품질·비용을 다시 설계하게 됩니다.

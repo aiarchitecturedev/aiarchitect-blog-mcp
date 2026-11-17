@@ -35,38 +35,6 @@ STT 성공은 이 경로 전체가 성공했다는 뜻이 아닙니다.
 
 이 글에서는 “AI가 가끔 실패한다”는 모호한 설명을 벗어나, STT 성공 이후의 요약 파이프라인을 단계별로 분리하고 어떤 증거를 어떤 순서로 확인해야 하는지 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">먼저 성공의 단위를 분리한다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">하나의 completed Flag로 전체를 표현하지 않는다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">진단은 화면 메시지가 아니라 불변 식별자에서 시작한다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">첫 번째 원인: 회의와 파일의 연결이 잘못됐다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">두 번째 원인: STT와 요약 단계가 같은 입력을 읽지 않는다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">세 번째 원인: 녹취록이 존재하지만 요약 입력으로 준비되지 않았다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">네 번째 원인: 요약 요청과 요약 완료를 혼동했다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">다섯 번째 원인: Queue에 들어갔지만 Worker까지 도착하지 않았다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">여섯 번째 원인: Worker가 잘못된 실행 문맥을 받았다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">일곱 번째 원인: LLM 호출 전에 Prompt 구성에서 실패했다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">여덟 번째 원인: Provider 호출이 실패했다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">아홉 번째 원인: 응답은 받았지만 결과 검증에 실패했다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">열 번째 원인: 결과 저장과 상태 전환이 원자적이지 않았다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">열한 번째 원인: 결과는 있는데 조회 API가 없다고 판단했다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">가장 빠른 장애 진단 순서</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">재시도는 오류 분류와 멱등성이 준비된 뒤 적용한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실패 상태에는 원인과 다음 행동이 포함돼야 한다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">분산 추적으로 끊어진 경로를 연결한다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단계별 Metric으로 느림과 실패를 분리한다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">재현 테스트는 단계별 Fixture로 만든다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자주 실패하는 진단 방식</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 Runbook</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">설계 체크리스트</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 ## 1. 먼저 성공의 단위를 분리한다
 
 사용자 화면에서는 “회의 처리” 하나로 보이지만 내부에는 여러 개의 독립적인 성공 조건이 있습니다.

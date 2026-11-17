@@ -4,26 +4,6 @@
 
 ![실시간·배치 음성이 화자 단위 녹취록과 임베딩·벡터 검색 근거로 정제되고 로컬 AI 인사이트가 사용자 승인과 권한 검사를 거쳐 업무로 연결되는 파이프라인](assets/blog-67-real-time-stt-rag-data-pipeline-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background: #f6f9fc; border: 1px solid #d7e2ea; border-radius: 12px; padding: 16px 20px 15px; color: #263746; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="margin: 0; padding-left: 1.4em; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">왜 “모델”이 아니라 “데이터→인사이트→활용” 서사인가 [응용·설계 예시]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">파이프라인 전체 개관과 아키텍처 [혼합]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">데이터 수집: 실시간과 배치를 하나의 레코드로 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">전사(STT): 실시간과 배치 두 경로 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">화자 분리와 녹취록 정제 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">임베딩·벡터DB 인덱싱: RAG의 저장층 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인사이트 생성: 요약·추출·검색 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인사이트를 업무로 연결: MCP 도구와 승인 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">같은 인사이트를 마케팅·고객 충성도에 적용한다면 [응용·설계 예시]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 관점: 재처리·멱등성·관측성·비용 [실제 운영/구현]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정리: A(참조)와 B(정박)를 함께 읽기 [혼합]</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">함께 읽으면 좋은 글</a></li>
-<li style="margin: 4px 0; color: #555555; font-weight: 400;"><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 동반편인 [기업 데이터 파이프라인 참조 아키텍처](https://aiarchitect.tistory.com/66)은 데이터웨어하우스에서 마케팅·고객 충성도까지 이어지는 기업 데이터 파이프라인을 **범용 참조 아키텍처**로 개관했습니다. 이 글은 같은 목표(데이터에서 얻은 인사이트를 업무와 고객 활용으로 잇기)를, 필자가 **실제로 운영하는 AI 스택**에 다시 정박해 “어떻게”를 다룹니다.
 
 원천 데이터는 정형 테이블이 아니라 **음성·회의 미디어**입니다. 이것을 실시간·배치 음성 인식 (Speech-to-Text, STT)으로 전사하고, 화자 분리 (Speaker Diarization)로 정제하고, 임베딩·벡터 데이터베이스에 색인해 검색 증강 생성 (Retrieval-Augmented Generation, RAG)으로 인사이트를 만듭니다. 그 인사이트를 업무로 연결하는 것이 이 파이프라인의 실제 범위입니다.
@@ -35,8 +15,6 @@
 **근거 정직성:** Faster-Whisper·WebRTC/Janus·ChromaDB·Gemma 3·4·Qwen3·NVIDIA DGX Spark·vLLM·Python/FastAPI/LangGraph·Java/Spring·MCP 등은 필자의 **실제 운영·구현** 범위입니다. **pgvector는 상용 운영이 아닌 설계·검증 범위**이며, **마케팅·고객 충성도(9절)는 응용·설계 예시**입니다. 각 절 제목 끝에 `[실제 운영/구현]`, `[응용·설계 예시]`, `[혼합]` 라벨을 붙여 근거를 구분합니다.
 
 **1분 요약:** 데이터는 음성에서 시작합니다. 실시간·배치로 전사하고, 화자 단위로 정제한 뒤, 한국어에 맞게 청킹해 임베딩·색인합니다. 그 위에서 요약·추출·검색으로 인사이트를 만들고, 사용자 승인과 권한 검사를 거쳐 업무로 연결합니다. 같은 인사이트를 마케팅·충성도에 쓸 수 있지만, 그것은 설계 예시이지 구축·납품 사례가 아닙니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 왜 “모델”이 아니라 “데이터→인사이트→활용” 서사인가 [응용·설계 예시]
 
@@ -52,8 +30,6 @@
 | 무엇이 중요한가(요약·추출) | 임베딩·색인 → 요약·구조화 추출 |
 | 지금 무엇을 할까(검색·행동) | 시맨틱 검색 → 승인 → 업무 연결 |
 
-<a id="ai-section-2"></a>
-
 ## 2. 파이프라인 전체 개관과 아키텍처 [혼합]
 
 > 근거: 실제 운영 구조의 익명화 개관입니다. 다만 마지막의 마케팅 노드는 설계 예시입니다.
@@ -65,8 +41,6 @@
 *실제 운영 경로는 실선으로, 구현하지 않은 마케팅·충성도 응용은 점선과 별도 라벨로 분리했습니다. 모델 출력이 바로 업무를 실행하지 않고 사용자 승인과 서버 객체 인가를 통과하는 경계가 핵심입니다.*
 
 이 글은 개관입니다. 각 단계는 이미 별도 심화 글이 있으므로, 여기서는 연결과 흐름에 집중하고 세부는 링크로 넘깁니다. 구현 상태도 정직하게 구분합니다. **ChromaDB는 실제 구현**했고, **pgvector는 설계·검증** 단계입니다.
-
-<a id="ai-section-3"></a>
 
 ## 3. 데이터 수집: 실시간과 배치를 하나의 레코드로 [실제 운영/구현]
 
@@ -92,8 +66,6 @@
 
 수집 시점에 **원천과 작업(job)의 관계를 먼저 기록**하는 이유는 재처리와 멱등성 때문입니다. 같은 원천을 다시 처리해도 중복이 생기지 않아야 뒤의 인덱싱이 안전합니다. 실시간 연결 자체의 진단(ICE·NAT·TURN)은 [브라우저 WebRTC 연결 실패](https://aiarchitect.tistory.com/6)에서 다뤘습니다.
 
-<a id="ai-section-4"></a>
-
 ## 4. 전사(STT): 실시간과 배치 두 경로 [실제 운영/구현]
 
 > 근거: 필자가 실제 운영하는 STT 구성입니다. 정확도 개선은 학습이 아니라 사전·규칙·피드백입니다.
@@ -104,8 +76,6 @@
 - **정확도 개선의 정직한 경계**: 도메인 용어가 틀리는 문제는 **용어 사전·교정 규칙·피드백 루프**로 개선합니다. 이것은 모델을 **학습**시키는 것이 아닙니다.
 
 리샘플링·자막 상태·환각 억제의 상세 설계는 [실시간 STT: 48kHz 리샘플링, Partial·Final 자막과 환각 억제](https://aiarchitect.tistory.com/12), 정확도 보정은 [STT 정확도 보정과 도메인 적응](https://aiarchitect.tistory.com/28)에서 이어집니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. 화자 분리와 녹취록 정제 [실제 운영/구현]
 
@@ -122,8 +92,6 @@
 | 개인정보 | 원문 그대로 | 마스킹·보존 정책 적용 |
 
 음성에는 개인을 식별할 수 있는 정보가 포함될 수 있고, 화자 식별 목적으로 기술 처리한 특징은 **생체정보 규율을 검토**해야 합니다. 따라서 [개인정보 보호법](https://www.law.go.kr/법령/개인정보보호법)을 포함한 적용 법령과 조직 정책에 따라 수집 근거·목적 제한·접근 통제·보존 기간을 확인하고, 정제 단계에서 마스킹과 보존 정책을 적용합니다. 화자 분리 설계는 [화자 분리(Speaker Diarization) 설계: STT와는 다른 문제](https://aiarchitect.tistory.com/30)에서 자세히 다뤘습니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. 임베딩·벡터DB 인덱싱: RAG의 저장층 [실제 운영/구현]
 
@@ -152,8 +120,6 @@
 
 *재임베딩은 기존 검색 결과를 즉시 덮어쓰지 않습니다. 새 리비전을 검증한 뒤 활성 포인터만 전환하고, 실패하면 이전 버전을 유지합니다. 삭제도 원본에서 파생 인덱스까지 끝까지 전파되어야 합니다.*
 
-<a id="ai-section-7"></a>
-
 ## 7. 인사이트 생성: 요약·추출·검색 [실제 운영/구현]
 
 > 근거: 필자가 실제 운영하는 인사이트 계층입니다. 모델은 서빙하며 학습하지 않습니다.
@@ -167,8 +133,6 @@
 LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 NVIDIA DGX Spark에서 로컬 서빙**하고, 클라우드 대안이 필요할 때를 위해 Claude·GPT·Gemini를 교체 가능한 제공자로 추상화합니다. [vLLM 공식 지원 모델 표](https://docs.vllm.ai/en/latest/models/supported_models/)는 현재 Gemma 3·Qwen3 아키텍처를 명시하므로, Gemma 4는 사용 중인 런타임·모델·드라이버 조합을 별도로 고정하고 호환성을 검증합니다. 다시 강조하면, 품질은 프롬프트·RAG·후처리로 올리며 **모델 가중치를 학습하지 않습니다.**
 
 환각은 한 가지 장치로 사라지지 않습니다. **근거가 부족하면 답변을 보류하도록 지시**하고, 여기에 검색 유사도 임계값, 인용·출처 검증, 구조화 출력 검증 같은 게이트를 함께 적용합니다. 제공자 추상화는 [GPT·Claude·Gemini를 교체 가능한 Agent Core로 연결하기](https://aiarchitect.tistory.com/13), 배치 판단은 [클라우드 API vs 로컬 LLM](https://aiarchitect.tistory.com/29)에서 다뤘습니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. 인사이트를 업무로 연결: MCP 도구와 승인 [실제 운영/구현]
 
@@ -190,8 +154,6 @@ LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 
 
 여기서 `requires_approval`·`authorization`은 MCP 표준 필드가 아니라 **애플리케이션 정책 메타데이터**입니다. 권한 판단은 모델이 인자로 보내는 것이 아니라 **서버가 인증 컨텍스트로 결정**합니다. MCP는 특정 승인 UI를 강제하지 않습니다. 다만 [MCP 명세의 보안·신뢰 원칙](https://modelcontextprotocol.io/specification/2025-03-26/index)은 도구 호출 전에 명시적 사용자 동의를 얻도록 요구하며, 민감 작업에는 호출 인자 확인과 승인 절차를 두도록 권고합니다. 읽기·쓰기·위험 작업을 구분하고, 실행 시점에 객체 인가를 다시 확인하며, 감사 로그를 남기는 원칙은 [AI Agent 승인 정책 설계](https://aiarchitect.tistory.com/16), [엔터프라이즈 AI Agent 권한 설계](https://aiarchitect.tistory.com/19)에서, 여러 에이전트의 권한 분리는 [메시지 버스 기반 멀티 에이전트 협업](https://aiarchitect.tistory.com/31)에서 다뤘습니다. 공개 콘텐츠를 도구로 노출한 실제 도그푸딩 사례는 [내 블로그를 MCP 서버로 만들기](https://aiarchitect.tistory.com/63)에 있습니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 같은 인사이트를 마케팅·고객 충성도에 적용한다면 [응용·설계 예시]
 
 > 근거: **이 절은 설계 예시입니다.** 필자는 마케팅·CRM·CLV 시스템을 실제로 구축·납품한 적이 없습니다.
@@ -207,8 +169,6 @@ LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 
 
 이 응용을 **실제 마케팅 시스템**으로 만들려면, 이 파이프라인 밖에서 추가로 필요한 것이 많습니다. 고객 데이터 플랫폼(CDP)·CRM 연동, 수집·활용 동의와 개인정보 처리, CLV 모델링, 실험 설계(A/B 등)가 그것입니다. 이 글의 범위는 **인사이트 생성까지**이며, 그 이후는 별도의 도메인입니다. 정량 성과 수치는 제시하지 않습니다.
 
-<a id="ai-section-10"></a>
-
 ## 10. 운영 관점: 재처리·멱등성·관측성·비용 [실제 운영/구현]
 
 > 근거: 필자가 실제 적용하는 운영 규율입니다. 수치가 아니라 방법을 서술합니다.
@@ -221,8 +181,6 @@ LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 
 - **삭제 전파**: 원본이 삭제되면 녹취록·요약·청크·인덱스까지 함께 정리합니다.
 
 정직하게, 이 글은 공개된 정량 지표를 제시하지 않습니다. **방법을 설명하되 숫자를 주장하지 않는 것**이 이 파이프라인 서술의 원칙입니다.
-
-<a id="ai-section-11"></a>
 
 ## 11. 정리: A(참조)와 B(정박)를 함께 읽기 [혼합]
 
@@ -245,8 +203,6 @@ LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 
 
 첫 문의에는 실제 고객 문서·개인정보·접속 주소·API Key 같은 자격 증명을 첨부하지 마세요. 업무 유형과 제약을 비식별 요약으로 먼저 공유하는 편이 안전합니다.
 
-<a id="ai-section-12"></a>
-
 ## 12. 함께 읽으면 좋은 글
 
 - [회의 음성에서 RAG까지: 녹취록·요약·검색·업무 연결 파이프라인](https://aiarchitect.tistory.com/4)
@@ -256,8 +212,6 @@ LLM 서빙의 실제 구성은 다음과 같습니다. **Gemma 3·4와 Qwen3를 
 - [한국어 문서 청킹 설계: 종결어미·임베딩 토큰 한도·회의 발화](https://aiarchitect.tistory.com/32)
 - [클라우드 API vs 로컬 LLM: 망 분리·비용·프라이버시로 정하는 배치 기준](https://aiarchitect.tistory.com/29)
 - [GPT·Claude·Gemini를 교체 가능한 Agent Core로 연결하기](https://aiarchitect.tistory.com/13)
-
-<a id="ai-section-13"></a>
 
 ## 13. 참고 자료
 

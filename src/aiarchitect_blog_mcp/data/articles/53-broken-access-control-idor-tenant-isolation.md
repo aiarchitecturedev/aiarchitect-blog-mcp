@@ -4,28 +4,6 @@ IDOR 취약점은 인증이 없어서 생기는 것이 아니라 로그인한 �
 
 ![검증된 신원과 리소스 관계를 중앙 인가 정책에서 평가해 올바른 Tenant 데이터만 허용하고 교차 Tenant 시도는 거부와 감사 경로로 분리하는 Broken Access Control 보안 흐름](assets/blog-53-broken-access-control-authorization-boundary-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">OWASP Top 10:2025의 A01 Broken Access Control</a></li>
-<li><a href="#ai-section-2">인가 판단을 네 가지 입력으로 모델링한다</a></li>
-<li><a href="#ai-section-3">IDOR: 식별자를 안다고 권한이 생기지는 않는다</a></li>
-<li><a href="#ai-section-4">Tenant 격리는 한 번의 if가 아니라 여러 층의 불변조건이다</a></li>
-<li><a href="#ai-section-5">수평·수직·기능 단위 권한 우회를 구분한다</a></li>
-<li><a href="#ai-section-6">Mass Assignment: DTO에 없는 권한은 바뀌지 않는다</a></li>
-<li><a href="#ai-section-7">목록·파일·캐시·Export에서 경계를 보존한다</a></li>
-<li><a href="#ai-section-8">오류 응답과 감사 Event</a></li>
-<li><a href="#ai-section-9">두 명·두 Tenant로 Negative Test를 만든다</a></li>
-<li><a href="#ai-section-10">CI/CD Release Gate</a></li>
-<li><a href="#ai-section-11">잘못된 대응과 이유</a></li>
-<li><a href="#ai-section-12">코드 Review 체크리스트</a></li>
-<li><a href="#ai-section-13">도입 순서</a></li>
-<li><a href="#ai-section-14">완료 조건</a></li>
-<li><a href="#ai-section-15">마무리</a></li>
-<li><a href="#ai-section-16">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 인증에 성공했다는 사실은 모든 데이터와 기능을 사용할 수 있다는 뜻이 아닙니다. 인증(Authentication)은 요청자가 누구인지 확인하고, 인가(Authorization)는 그 주체가 **이 리소스에 이 동작을 수행해도 되는지** 판단합니다.
 
 Broken Access Control은 이 두 번째 판단이 빠지거나 서로 다른 경로에서 일관되지 않을 때 발생합니다.

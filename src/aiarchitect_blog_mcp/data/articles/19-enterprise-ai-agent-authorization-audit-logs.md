@@ -4,47 +4,6 @@ AI Agent 권한을 역할 하나로 묶으면 그 Agent가 접근 가능한 모�
 
 ![사용자 요청이 Identity, Tenant, 정책 결정, 승인과 Tool 실행 경계를 통과하고 실제 업무 결과와 변경 불가능한 감사 증거로 연결되는 밝은 엔터프라이즈 AI Agent 권한 거버넌스](assets/blog-19-enterprise-agent-authorization-audit-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인증, 인가, 승인과 감사는 서로 다른 통제다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">권한 검사는 한 번이 아니라 여러 경계에서 수행한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Principal을 사용자 하나로 단순화하지 않는다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">위임과 가장을 구분한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tenant는 사용자가 입력하는 필드가 아니다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">테넌트 격리는 애플리케이션 Filter 하나로 끝나지 않는다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">RBAC만으로 부족한 조건은 ABAC로 보완한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">권한 판단 입력을 구조화한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool 권한과 객체 권한을 분리한다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool 목록 필터링은 보안 경계가 아니다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결정과 정책 집행을 분리한다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결과는 Boolean보다 풍부해야 한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">OPA 정책 예시: 역할·Tenant·객체 관계를 함께 본다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">객체 권한은 모든 상세·변경 Endpoint에서 재검사한다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업무 상태도 인가 입력이다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">장시간 Workflow는 실행 직전에 다시 인가한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 로그는 일반 Application Log와 목적이 다르다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 이벤트는 누가·어디서·무엇을·왜·어떻게 됐는가를 담는다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결정과 실제 실행을 다른 이벤트로 남긴다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">실행 감사 이벤트에는 결과 상태와 Side Effect를 구분한다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">전체 Tool 인자 대신 Canonical Digest를 기록한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">허용뿐 아니라 거부와 실패를 기록한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Decision ID로 정책 판단을 재구성한다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 로그의 민감정보를 별도 정책으로 Masking한다</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 로그 자체를 보호한다</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 Pipeline 실패 시 행동을 위험 등급별로 정한다</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tenant별 감사 조회 권한도 분리한다</a></li>
-<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">탐지 규칙은 권한 결정과 실행 이벤트를 함께 본다</a></li>
-<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">권한 정책 변경도 감사 대상이다</a></li>
-<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">권한 테스트는 역할보다 전체 Context 조합을 검증한다</a></li>
-<li><a href="#ai-section-31" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">공격·오류 시나리오로 검증한다</a></li>
-<li><a href="#ai-section-32" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 체크리스트</a></li>
-<li><a href="#ai-section-33" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-34" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. AI Agent의 제한된 권한과 실제 업무 실행, 감사 증거를 하나의 통제 경로로 연결한 엔터프라이즈 권한 거버넌스*
 
 사용자가 AI Agent에게 요청합니다.

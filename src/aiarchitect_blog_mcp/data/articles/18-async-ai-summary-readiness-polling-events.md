@@ -4,44 +4,6 @@
 
 ![새 AI 요약 작업이 진행되는 동안 검증된 기존 결과를 안전하게 제공하고 중앙 Readiness Gate에서 상태를 판정하는 대표 이미지](assets/blog-18-async-summary-readiness-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">202 Accepted는 완료 응답이 아니다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">가장 먼저 작업과 결과를 다른 Resource로 본다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">완료 상태를 다섯 축으로 분리한다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Job State는 상호 배타적인 생명주기를 표현한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Result는 생명주기보다 Version과 Condition이 중요하다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">준비 상태 판정식을 코드로 명시한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">usable, current, generating을 동시에 계산한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">completed=false, 결과 있음 상태를 정확히 해석한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">상태 조합표가 API 계약의 중심이다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">최신성을 시간만으로 판단하지 않는다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">재생성은 기존 결과를 덮어쓰지 않고 새 Version으로 만든다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">동시에 여러 재생성 요청이 들어오면 목표 Version을 고정한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Polling API는 Operation Resource를 조회한다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Polling 간격은 Client마다 추측하게 두지 않는다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">ETag와 조건부 GET으로 변경이 없을 때 본문을 줄인다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Polling 종료 조건을 명확히 한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Event는 상태 변경 알림이고 결과의 기준 데이터가 아니다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">중복·역순 Event를 전제로 Consumer를 만든다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Polling과 Event를 함께 사용하는 것이 현실적이다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">UI에는 작업 상태와 결과 상태를 함께 보여 준다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Agent와 MCP Tool도 같은 Readiness Predicate를 사용한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">접근 권한은 Readiness와 별도로 매 요청 확인한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Operation과 Result의 보존 기간을 분리한다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">상태와 결과를 같은 Transaction 또는 복구 가능한 흐름으로 저장한다</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기존 Boolean API를 단계적으로 개선한다</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">상태 계약 테스트는 모든 조합을 검증한다</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Polling과 Event 계약을 실패 주입으로 검증한다</a></li>
-<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 Metric은 결과 가용성을 기준으로 만든다</a></li>
-<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">구현 체크리스트</a></li>
-<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-31" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. 비동기 요약의 작업 진행 상태와 사용 가능한 결과 상태는 분리해 관찰해야 하며, 재생성 중에도 검증된 기존 결과를 유지할 수 있습니다.*
 
 AI 요약 생성 API를 호출했습니다.

@@ -4,40 +4,6 @@ AI 프로젝트에서 데모가 잘 됐다는 말과 인수 조건을 만족했�
 
 ![업무 가치·사용자·AI 품질·안전·신뢰성·데이터·비용·운영 기준을 하나의 인수 결정으로 모으는 대표 이미지](assets/blog-20-ai-project-success-criteria-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">데모 성공과 프로젝트 성공은 다르다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Metric, Target과 Gate를 구분한다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준은 가설과 평가 단위에서 시작한다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 1: 업무 가치</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 2: 사용자 작업 성공</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 3: AI 품질</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">사람 평가와 AI Judge를 함께 설계한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 4: 안전·보안·권한</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 5: 지연·가용성·복구</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 6: 데이터·통합 준비도</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 7: 비용·처리 용량</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 8: 운영·거버넌스 책임</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Blocking Gate와 Optimization Metric을 섞지 않는다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">기준선 없이 목표 숫자부터 정하지 않는다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">대표 평가 Dataset과 실패 Slice를 Version으로 관리한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Offline Evaluation과 Online Evaluation을 연결한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준 문서는 계산식까지 명시한다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 계약 예시</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">단계별 Acceptance Gate를 다르게 둔다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">판정 상태를 네 가지로 고정한다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인수 증거 패키지</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성공 기준에도 Owner와 Review Date가 필요하다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자주 실패하는 성공 기준 안티패턴</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Kickoff에서 결정할 질문</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 전 최종 체크리스트</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. 모델 정확도는 여덟 성공 영역 중 하나이며, 프로젝트 인수는 업무·사용자·안전·신뢰성·데이터·비용·운영 증거를 함께 판단합니다.*
 
 AI 프로젝트를 시작할 때 이런 표현을 자주 듣습니다.

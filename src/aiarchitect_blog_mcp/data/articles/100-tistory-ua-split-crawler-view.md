@@ -6,21 +6,6 @@
 
 이 글의 수치와 날짜는 **이 블로그를 관리하며 실제로 측정한 값**입니다. **재현 범위를 먼저 가르겠습니다.** 2~4절의 명령은 **독자가 오늘 자기 블로그에 그대로 적용할 수 있습니다.** 🔴 다만 **제가 그날 받은 응답 자체는 재현할 수 없습니다** — 원시 응답을 보관·공개하지 않았기 때문입니다. 원시 HTML 측정(2~5절)은 **10월 22일 · 10월 29일 오전 · 10월 29일 19:36 KST 세 시점**에 같은 방법으로 했고(10-22 와 29일 오전은 **시각을 기록하지 않았습니다**), 렌더 비교(6절)는 **10월 22일에 `/92` 한 편**만 했습니다. 🔴 그리고 **"구글이 실제로 무엇을 봤는가"는 이 글이 답하지 않습니다** — 7절에서 왜 답할 수 없는지 적었습니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">왜 이걸 재게 됐나</a></li>
-<li><a href="#ai-section-2">신호라고 부르기 전에 잡음 바닥을 먼저 잰다</a></li>
-<li><a href="#ai-section-3">한 편이 갈렸다고 전역은 아니다 — 12편으로 넓히기</a></li>
-<li><a href="#ai-section-4">무엇이 빠지는가 — 바이트가 아니라 줄을 본다</a></li>
-<li><a href="#ai-section-5">일주일 뒤 다시 쟀더니 구성이 바뀌어 있었다</a></li>
-<li><a href="#ai-section-6">원시 HTML과 렌더 후는 다른 질문이다</a></li>
-<li><a href="#ai-section-7">이 측정으로 말할 수 없는 것</a></li>
-<li><a href="#ai-section-8">정리 — 그대로 돌려 볼 수 있는 순서</a></li>
-<li><a href="#ai-section-9">참고 자료</a></li>
-</ol>
-</blockquote>
-
 ## 1. 왜 이걸 재게 됐나
 
 같은 주소에 User-Agent 값만 바꿔 요청해 보던 중이었습니다. 응답이 **같을 것이라 생각하고** 확인 삼아 크기를 비교했는데, 예상보다 큰 차이가 나왔습니다.

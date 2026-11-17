@@ -4,35 +4,6 @@ AI Agent의 기억을 Context Window 하나로 다루면 대화가 길어질 때
 
 ![현재 Context와 Workflow Checkpoint·RAG Knowledge·장기 기억을 분리하고 정책에 따라 조립하는 AI Agent 메모리 아키텍처](assets/blog-73-ai-agent-memory-architecture-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">Context Window는 메모리가 아니다</a></li>
-<li><a href="#ai-section-2">다섯 가지 상태 계층을 먼저 분리한다</a></li>
-<li><a href="#ai-section-3">메모리 저장소보다 계약이 먼저다</a></li>
-<li><a href="#ai-section-4">Request Context는 한 번의 호출까지만 신뢰한다</a></li>
-<li><a href="#ai-section-5">Workflow State와 Checkpoint는 실행을 복구한다</a></li>
-<li><a href="#ai-section-6">RAG 지식과 Agent Memory를 같은 것으로 취급하지 않는다</a></li>
-<li><a href="#ai-section-7">장기 기억은 Semantic·Episodic·Procedural로 구분한다</a></li>
-<li><a href="#ai-section-8">읽기 경로는 권한 확인 후 검색한다</a></li>
-<li><a href="#ai-section-9">쓰기 경로는 Candidate와 확정 기억을 분리한다</a></li>
-<li><a href="#ai-section-10">Tenant·사용자·업무 Scope를 Namespace에 고정한다</a></li>
-<li><a href="#ai-section-11">기억 Record에 출처·유효기간·Version을 남긴다</a></li>
-<li><a href="#ai-section-12">충돌·정정·망각을 정상 상태로 설계한다</a></li>
-<li><a href="#ai-section-13">Context Assembler가 Token Budget을 통제한다</a></li>
-<li><a href="#ai-section-14">개인정보·동의·TTL·삭제를 수명주기에 포함한다</a></li>
-<li><a href="#ai-section-15">Memory Poisoning은 Prompt Injection의 장기화다</a></li>
-<li><a href="#ai-section-16">관측성과 Audit은 기억 원문을 복제하지 않는다</a></li>
-<li><a href="#ai-section-17">메모리 품질은 별도 평가 세트로 측정한다</a></li>
-<li><a href="#ai-section-18">합성 장애 사례로 메모리 흐름을 읽어 본다</a></li>
-<li><a href="#ai-section-19">단계적으로 도입한다</a></li>
-<li><a href="#ai-section-20">흔한 안티패턴</a></li>
-<li><a href="#ai-section-21">운영 체크리스트</a></li>
-<li><a href="#ai-section-22">마무리</a></li>
-<li><a href="#ai-section-23">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 사용자가 사내 업무 Agent에게 말합니다.
 
 ```text
@@ -61,8 +32,6 @@ AI Agent의 기억을 Context Window 하나로 다루면 대화가 길어질 때
 
 > 이 글의 사용자·Tenant·프로젝트·기억 Record·정책과 수치는 모두 교육용 합성 예시입니다. 특정 고객·회사·제품·운영 환경을 나타내지 않습니다. 프레임워크의 Memory API는 빠르게 바뀔 수 있으므로 실제 적용 시 사용하는 SDK와 저장소 Version을 고정하고 최신 공식 문서를 다시 확인해야 합니다.
 
-<a id="ai-section-1"></a>
-
 ## 1. Context Window는 메모리가 아니다
 
 **구현에서 실제로 고른 것**(코드 기본값 기준, 운영 적용값은 확인하지 않음) — LLM에 넣는 대화 범위를 **세션에 보관하는 메시지 상한보다 작게** 뒀고, 세션에는 그와 별개로 **활동할 때마다 갱신되는 만료 기준**을 적용했습니다. 셋의 목적이 다르기 때문입니다 — 입력 범위는 응답 품질과 호출 비용을, 보관 상한은 세션당 누적량을, 만료는 수명주기를 정합니다.
@@ -89,8 +58,6 @@ LLM의 Context Window는 한 번의 Model 호출에서 읽을 수 있는 입력 
   = 정책이 허용한 최신 상태와 근거를
     Token Budget 안에서 선택·정렬한 결과
 ```
-
-<a id="ai-section-2"></a>
 
 ## 2. 다섯 가지 상태 계층을 먼저 분리한다
 
@@ -137,8 +104,6 @@ Google ADK 공식 문서도 `Session`과 `State`를 현재 대화의 History·�
 
 *그림 1. Model 호출 전에 서로 다른 상태 계층을 Context Assembler에서 결합하는 구조*
 
-<a id="ai-section-3"></a>
-
 ## 3. 메모리 저장소보다 계약이 먼저다
 
 **구현에서 실제로 고른 것**(코드 기본값 기준, 운영 적용값은 확인하지 않음) — 캐시는 **있으면 쓰고 없으면 없는 대로** 동작합니다. 캐시 읽기가 실패하면 DB로 폴백하고, 쓰기가 실패해도 이미 읽은 결과를 그대로 돌려줍니다. 캐시 계층이 죽어도 대화는 끊기지 않습니다.
@@ -178,8 +143,6 @@ Agent Memory 논의가 시작되면 Vector DB, Graph DB, Redis, PostgreSQL 중 �
   원문 전체가 불필요한 민감 대화
 ```
 
-<a id="ai-section-4"></a>
-
 ## 4. Request Context는 한 번의 호출까지만 신뢰한다
 
 Java Security Gateway는 인증과 Tenant 경계를 확인한 뒤 Python Agent가 사용할 내부 Context를 만듭니다.
@@ -204,8 +167,6 @@ public record TrustedAgentContext(
 - Trace에는 원문 Identity 대신 제한된 참조와 정책 결정 ID만 남깁니다.
 
 Request Context는 다음 Session을 위한 Memory가 아닙니다. 다음 요청에서는 인증·권한·동의를 다시 확인하고 새 Context를 발급합니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. Workflow State와 Checkpoint는 실행을 복구한다
 
@@ -236,8 +197,6 @@ Checkpoint는 이 상태를 특정 실행 단계에서 복원할 수 있게 만�
 - 승인 대기 상태는 Workflow Store에서 읽고, “이 사용자는 항상 승인한다” 같은 추론 기억으로 대체하지 않습니다.
 
 즉 **복구를 위한 상태**와 **다음 업무에 참고할 기억**은 목적이 다릅니다.
-
-<a id="ai-section-6"></a>
 
 ## 6. RAG 지식과 Agent Memory를 같은 것으로 취급하지 않는다
 
@@ -281,8 +240,6 @@ Agent Memory
   → 과거 기억은 충돌 사실을 설명하는 보조 Context로만 사용
 ```
 
-<a id="ai-section-7"></a>
-
 ## 7. 장기 기억은 Semantic·Episodic·Procedural로 구분한다
 
 LangGraph의 공식 Memory 개념 문서는 장기 기억을 Semantic, Episodic, Procedural 유형으로 설명합니다. 이 분류는 저장 Schema와 승인 수준을 정하는 데 유용합니다.
@@ -306,8 +263,6 @@ LangGraph의 공식 Memory 개념 문서는 장기 기억을 Semantic, Episodic,
 - 위험: Agent가 대화 한 번을 근거로 System Prompt나 Tool 권한을 스스로 바꿀 수 있습니다.
 
 Procedural Memory는 일반 사용자 대화가 직접 쓰는 저장소로 만들지 않습니다. 변경 제안은 가능하지만 검토, Test, 승인과 Release Gate를 거쳐 배포합니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. 읽기 경로는 권한 확인 후 검색한다
 
@@ -345,8 +300,6 @@ def search_memory(query, trusted_context, purpose):
 
 Vector 유사도는 권한이 아닙니다. 높은 유사도 결과라도 다른 Tenant, 만료 Record, 삭제 대기 Record라면 반환하지 않습니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 쓰기 경로는 Candidate와 확정 기억을 분리한다
 
 대화에서 발견한 정보를 바로 장기 기억에 쓰면 Model의 오해와 공격 입력이 영속화됩니다. 먼저 `MemoryCandidate`로 격리합니다.
@@ -364,8 +317,6 @@ Vector 유사도는 권한이 아닙니다. 높은 유사도 결과라도 다른
 - **보안 정책·Tool 권한 변경**: Memory 쓰기 대상이 아니라 별도 관리 Workflow로 보냅니다.
 
 Hot Path에서 모든 기억을 추출하면 응답 지연이 늘고 잘못된 기억이 즉시 다음 행동에 영향을 줄 수 있습니다. Background 추출은 지연을 줄이지만 사용자가 방금 수정한 내용과 순서가 엇갈릴 수 있습니다. 두 방식 모두 Event 순서, Source Version과 Idempotency Key가 필요합니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. Tenant·사용자·업무 Scope를 Namespace에 고정한다
 
@@ -388,8 +339,6 @@ Namespace는 검색 편의를 위한 Tag가 아니라 보안 경계의 일부입
 - 관리자 조회도 별도의 Purpose, 승인과 Audit을 요구합니다.
 
 LangGraph Store도 Cross-thread Memory를 Custom Namespace로 구분합니다. 하지만 Framework의 Namespace 기능만 켰다고 멀티테넌트 보안이 완성되는 것은 아닙니다. 저장소 Row-level Policy, 암호화 Key, Cache Key, Backup과 삭제 Job에서도 같은 경계를 유지해야 합니다.
-
-<a id="ai-section-11"></a>
 
 ## 11. 기억 Record에 출처·유효기간·Version을 남긴다
 
@@ -424,8 +373,6 @@ LangGraph Store도 Cross-thread Memory를 Custom Namespace로 구분합니다. �
 
 원문 대신 Digest와 제한된 Event 참조를 저장하면 추적성과 데이터 최소화를 함께 달성할 수 있습니다. 다만 원문이 삭제될 때 Memory가 여전히 개인을 식별하거나 의미를 복원할 수 있다면 Memory와 Embedding도 삭제 대상입니다.
 
-<a id="ai-section-12"></a>
-
 ## 12. 충돌·정정·망각을 정상 상태로 설계한다
 
 기억은 한 번 쓰고 끝나는 Immutable Fact가 아닙니다.
@@ -447,8 +394,6 @@ v1: SUPERSEDED by v2
 - 삭제 요청은 `DELETION_PENDING`부터 하위 저장소 삭제 완료까지 상태를 추적합니다.
 
 Summary도 사실을 잃거나 합칠 수 있습니다. 요약본만 갱신하지 말고 어떤 Event 범위를 어떤 Model·Prompt Version으로 요약했는지 남깁니다. 중요한 업무 상태는 Summary가 아니라 구조화 필드와 원천 시스템을 사용합니다.
-
-<a id="ai-section-13"></a>
 
 ## 13. Context Assembler가 Token Budget을 통제한다
 
@@ -480,8 +425,6 @@ Summary도 사실을 잃거나 합칠 수 있습니다. 요약본만 갱신하�
 
 Memory 원문 전체나 민감 필드를 Trace에 기록하지 않습니다. 어떤 Version을 선택했는지 참조만 남깁니다.
 
-<a id="ai-section-14"></a>
-
 ## 14. 개인정보·동의·TTL·삭제를 수명주기에 포함한다
 
 🔴 **여기서 내가 틀렸던 것** — 세션 저장소와 캐시에 **같은 TTL 값을 주면 수명주기가 맞춰진다고 생각**했습니다. 맞지 않았습니다.
@@ -507,8 +450,6 @@ Memory Policy에는 다음을 포함합니다.
 - **동의 철회**: 철회 즉시 검색에서 제외하고 비동기 물리 삭제를 추적합니다.
 
 Embedding은 원문이 아니지만 원문에서 파생된 데이터입니다. 원문 삭제 후 Vector만 남기는 것을 자동으로 익명화라고 간주하지 않습니다.
-
-<a id="ai-section-15"></a>
 
 ## 15. Memory Poisoning은 Prompt Injection의 장기화다
 
@@ -541,8 +482,6 @@ Memory Poisoning은 공격자가 Agent의 단기 또는 장기 기억에 악성 
 
 Memory 쓰기 도구 자체도 Side Effect입니다. Tool Allowlist, 인자 Schema, Rate Limit, 승인 정책과 Audit을 적용합니다.
 
-<a id="ai-section-16"></a>
-
 ## 16. 관측성과 Audit은 기억 원문을 복제하지 않는다
 
 Memory Pipeline을 운영하려면 읽기·쓰기·삭제를 관측해야 하지만, 모든 기억 원문을 Log와 Trace에 복사하면 새로운 유출 경로가 생깁니다.
@@ -571,8 +510,6 @@ Audit Trail에는 중요 변경의 주체, 목적, 정책 판단, 대상 Record 
 - 정책이 다른 Tenant Namespace 접근을 거부했습니다.
 
 Trace는 성능과 오류 진단을 위해 Sampling될 수 있지만, 고위험 Memory 변경 Audit은 조직 정책에 따라 완전성을 보장해야 합니다.
-
-<a id="ai-section-17"></a>
 
 ## 17. 메모리 품질은 별도 평가 세트로 측정한다
 
@@ -624,8 +561,6 @@ Cross-tenant Leakage
 
 평가 Dataset에는 선호 변경, 이름이 같은 다른 사용자, 오래된 업무 상태, 삭제 요청, 악성 기억, 권한 변경과 No-memory Case를 포함합니다.
 
-<a id="ai-section-18"></a>
-
 ## 18. 합성 장애 사례로 메모리 흐름을 읽어 본다
 
 합성 시나리오를 가정합니다.
@@ -660,8 +595,6 @@ Session D
 
 좋은 메모리 설계는 답변을 개인화할 뿐 아니라 **어떤 기억이 선택되고 어떤 기억이 제외됐는지** 설명할 수 있습니다.
 
-<a id="ai-section-19"></a>
-
 ## 19. 단계적으로 도입한다
 
 ### 1단계: Session과 Workflow State 분리
@@ -694,8 +627,6 @@ Session D
 - Procedural Memory는 코드·정책 배포와 같은 수준으로 Version 관리합니다.
 - Rollback과 오염 Record 회수 절차를 훈련합니다.
 
-<a id="ai-section-20"></a>
-
 ## 20. 흔한 안티패턴
 
 ### 전체 대화를 Vector DB에 넣으면 메모리가 완성된다
@@ -725,8 +656,6 @@ Embedding, Cache, Materialized Profile, 분석 사본과 Backup 정책까지 추
 ### Agent가 스스로 Procedure를 학습하면 항상 좋아진다
 
 한 번의 실패·공격·우연을 조직 절차로 굳힐 수 있습니다. Procedural 변경은 평가·승인·Version·Rollback이 필요합니다.
-
-<a id="ai-section-21"></a>
 
 ## 21. 운영 체크리스트
 
@@ -767,8 +696,6 @@ Embedding, Cache, Materialized Profile, 분석 사본과 Backup 정책까지 추
 - Context Policy·Memory Schema·Embedding·Model Version을 기록한다.
 - Cross-tenant Leakage 목표값은 0이며 발생 시 Release를 차단한다.
 
-<a id="ai-section-22"></a>
-
 ## 22. 마무리
 
 AI Agent Memory는 Chat History를 오래 저장하는 기능이 아닙니다.
@@ -797,8 +724,6 @@ AI Agent Memory는 Chat History를 오래 저장하는 기능이 아닙니다.
 좋은 Agent는 모든 것을 기억하지 않습니다. 지금 업무에 필요한 정보를 올바른 범위에서 선택하고, 출처가 약하거나 오래됐거나 권한 밖인 기억은 사용하지 않으며, 사용자가 원하면 정정하고 잊을 수 있어야 합니다.
 
 ---
-
-<a id="ai-section-23"></a>
 
 ## 23. 공식 참고자료
 

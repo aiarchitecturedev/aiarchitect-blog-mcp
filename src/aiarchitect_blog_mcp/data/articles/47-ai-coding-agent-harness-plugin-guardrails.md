@@ -4,26 +4,6 @@ Claude Code 같은 AI 코딩 에이전트를 팀에 도입하면 생산성보다
 
 ![AI 코딩 에이전트가 세 개의 보호 게이트와 안전 레일 안에서 코드 변경을 검증한 뒤 공유 저장소로 보내는 하네스 이미지](assets/blog-47-ai-coding-agent-harness-guardrails-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">문제 정의: 강력한 에이전트가 만드는 세 가지 일관성 붕괴</a></li>
-<li><a href="#ai-section-2">하네스라는 발상: 실행하는 앱이 아니라 주입하는 플러그인</a></li>
-<li><a href="#ai-section-3">무엇을 전역으로 주입하는가</a></li>
-<li><a href="#ai-section-4">결정적 스캐폴딩: 한 입력에서 사람용·기계용 설정을 함께 생성</a></li>
-<li><a href="#ai-section-5">3겹 강제: 권위적 차단은 항상 서버</a></li>
-<li><a href="#ai-section-6">안전 가드의 실제: 시크릿·보호 브랜치·우회 탐지</a></li>
-<li><a href="#ai-section-7">역할 기반 리뷰 라우팅: 변경 파일이 리뷰어를 부른다</a></li>
-<li><a href="#ai-section-8">생성물 골든 테스트: 의도치 않은 변화를 byte로 잡는다</a></li>
-<li><a href="#ai-section-9">외부 LLM 교차검증 루프: 신뢰를 라운드로 쌓는다</a></li>
-<li><a href="#ai-section-10">도입 생명주기와 결정표</a></li>
-<li><a href="#ai-section-11">한계와 함정</a></li>
-<li><a href="#ai-section-12">도입·운영 체크리스트</a></li>
-<li><a href="#ai-section-13">마무리</a></li>
-<li><a href="#ai-section-14">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 팀이 AI 코딩 에이전트 (AI Coding Agent, 예: Claude Code)를 도입하면 생산성은 분명히 오릅니다. 그런데 사람이 여럿, 프로젝트가 여럿, 세션이 수백 개가 되면 새로운 문제가 생깁니다. **에이전트마다 하는 방식이 제각각**입니다. 어떤 세션은 커밋 메시지 컨벤션을 지키고 어떤 세션은 안 지킵니다. 어떤 세션은 리뷰를 꼼꼼히 하고 어떤 세션은 건너뜁니다. 그리고 아주 가끔, **시크릿을 커밋하거나 보호된 브랜치에 직접 push**하는 사고가 납니다.
 
 이 글은 그 문제를 "에이전트를 더 똑똑하게 만드는 것"이 아니라 **"팀의 표준을 에이전트가 벗어나지 못하게 강제하는 것"** 으로 푸는 접근을 정리합니다. 핵심 발상은 팀의 엔지니어링 표준을 **재사용 가능한 하네스 (Harness) 플러그인**으로 패키징해, 스킬·리뷰 에이전트·강제 훅을 에이전트에 전역으로 주입하고, 프로젝트별 설정은 **결정적으로 스캐폴딩**하는 것입니다. 그 위에 로컬 훅부터 서버 브랜치 보호까지 **3겹의 강제 계층**을 둡니다.

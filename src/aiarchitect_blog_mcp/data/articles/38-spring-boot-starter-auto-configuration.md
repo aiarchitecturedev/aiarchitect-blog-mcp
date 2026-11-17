@@ -4,26 +4,6 @@
 
 ![외부 설정과 사용자 Bean을 조건부 Auto-configuration으로 조립하고 Java SDK Core·Private API 연결과 자동 테스트 증거를 관리하는 Spring Boot Starter 이미지](assets/blog-38-spring-boot-starter-autoconfiguration-hero.png)
 
-> **목차**
->
-> 1. [Starter의 책임은 Core SDK를 Spring에 연결하는 것이다](#ai-section-1)
-> 2. [Artifact는 변경 이유와 배포 책임으로 나눈다](#ai-section-2)
-> 3. [자동 설정은 Imports 파일로 발견시킨다](#ai-section-3)
-> 4. [조건과 사용자 Bean 우선권을 하나의 Back off 계약으로 만든다](#ai-section-4)
-> 5. [설정과 Metadata를 공개 API처럼 관리한다](#ai-section-5)
-> 6. [Secret과 필수 Bean의 실패 경계를 분리한다](#ai-section-6)
-> 7. [Client 수명과 자원 소유권을 Container에 연결한다](#ai-section-7)
-> 8. [Customizer는 좁고 안정적인 확장 지점이어야 한다](#ai-section-8)
-> 9. [다중 Client와 Tenant 문맥을 혼동하지 않는다](#ai-section-9)
-> 10. [관측성 통합은 선택적 Adapter로 연결한다](#ai-section-10)
-> 11. [시작 검증과 네트워크 준비 상태를 분리한다](#ai-section-11)
-> 12. [ApplicationContextRunner로 자동 설정 계약을 고정한다](#ai-section-12)
-> 13. [조건 조합과 종료 동작을 테스트 Matrix로 관리한다](#ai-section-13)
-> 14. [Spring Boot·Java 호환 범위를 Matrix로 검증한다](#ai-section-14)
-> 15. [AOT와 Native Image는 별도 실행 경로로 검증한다](#ai-section-15)
-> 16. [안티패턴과 구현·배포 체크리스트](#ai-section-16)
-> 17. [마무리와 참고 자료](#ai-section-17)
-
 앞선 글에서는 고객사 서버가 프라이빗 API를 안전하게 호출하도록 Java Server SDK의 공개 API, 전송 계층, 인증, 오류, 재시도와 Client 수명을 설계했습니다.
 
 그 SDK를 Spring Boot 프로젝트에 적용할 때 고객사마다 같은 연결 코드를 반복하게 두면 새로운 문제가 생깁니다. 설정 이름과 기본값이 제각각이 되고, Client 종료를 빠뜨리거나, 애플리케이션의 Bean과 SDK가 만든 Bean이 충돌할 수 있습니다. 운영 환경에서는 Secret 주입과 관측성 연결 방식도 달라집니다.
@@ -34,7 +14,7 @@ Spring Boot Starter는 이 반복을 줄이는 **Framework Binding 계층**입�
 
 이 글은 이 역할을 수행하는 Starter의 모듈, 자동 설정 조건, 설정 속성, Secret 경계, 확장 지점, 종료 수명과 테스트 방법을 공개 가능한 합성 예시로 정리합니다. 예시의 Package, Endpoint와 속성 이름은 설명용이며 실제 고객사·제품·자격 증명을 포함하지 않습니다.
 
-<h2 id="ai-section-1" style="scroll-margin-top: 72px;">1. Starter의 책임은 Core SDK를 Spring에 연결하는 것이다</h2>
+## 1. Starter의 책임은 Core SDK를 Spring에 연결하는 것이다
 
 Starter가 담당할 일은 명확합니다.
 
@@ -57,7 +37,7 @@ Starter가 담당할 일은 명확합니다.
 
 이 기능은 Java Core SDK에 있어야 Spring을 쓰지 않는 Java 애플리케이션에서도 동일하게 동작합니다. Starter에 제품 로직을 넣으면 같은 SDK가 Framework마다 다른 의미로 작동하게 됩니다.
 
-<h2 id="ai-section-2" style="scroll-margin-top: 72px;">2. Artifact는 변경 이유와 배포 책임으로 나눈다</h2>
+## 2. Artifact는 변경 이유와 배포 책임으로 나눈다
 
 작은 프로젝트는 하나의 Artifact로 시작할 수 있지만, 배포와 호환성까지 고려하면 다음과 같이 역할을 나누는 편이 안전합니다.
 
@@ -84,7 +64,7 @@ Starter가 담당할 일은 명확합니다.
 
 Spring Boot 공식 문서는 자체 Starter 이름이 공식 Starter처럼 보이지 않도록 `spring-boot`로 시작하지 말고, 고유한 Namespace를 사용하도록 권장합니다. 예를 들어 `example-sdk-spring-boot-starter`와 `example.sdk`처럼 제품 소유권을 알 수 있는 이름을 선택합니다.
 
-<h2 id="ai-section-3" style="scroll-margin-top: 72px;">3. 자동 설정은 Imports 파일로 발견시킨다</h2>
+## 3. 자동 설정은 Imports 파일로 발견시킨다
 
 현재 Spring Boot의 사용자 정의 Auto-configuration은 `@AutoConfiguration`을 붙인 뒤 다음 파일에 클래스 이름을 한 줄씩 등록합니다.
 
@@ -113,7 +93,7 @@ public class ExampleSdkAutoConfiguration {
 
 Auto-configuration 전용 Package를 두고, 필요한 구성만 구체적인 `@Import`로 연결합니다. 이렇게 하면 고객사 애플리케이션의 Scan 범위나 Package 구조에 따라 SDK 동작이 달라지지 않습니다.
 
-<h2 id="ai-section-4" style="scroll-margin-top: 72px;">4. 조건과 사용자 Bean 우선권을 하나의 Back off 계약으로 만든다</h2>
+## 4. 조건과 사용자 Bean 우선권을 하나의 Back off 계약으로 만든다
 
 자동 설정은 무조건 Bean을 등록하는 기능이 아닙니다. Classpath, 설정, 기존 Bean을 확인한 뒤 안전하게 물러날 수 있어야 합니다.
 
@@ -160,7 +140,7 @@ public class ExampleSdkAutoConfiguration {
 
 `@ConditionalOnMissingBean`은 단순 충돌 방지 기능이 아닙니다. 고객이 특수한 Proxy, 인증, 네트워크 또는 테스트 구성을 사용할 수 있도록 **기본값은 편리하게 제공하되 최종 통제권은 고객에게 남기는 계약**입니다.
 
-<h3 data-ke-size="size23">4.1 사용자 Bean 우선권은 자동 설정의 핵심 계약이다</h3>
+### 4.1 사용자 Bean 우선권은 자동 설정의 핵심 계약이다
 
 고객이 `SdkClient`를 직접 정의했을 때 Starter가 두 번째 Client를 만들면 연결 풀, 인증, Metric과 종료 책임이 중복됩니다. Bean 이름만 다르게 만들어 충돌을 숨기는 것은 해결책이 아닙니다.
 
@@ -185,7 +165,7 @@ class CustomerSdkConfiguration {
 
 Starter는 이 Bean을 발견하면 기본 Client 생성을 중단해야 합니다. 이 동작은 문서로만 약속하지 말고 자동화 테스트로 고정합니다.
 
-<h2 id="ai-section-5" style="scroll-margin-top: 72px;">5. 설정과 Metadata를 공개 API처럼 관리한다</h2>
+## 5. 설정과 Metadata를 공개 API처럼 관리한다
 
 개별 `@Value`를 여러 Configuration 클래스에 흩어 놓으면 어떤 설정이 필수인지 파악하기 어렵고, 검증과 IDE 지원도 약해집니다. 구조화된 SDK 설정은 전용 `@ConfigurationProperties`에 모읍니다.
 
@@ -287,7 +267,7 @@ example:
 
 속성 문서에서는 `example.sdk.request-timeout`처럼 소문자 Kebab Case를 기준 이름으로 사용합니다. 환경 변수에서는 Spring Boot의 Relaxed Binding에 따라 `EXAMPLE_SDK_REQUESTTIMEOUT` 같은 운영 환경 규칙을 적용할 수 있지만, 실제 배포 플랫폼의 변환 규칙을 함께 검증해야 합니다.
 
-<h3 data-ke-size="size23">5.1 설정 Metadata도 호환성 계약이다</h3>
+### 5.1 설정 Metadata도 호환성 계약이다
 
 설정 키는 Java 메서드와 마찬가지로 고객 코드와 운영 설정에 남습니다. 이름을 바꾸거나 기본값의 의미를 바꾸면 배포에 영향을 줍니다.
 
@@ -314,7 +294,7 @@ public Duration getRequestTimeout() {
 
 설정 키를 제거해야 한다면 즉시 삭제하기보다 이전 키를 일정 기간 지원하고 경고와 이전 방법을 제공합니다. 속성 Namespace는 다른 라이브러리와 충돌하지 않도록 고유해야 합니다.
 
-<h2 id="ai-section-6" style="scroll-margin-top: 72px;">6. Secret과 필수 Bean의 실패 경계를 분리한다</h2>
+## 6. Secret과 필수 Bean의 실패 경계를 분리한다
 
 Endpoint와 Timeout은 일반 설정이지만 API Key, Client Secret과 접근 Token은 그렇지 않습니다. Secret을 `application.yml` 예시에 직접 넣거나 `ExampleSdkProperties`의 평범한 문자열로 노출하면 다음 위험이 생깁니다.
 
@@ -349,7 +329,7 @@ class CredentialConfiguration {
 
 개발 편의를 위한 정적 Credential 구현이 필요하면 운영 Starter의 기본 Bean으로 제공하지 않고, 테스트 전용 모듈이나 명시적인 Opt-in 구성에 둡니다.
 
-<h3 data-ke-size="size23">6.1 필수 Bean이 없으면 안전하게 실패해야 한다</h3>
+### 6.1 필수 Bean이 없으면 안전하게 실패해야 한다
 
 SDK가 활성화됐는데 `CredentialProvider`가 없을 때 빈 문자열이나 익명 자격 증명으로 요청을 보내면 오류가 늦게 발견되고 원인도 불명확해집니다. 다음 두 전략 가운데 제품 계약에 맞는 하나를 명시합니다.
 
@@ -365,7 +345,7 @@ SDK가 활성화됐는데 `CredentialProvider`가 없을 때 빈 문자열이나
 - 고객이 정의할 최소 구성
 - SDK를 사용하지 않을 때 비활성화할 속성
 
-<h2 id="ai-section-7" style="scroll-margin-top: 72px;">7. Client 수명과 자원 소유권을 Container에 연결한다</h2>
+## 7. Client 수명과 자원 소유권을 Container에 연결한다
 
 Core SDK의 `SdkClient`는 연결 풀과 실행 자원을 재사용하는 장수명 객체입니다. Starter는 기본적으로 Singleton Bean 하나를 만들고 Context 종료 시 닫습니다.
 
@@ -389,7 +369,7 @@ SdkClient exampleSdkClient(/* dependencies */) {
 
 Starter가 주입받은 공유 Executor나 관측성 Provider까지 닫으면 다른 애플리케이션 기능이 함께 중단될 수 있습니다. Core SDK Builder가 **소유한 자원과 빌린 자원**을 구분해야 Auto-configuration도 안전해집니다.
 
-<h2 id="ai-section-8" style="scroll-margin-top: 72px;">8. Customizer는 좁고 안정적인 확장 지점이어야 한다</h2>
+## 8. Customizer는 좁고 안정적인 확장 지점이어야 한다
 
 고객마다 Proxy, 진단 Listener 또는 제한된 전송 옵션을 추가해야 할 수 있습니다. 모든 설정을 속성으로 늘리기보다 Builder Customizer를 제공할 수 있습니다.
 
@@ -414,7 +394,7 @@ Auto-configuration은 `ObjectProvider`의 `orderedStream()`으로 Customizer 순
 
 Customizer가 필수 보안 정책을 끄거나 Secret 로깅을 활성화할 수 있게 해서는 안 됩니다. **확장 가능성보다 불변 보안 규칙이 우선**입니다.
 
-<h2 id="ai-section-9" style="scroll-margin-top: 72px;">9. 다중 Client와 Tenant 문맥을 혼동하지 않는다</h2>
+## 9. 다중 Client와 Tenant 문맥을 혼동하지 않는다
 
 하나의 Endpoint를 여러 Tenant가 사용하는 경우 Tenant ID와 사용자 문맥은 요청별 `RequestContext`에 둡니다. Singleton `SdkClient`의 필드를 요청마다 변경해서는 안 됩니다.
 
@@ -428,7 +408,7 @@ Customizer가 필수 보안 정책을 끄거나 Secret 로깅을 활성화할 �
 
 모든 경우에 Client 선택 기준, 자격 증명 경계와 종료 책임을 문서화합니다.
 
-<h2 id="ai-section-10" style="scroll-margin-top: 72px;">10. 관측성 통합은 선택적 Adapter로 연결한다</h2>
+## 10. 관측성 통합은 선택적 Adapter로 연결한다
 
 Core SDK는 Request ID, 상태 분류, 지연시간 같은 진단 이벤트를 작은 SPI로 발행하고, Starter는 환경에 맞는 Adapter를 선택적으로 연결할 수 있습니다.
 
@@ -453,7 +433,7 @@ class ExampleSdkMetricsConfiguration {
 
 고카디널리티 값을 Tag로 사용하면 비용과 성능 문제가 생깁니다. 오류 코드는 제한된 분류로 집계하고, 상세 Request ID는 제한된 진단 로그에서 확인하도록 역할을 나눕니다.
 
-<h2 id="ai-section-11" style="scroll-margin-top: 72px;">11. 시작 검증과 네트워크 준비 상태를 분리한다</h2>
+## 11. 시작 검증과 네트워크 준비 상태를 분리한다
 
 Endpoint 누락, 음수 Timeout, 필수 Bean 누락처럼 구성만 보고 알 수 있는 오류는 시작 시점에 빠르게 실패시키는 것이 좋습니다.
 
@@ -469,7 +449,7 @@ Endpoint 누락, 음수 Timeout, 필수 Bean 누락처럼 구성만 보고 알 �
 
 Starter 문서에는 “Bean이 생성됐다”와 “프라이빗 API가 현재 준비됐다”가 서로 다른 상태라는 점을 명확히 적습니다.
 
-<h2 id="ai-section-12" style="scroll-margin-top: 72px;">12. ApplicationContextRunner로 자동 설정 계약을 고정한다</h2>
+## 12. ApplicationContextRunner로 자동 설정 계약을 고정한다
 
 Auto-configuration 테스트의 핵심은 전체 애플리케이션을 띄우는 것이 아니라, 필요한 Class와 설정만 가진 작은 Context에서 조건 조합을 검증하는 것입니다. Spring Boot는 이를 위해 `ApplicationContextRunner`를 제공합니다.
 
@@ -526,7 +506,7 @@ class ExampleSdkAutoConfigurationTests {
 
 예시는 개념 전달용이며 실제 테스트에서는 Mock 또는 Test Fixture가 소유한 Client를 사용하고, 종료 호출도 검증합니다.
 
-<h2 id="ai-section-13" style="scroll-margin-top: 72px;">13. 조건 조합과 종료 동작을 테스트 Matrix로 관리한다</h2>
+## 13. 조건 조합과 종료 동작을 테스트 Matrix로 관리한다
 
 행복 경로 하나만 테스트하면 Starter의 핵심인 Back off와 실패 동작이 보장되지 않습니다.
 
@@ -549,7 +529,7 @@ class ExampleSdkAutoConfigurationTests {
 
 Classpath 조건은 `FilteredClassLoader` 같은 테스트 도구로 검증할 수 있습니다. 조건 평가가 예상과 다르면 Condition Evaluation Report를 출력해 어떤 조건이 일치하지 않았는지 확인합니다.
 
-<h2 id="ai-section-14" style="scroll-margin-top: 72px;">14. Spring Boot·Java 호환 범위를 Matrix로 검증한다</h2>
+## 14. Spring Boot·Java 호환 범위를 Matrix로 검증한다
 
 Starter는 Spring Boot API, Spring Framework, Jakarta Validation과 빌드 Plugin에 영향을 받습니다. “최신 버전에서 컴파일됐다”는 사실만으로 고객 환경 호환성을 보장할 수 없습니다.
 
@@ -565,7 +545,7 @@ Starter는 Spring Boot API, Spring Framework, Jakarta Validation과 빌드 Plugi
 
 CI에서는 최소·최대 지원 버전, 주요 Java Runtime, 설정 메타데이터 생성, 자동 설정 Imports 포함 여부와 샘플 애플리케이션 기동을 확인합니다. 하나의 Binary가 여러 Major를 우연히 통과하더라도 공개 호환성은 검증된 범위만 약속합니다.
 
-<h2 id="ai-section-15" style="scroll-margin-top: 72px;">15. AOT와 Native Image는 별도 실행 경로로 검증한다</h2>
+## 15. AOT와 Native Image는 별도 실행 경로로 검증한다
 
 Auto-configuration이 Reflection, Resource Scan 또는 동적 Proxy에 의존하면 AOT 처리와 Native Image에서 추가 Hint가 필요할 수 있습니다.
 
@@ -578,7 +558,7 @@ Spring Boot 공식 문서는 `ApplicationContextRunner`가 Native Image 내부�
 
 Native 지원을 선언하지 않는다면 “지원 여부 미검증”을 문서에 명시하는 편이 모호한 약속보다 낫습니다.
 
-<h2 id="ai-section-16" style="scroll-margin-top: 72px;">16. 안티패턴과 구현·배포 체크리스트</h2>
+## 16. 안티패턴과 구현·배포 체크리스트
 
 ### 16.1 Auto-configuration에 제품 로직을 복사한다
 
@@ -643,7 +623,7 @@ Core SDK와 Spring 사용자의 재시도·오류 의미가 달라집니다. 제
 - [ ] 지원하는 Spring Boot·Java Matrix를 CI로 검증하는가
 - [ ] Native 지원 여부와 검증 범위를 별도로 명시했는가
 
-<h2 id="ai-section-17" style="scroll-margin-top: 72px;">17. 마무리와 참고 자료</h2>
+## 17. 마무리와 참고 자료
 
 좋은 Spring Boot Starter는 많은 Bean을 자동으로 만드는 도구가 아닙니다. **일반적인 연결은 짧게 만들고, 고객의 명시적인 선택 앞에서는 정확히 물러나는 통합 계약**입니다.
 

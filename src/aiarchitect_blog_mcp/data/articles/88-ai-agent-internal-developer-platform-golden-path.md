@@ -2,42 +2,6 @@
 
 여러 팀이 각자 AI Agent를 만들면 속도는 나오지만 보안·평가·관측성·비용 계약이 팀마다 갈라집니다. Portal 하나를 세우는 것으로는 해결되지 않고, 무엇을 기본 경로로 제공하고 무엇을 예외로 허용할지 정해야 합니다. 이 글은 AI Agent를 위한 Internal Developer Platform을 제품으로 운영하는 방법과 Golden Path·Self-service 환경, Scorecard와 Escape Hatch, Portal·Platform API·Control Plane·Runtime 책임 분리를 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">AI Agent Platform은 Portal 하나가 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">내부 고객과 핵심 User Journey를 먼저 정의한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">Platform을 프로젝트가 아니라 제품으로 운영한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">Portal·Platform API·Control Plane·Runtime 책임을 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">Capability Map으로 제공 범위와 소유권을 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">Golden Path는 기본 경로이지 Golden Cage가 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">Agent Project Template에 운영 계약을 내장한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">Agent Manifest를 Platform API 계약으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">Software Catalog로 소유권·의존성·수명주기를 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">Self-service Environment를 비동기 요청으로 제공한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">Tenant·환경·Network·Quota 격리를 기본값으로 둔다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">User·Workload Identity와 Secret 수명을 자동화한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">Model Gateway와 Route Policy를 공통 Capability로 제공한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">Prompt·Configuration Registry를 Release Bundle에 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">RAG Knowledge Onboarding을 데이터 계약으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">MCP Tool 등록과 권한 검증을 표준화한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">Policy-as-code를 Template과 Admission에 겹쳐 적용한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">Evaluation을 선택 기능이 아니라 기본 Pipeline으로 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">Observability와 Evidence Schema를 자동 계측한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">SLO·Capacity·FinOps Guardrail을 Self-service에 연결한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">Release Bundle과 Progressive Delivery를 Golden Path에 포함한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">Supply Chain Provenance와 Artifact Promotion을 보장한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23">Desired·Effective·Observed State를 Reconciliation한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24">Escape Hatch는 예외 Workflow로 제품화한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25">Scorecard는 순위표가 아니라 개선 Action을 제공해야 한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26">Adoption·Flow·Outcome Metric을 함께 측정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27">Platform SLO와 Support Contract를 정의한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-28">Template Version과 기존 Agent Upgrade를 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-29">합성 사례와 5단계 도입 로드맵</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-30">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 첫 번째 팀은 회의 요약 Agent를 만듭니다. 두 번째 팀은 계약서 검토 Agent를 만들고, 세 번째 팀은 고객 문의 분류 Agent를 만듭니다. 세 팀은 비슷한 문제를 각각 해결합니다.
 
 ```text

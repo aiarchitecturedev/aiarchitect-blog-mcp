@@ -4,41 +4,6 @@
 
 ![검증된 Software Artifact가 Identity·Digest·Freshness·Policy Gate를 통과하고 변조본은 격리되는 무결성 구조](assets/blog-60-software-data-integrity-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">먼저 용어를 같은 의미로 맞춘다</a></li>
-<li><a href="#ai-section-2">A03 공급망 실패와 A08 무결성 실패를 구분한다</a></li>
-<li><a href="#ai-section-3">출처 이름보다 검증 가능한 증거를 신뢰한다</a></li>
-<li><a href="#ai-section-4">역직렬화는 Data를 객체로 만드는 실행 경계다</a></li>
-<li><a href="#ai-section-5">Java Native Serialization을 신뢰되지 않은 입력에 사용하지 않는다</a></li>
-<li><a href="#ai-section-6">명시적인 JSON DTO로 입력 Type을 고정한다</a></li>
-<li><a href="#ai-section-7">JSON의 Class 이름 기반 다형성을 열어두지 않는다</a></li>
-<li><a href="#ai-section-8">ObjectMapper의 자원 경계를 명시한다</a></li>
-<li><a href="#ai-section-9">Legacy Java Serialization은 Filter를 마지막 방어선으로 둔다</a></li>
-<li><a href="#ai-section-10">Mass Assignment도 데이터 무결성 실패다</a></li>
-<li><a href="#ai-section-11">Hash, MAC, Digital Signature의 역할을 구분한다</a></li>
-<li><a href="#ai-section-12">서명 Envelope는 내용·목적·시간을 함께 Bind한다</a></li>
-<li><a href="#ai-section-13">Webhook은 원본 Byte와 재생 방지를 함께 검증한다</a></li>
-<li><a href="#ai-section-14">안전한 Update는 서명 하나가 아니라 상태 기계다</a></li>
-<li><a href="#ai-section-15">검증한 Byte와 사용하는 Byte를 같게 만든다</a></li>
-<li><a href="#ai-section-16">CycloneDX를 사람이 읽을 수 있게 설명한다</a></li>
-<li><a href="#ai-section-17">CycloneDX SBOM의 최소 예제를 읽어본다</a></li>
-<li><a href="#ai-section-18">SBOM, Signature, Provenance, VEX를 섞지 않는다</a></li>
-<li><a href="#ai-section-19">Maven과 Gradle Build에서 SBOM을 생성한다</a></li>
-<li><a href="#ai-section-20">CI/CD에서는 생성보다 소비 검증을 Gate로 둔다</a></li>
-<li><a href="#ai-section-21">외부 Script와 Plugin도 실행 전 무결성을 확인한다</a></li>
-<li><a href="#ai-section-22">실패하면 이전 검증 상태를 조용히 재사용하지 않는다</a></li>
-<li><a href="#ai-section-23">Negative Test로 변조·재생·Type 선택을 검증한다</a></li>
-<li><a href="#ai-section-24">탐지 Event는 검증 실패의 이유를 남긴다</a></li>
-<li><a href="#ai-section-25">사고 대응은 신뢰 철회와 영향 범위를 함께 다룬다</a></li>
-<li><a href="#ai-section-26">흔한 오해를 Review에서 제거한다</a></li>
-<li><a href="#ai-section-27">Code Review Checklist</a></li>
-<li><a href="#ai-section-28">마무리</a></li>
-<li><a href="#ai-section-29">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 무결성(Integrity)은 데이터가 깨지지 않았다는 뜻만이 아닙니다. 시스템이 사용하는 Software, Configuration, Update와 업무 데이터가 **기대한 출처에서 왔고, 승인된 내용이며, 전달 과정에서 바뀌지 않았고, 지금 사용해도 되는 상태**임을 확인하는 성질입니다.
 
 파일의 Hash가 일치해도 공격자가 그 Hash까지 바꿀 수 있다면 신뢰할 수 없습니다. Digital Signature가 유효해도 오래된 취약 Version을 재전송한 것이라면 안전한 Update가 아닙니다. JSON 문법이 올바르더라도 Client가 `role=ADMIN`을 넣을 수 있다면 중요한 데이터의 의미적 무결성이 깨집니다.

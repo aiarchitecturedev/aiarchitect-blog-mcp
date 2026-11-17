@@ -17,31 +17,6 @@ MCP와 A2A는 경쟁 프로토콜이 아닙니다. MCP는 Agent가 Tool·Resourc
 
 > 이 글의 Agent, 사용자, Tenant, Task, Artifact, URL, Token, 조직과 업무 Record는 모두 교육용 합성 예시입니다. 특정 회사·고객·제품의 실제 구성이나 성과를 나타내지 않습니다. 명세와 SDK는 바뀔 수 있으므로 실제 구현에서는 사용하는 Protocol Version과 공식 문서를 다시 확인해야 합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1">프로토콜보다 책임 경계를 먼저 결정한다</a></li>
-<li><a href="#ai-section-2">MCP와 A2A를 한 문장으로 구분한다</a></li>
-<li><a href="#ai-section-3">Tool과 Remote Agent를 판정하는 여섯 질문</a></li>
-<li><a href="#ai-section-4">통합 아키텍처를 세 개의 경계로 나눈다</a></li>
-<li><a href="#ai-section-5">Agent Card를 신뢰 가능한 후보 계약으로 관리한다</a></li>
-<li><a href="#ai-section-6">Discovery와 Registry를 구분한다</a></li>
-<li><a href="#ai-section-7">Message·Task·Artifact·Context의 소유권을 분리한다</a></li>
-<li><a href="#ai-section-8">A2A Task와 MCP Task를 같은 것으로 보지 않는다</a></li>
-<li><a href="#ai-section-9">Integration Boundary Record를 남긴다</a></li>
-<li><a href="#ai-section-10">Identity·Tenant·Artifact 신뢰 경계를 표시한다</a></li>
-<li><a href="#ai-section-11">세 가지 통합 배치 패턴을 비교한다</a></li>
-<li><a href="#ai-section-12">Version과 Capability 호환성을 계약으로 만든다</a></li>
-<li><a href="#ai-section-13">실행 Runtime에 넘길 것과 넘기지 않을 것을 정한다</a></li>
-<li><a href="#ai-section-14">통합 결정 자체를 Evidence로 보존한다</a></li>
-<li><a href="#ai-section-15">작은 경계부터 단계적으로 도입한다</a></li>
-<li><a href="#ai-section-16">흔한 통합 안티패턴</a></li>
-<li><a href="#ai-section-17">설계 검토 체크리스트</a></li>
-<li><a href="#ai-section-18">마무리</a></li>
-<li><a href="#ai-section-19">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 ## 1. 프로토콜보다 책임 경계를 먼저 결정한다
 
 통합 설계의 첫 질문은 “MCP인가 A2A인가”가 아닙니다.

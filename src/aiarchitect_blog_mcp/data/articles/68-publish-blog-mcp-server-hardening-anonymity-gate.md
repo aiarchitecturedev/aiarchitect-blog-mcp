@@ -4,23 +4,6 @@ MCP 서버를 로컬에서 돌리는 것과 PyPI에 공개하는 것은 다른 �
 
 ![소스 모듈과 콘텐츠가 패키징·입력 하드닝·익명성 검증 Gate를 통과해 공개 배포 아티팩트와 디렉터리로 이어지는 블로그 MCP 서버 공개 배포 흐름](assets/blog-68-mcp-server-public-release-hardening-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">로컬 stdio에서 배포 가능한 패키지로</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">되돌릴 수 없는 배포라는 전제</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">하드닝 ① 서빙은 기본 거부(fail-closed)로</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">하드닝 ② 입력은 클램프하고, 예외는 삼킨다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">하드닝 ③ 읽기 전용임을 프로토콜에 선언한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">“금지어 스캔”이 놓치는 것 — 배포 아티팩트의 노출 면적</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">배포 전 검토 게이트 — 다회 LLM 리뷰로 P0를 거른다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">배포와 태깅 — 아티팩트와 소스를 일치시킨다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">디렉터리 등록과 유입 루프</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">배포 전 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">마무리</a></li>
-</ol>
-</blockquote>
-
 앞선 글 [내 블로그를 MCP 서버로 만들기](https://aiarchitect.tistory.com/63)에서는 이 블로그의 공개 글 코퍼스를 **로컬 stdio MCP 서버**로 만들어 AI 에이전트가 목록·검색·본문을 읽게 하는 데까지 다뤘다. 그 글은 마지막에 "로컬 stdio로 먼저, 공개 배포는 다음"이라고 미뤄 두었다. 이 글은 바로 그 **다음** 이야기다.
 
 로컬에서 도는 것과 남들이 `uvx <패키지명>` 한 줄로 설치해 쓰는 것 사이에는 생각보다 큰 간극이 있다. 특히 **PyPI에 올린 배포 파일은 되돌리기 어렵다** — 이미 올린 wheel/sdist는 같은 파일명으로 교체할 수 없고, 수정본은 통상 새 버전 번호를 필요로 한다. 한 번 나간 아티팩트는 캐시·미러·포크에도 남는다. 그래서 배포는 "동작하니까 올린다"가 아니라 **배포 전에 굳혀도 되는 상태인지 검증하는 게이트**를 세우는 작업에 가깝다.
@@ -28,8 +11,6 @@ MCP 서버를 로컬에서 돌리는 것과 PyPI에 공개하는 것은 다른 �
 이 글에서 다루는 것: ① 데이터까지 담아 self-contained로 만드는 패키징, ② 되돌릴 수 없는 배포 전에 세운 하드닝 세 가지, ③ 단순 "금지어 스캔"이 놓치는 노출 면적과 그것을 다회 LLM 검토로 걸러낸 과정, ④ 디렉터리 등록으로 닫는 유입 루프.
 
 > **2026-08-14 업데이트:** 현재 PyPI 최신 버전은 [`0.1.1`](https://pypi.org/project/aiarchitect-blog-mcp/0.1.1/)이다. 아래의 `0.1.0` 설정과 배포 순서는 최초 공개 당시의 재현 가능한 기록으로 유지한다. `0.1.1`에서는 코드용 표준 MIT `LICENSE`와 번들 글의 별도 `LICENSE-ARTICLES`를 분리해 혼합 라이선스 범위를 더 명확히 했다.
-
-<a id="ai-section-1"></a>
 
 ## 1. 로컬 stdio에서 배포 가능한 패키지로
 
@@ -66,8 +47,6 @@ uv venv /tmp/smoke && uv pip install --python /tmp/smoke/bin/python dist/*.whl
 # /tmp에서(소스 경로 밖에서) 실제 검색이 되는지 확인 → self-contained 확인
 ```
 
-<a id="ai-section-2"></a>
-
 ## 2. 되돌릴 수 없는 배포라는 전제
 
 PyPI에 `0.1.0`을 올리면 그 릴리스의 파일은 **같은 파일명으로 교체할 수 없다**. 메타데이터 오타 하나, 번들에 딸려 들어간 파일 하나를 고치려면 통상 새 버전을 올려야 한다. yank는 가능하지만 비파괴적이라 정확한 버전을 고정한 설치에는 여전히 선택될 수 있고, 이미 받아 간 사람·캐시·미러에는 소용이 없다.
@@ -84,8 +63,6 @@ PyPI에 `0.1.0`을 올리면 그 릴리스의 파일은 **같은 파일명으로
 *차단 이슈가 발견되면 업로드를 진행하지 않고 소스 정리 단계로 돌아가 수정·재검토합니다.*
 
 아래 3~7절이 이 질문들에 대한 답이다.
-
-<a id="ai-section-3"></a>
 
 ## 3. 하드닝 ① 서빙은 기본 거부(fail-closed)로
 
@@ -122,8 +99,6 @@ def _is_published_rec(rec: dict) -> bool:
 
 한 가지 정직하게 짚을 점이 있다. 위 코드는 `rec.get("published", True)`라서 **`published` 키가 아예 없는 레코드는 URL 정식성 판정으로 폴백**한다(플래그가 없던 이전 인덱스와의 호환). 즉 "정식 URL이면서, 명시된 플래그가 비-True가 아닐 것"이다. 더 엄격하게 하려면 기본값을 `False`로 두어 플래그 누락 자체를 거부하면 된다 — 다만 그건 인덱스 스키마를 함께 바꾸는 다음 버전의 일이다. 이처럼 "어디까지가 기본 거부이고 어디부터가 호환 폴백인지"를 정확히 아는 것이 하드닝의 절반이다.
 
-<a id="ai-section-4"></a>
-
 ## 4. 하드닝 ② 입력은 클램프하고, 예외는 삼킨다
 
 읽기 전용 서버라도 도구 인자는 외부(에이전트)에서 온다. `limit`에 음수·거대값·엉뚱한 타입이 들어와도 서버가 죽으면 안 된다. 상·하한으로 클램프하되, 변환 불가 값은 기본값으로 되돌린다.
@@ -141,8 +116,6 @@ def _clamp_int(value, default: int, lo: int, hi: int) -> int:
 
 여기서 `OverflowError`를 빠뜨리기 쉽다. `int(float("inf"))`는 `OverflowError`를 던진다. `TypeError, ValueError`만 잡으면 `limit=inf` 한 방에 도구 호출이 실패한다. 경계 입력(무한대·NaN·bool·음수·거대값)은 **회귀 테스트로 고정**해 둔다.
 
-<a id="ai-section-5"></a>
-
 ## 5. 하드닝 ③ 읽기 전용임을 프로토콜에 선언한다
 
 MCP 도구는 애노테이션으로 "이 도구가 무엇을 하는지"를 힌트로 줄 수 있다. 이 서버의 5개 도구는 전부 읽기 전용·부작용 없음·외부 세계를 건드리지 않음이다. 이를 명시하면 클라이언트가 승인·표시 정책을 더 안전하게 잡는다.
@@ -158,8 +131,6 @@ def search_articles(query: str, limit: int = 10) -> list[dict]:
 ```
 
 이 애노테이션은 서버가 스스로 선언하는 **비강제적 힌트**다([ToolAnnotations 사양](https://modelcontextprotocol.io/specification/2025-06-18/schema#toolannotations)). 실제 권한·부작용 통제를 대신하지 않으며, 클라이언트도 신뢰할 수 없는 서버의 힌트를 보안 결정에 그대로 쓰면 안 된다. 그렇더라도 **실제 동작과 어긋나게 달면 안 된다** — 읽기 전용이 아닌 도구에 `readOnlyHint`를 달면 잘못된 신호를 준다. 배포본에서 5개 도구가 실제로 이 값을 노출하는지 in-memory 클라이언트로 확인했다.
-
-<a id="ai-section-6"></a>
 
 ## 6. "금지어 스캔"이 놓치는 것 — 배포 아티팩트의 노출 면적
 
@@ -195,8 +166,6 @@ include = ["/src", "/scripts", "/README.md", "/LICENSE", "/pyproject.toml", "/uv
 
 *서빙 응답뿐 아니라 다운로드 가능한 아티팩트·메타데이터·이력까지 노출 표면으로 보고, 정의한 검토 범위에서 차단 이슈가 0이 될 때까지 반복합니다.*
 
-<a id="ai-section-7"></a>
-
 ## 7. 배포 전 검토 게이트 — 다회 LLM 리뷰로 P0를 거른다
 
 위 (a)~(e)는 사람이 한 번 훑어서 다 잡기 어렵다. 그래서 **되돌릴 수 없는 배포 직전에 검토 게이트**를 세웠다. 코드·데이터·빌드 산출물을 읽을 수 있는 별도 LLM(리뷰어 역할)에게 명시적 기준으로 판정을 시켰다.
@@ -217,8 +186,6 @@ include = ["/src", "/scripts", "/README.md", "/LICENSE", "/pyproject.toml", "/uv
 
 배포 직전엔 기계적 검증도 함께 돌린다. `twine check`로 README(long description) 렌더링을 확인하고, 격리 설치로 self-contained를, 별도 메타데이터 파싱과 아티팩트 전수 grep으로 금지 식별자·내부 경로·편집 마커가 0인지 마지막으로 확인한다.
 
-<a id="ai-section-8"></a>
-
 ## 8. 배포와 태깅 — 아티팩트와 소스를 일치시킨다
 
 게이트를 통과하면 배포한다. 이때 **배포하는 아티팩트가 어떤 커밋에서 나왔는지**를 고정하는 게 중요하다. 작업트리가 미커밋 상태에서 배포하면, 공개 저장소의 소스와 PyPI의 아티팩트가 어긋난다.
@@ -236,8 +203,6 @@ uvx aiarchitect-blog-mcp        # 실제 PyPI에서 설치·동작 확인
 
 업로드 후엔 **실제 PyPI에서 새로 설치**해 도구 목록·검색·본문·애노테이션이 정상인지 확인한다. 로컬 빌드가 아니라 배포본을 검증하는 게 배포 성공의 기준이다.
 
-<a id="ai-section-9"></a>
-
 ## 9. 디렉터리 등록과 유입 루프
 
 배포가 끝이 아니다. AI 에이전트·개발자가 서버를 **발견**해야 유입 루프가 돈다. MCP 서버 디렉터리(레지스트리)에 등록하면 검색·카테고리에서 노출된다. 상당수 디렉터리는 공개 GitHub 저장소를 자동 인덱싱하고, 일부는 저장소 루트에 작은 메타 파일을 두면 소유권을 주장할 수 있다.
@@ -248,8 +213,6 @@ uvx aiarchitect-blog-mcp        # 실제 PyPI에서 설치·동작 확인
 ```
 
 여기서 **발견 → 원문 이동 경로**가 만들어진다. 블로그 글이 서버로 사람을 보내고(설치·사용), 서버 응답이 각 글의 **원문 URL**을 실어 블로그로 되돌리는 경로다(실제 유입량이 얼마나 되는지는 별개의 측정 문제다). 검색엔진·AI 에이전트 양쪽에 노출하는 이야기는 [이 글](https://aiarchitect.tistory.com/64)에서 더 다뤘다.
-
-<a id="ai-section-10"></a>
 
 ## 10. 배포 전 체크리스트
 
@@ -264,8 +227,6 @@ uvx aiarchitect-blog-mcp        # 실제 PyPI에서 설치·동작 확인
 - [ ] git 이력에 실명·회사·삭제한 내부 파일 잔존 0
 - [ ] `twine check` 통과, 아티팩트 전수 금지 식별자·내부 경로 스캔 0
 - [ ] 커밋·태그 후 그 상태에서 재빌드 → 업로드, **실제 배포본**으로 재검증
-
-<a id="ai-section-11"></a>
 
 ## 11. 마무리
 

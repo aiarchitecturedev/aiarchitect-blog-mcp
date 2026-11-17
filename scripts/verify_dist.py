@@ -28,6 +28,9 @@ import zipfile
 from pathlib import Path
 
 ARTICLE_MD = re.compile(r"(?:^|/)data/articles/[^/]+\.md$")
+# 번들 본문에 남아 있으면 안 되는 게시용 목차 장치. 소스에는 있고 빌드가 걷어낸다 —
+# 옛 스크립트로 빌드한 아티팩트가 섞여 들어오면 여기서 걸린다.
+SCAFFOLDING = ("aiarchitect-toc", "ai-section-", "data-ke-", "box-sizing")
 INDEX_JSON = re.compile(r"(?:^|/)data/articles_index\.json$")
 
 
@@ -74,7 +77,19 @@ def _check_archive(label: str, names: list[str], read: object) -> int:
     if home_fallback:
         return _fail(f"{label}: 정식 게시 URL 없는 글이 포함됨 {home_fallback}")
 
-    print(f"✅ {label}: {count}편 (인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글)")
+    scaffolded = {}
+    for name in body_names:
+        text = read(name).decode("utf-8").lower()
+        hits = [marker for marker in SCAFFOLDING if marker in text]
+        if hits:
+            scaffolded[Path(name).name] = hits
+    if scaffolded:
+        return _fail(
+            f"{label}: 게시용 목차 장치가 번들에 남아 있음 {scaffolded} — "
+            f"옛 스크립트로 빌드한 아티팩트다. `rm -rf dist && uv build` 다시"
+        )
+
+    print(f"✅ {label}: {count}편 (인덱스 ↔ 번들 일치, 중복 0, 전부 정식 게시글, 게시용 장치 0)")
     return 0
 
 

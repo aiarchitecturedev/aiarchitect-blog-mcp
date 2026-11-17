@@ -4,37 +4,6 @@ LLM 평가지표를 정하는 것과 배포를 막을 수 있는 평가를 갖�
 
 ![운영 Trace를 평가 Dataset과 Regression Gate, Canary 배포로 연결하는 AI Agent 평가 아키텍처](assets/blog-74-ai-agent-evaluation-release-loop-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">Agent 평가는 최종 답변 점수 하나가 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">평가 대상과 평가 단위를 먼저 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">Trace에서 배포까지 폐쇄 루프를 설계한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">운영 Trace와 Evaluation Dataset을 같은 것으로 취급하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">Evaluation Example 계약을 Version으로 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">운영 실패를 안전한 Dataset Candidate로 승격한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">Dataset을 목적별 Suite와 Split으로 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">Outcome과 Trajectory를 함께 평가한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">RAG는 Retrieval과 Answer를 분리해 평가한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">Tool 호출은 선택·인자·권한·Side Effect를 검사한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">Memory는 정확성·Scope·수명주기를 평가한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">Code·Model·Human Grader의 역할을 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">LLM-as-a-Judge를 정답 판정기로 과신하지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">비결정성은 반복 Trial과 분포로 측정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">Experiment는 변경 축과 실행 증거를 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">Regression Gate는 평균 점수만 보지 않는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">품질·안전·비용·지연 Gate를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">CI·Nightly·Canary 평가를 계층화한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">Evaluator도 Version·Calibration·Drift를 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">합성 사례와 실제 사례로 평가 흐름을 읽어 본다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">단계적으로 도입한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">흔한 안티패턴</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23">운영 체크리스트</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24">마무리</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 AI Agent의 Prompt, Model, 검색 Index 또는 Tool 설명을 조금 바꿨다고 가정해 보겠습니다.
 
 ```text
@@ -59,8 +28,6 @@ Agent 평가는 점수 Dashboard 하나가 아닙니다. **운영 Trace에서 �
 이 글은 [AI 프로젝트 성공 기준 8가지](https://aiarchitect.tistory.com/20)의 Metric·Target·Acceptance Gate, [AI Agent 관측성 설계](https://aiarchitect.tistory.com/72)의 Trace와 [AI Agent 메모리 아키텍처](https://aiarchitect.tistory.com/73)의 상태 품질을 실제 Evaluation Dataset과 Release Gate로 연결합니다. 자연어에서 Tool 호출까지의 계약 테스트는 [자연어에서 MCP Tool Call까지](https://aiarchitect.tistory.com/14)를 함께 참고할 수 있습니다.
 
 > 이 글이 Agent를 설명하기 위해 든 사용자 요청, Trace, Dataset, Model·Prompt·Tool Version, 평가 점수와 배포 임계값은 모두 교육용 합성 예시이며, 특정 고객·회사·제품·운영 환경이나 실제 성과를 나타내지 않습니다. 다만 20장의 “실제 운영 사례”에 적은 글 수·길이 분포·검사 결과는 이 블로그를 관리하는 과정의 실제 기록입니다. 해당 결함은 2026년 9월 23일에 발견·수정했고 9월 28일에 다시 검사했습니다. 이 사례는 Agent 실행이나 Agent 평가 실험이 아니며, 코드 저장소와 수정 전 공개본이 공개돼 있지 않아 독립 재현에는 제한이 있습니다. Agent 평가 기법과 프레임워크 API는 빠르게 바뀔 수 있으므로 실제 적용 시 사용하는 SDK·평가 규칙·Dataset Version을 고정하고 최신 공식 문서를 다시 확인해야 합니다.
-
-<a id="ai-section-1"></a>
 
 ## 1. Agent 평가는 최종 답변 점수 하나가 아니다
 
@@ -89,8 +56,6 @@ Agent 품질을 “답변 정확도” 하나로 줄이면 서로 다른 실패�
 
 최종 답변은 이 모든 실행의 마지막 Projection일 뿐입니다. 따라서 **Component 평가와 End-to-End 평가를 함께 운영**해야 합니다.
 
-<a id="ai-section-2"></a>
-
 ## 2. 평가 대상과 평가 단위를 먼저 분리한다
 
 평가 구현보다 먼저 “무엇을 한 건으로 볼 것인가”를 정합니다.
@@ -115,8 +80,6 @@ Experiment: 특정 Agent Version을 Dataset에 실행한 결과 집합
 ```
 
 예를 들어 “티켓 생성” 평가에서 최종 응답만 단위로 잡으면 `요청하신 업무를 등록했습니다`라는 답은 성공처럼 보입니다. 하지만 평가 단위를 업무 Outcome까지 확장하면 실제 합성 Tool Environment에 티켓이 없다는 사실을 발견할 수 있습니다. 반대로 Agent가 예상과 다른 순서로 Tool을 호출했더라도 권한을 지키고 정확한 Outcome을 만들었다면 무조건 실패로 판정할 이유가 없습니다.
-
-<a id="ai-section-3"></a>
 
 ## 3. Trace에서 배포까지 폐쇄 루프를 설계한다
 
@@ -147,8 +110,6 @@ flowchart TB
 
 Trace를 조회할 수 있다고 평가 시스템이 운영 원문을 복제할 권한을 자동으로 얻는 것은 아닙니다. 데이터 이동에는 별도의 목적, 승인, Masking과 보존 정책이 필요합니다.
 
-<a id="ai-section-4"></a>
-
 ## 4. 운영 Trace와 Evaluation Dataset을 같은 것으로 취급하지 않는다
 
 운영 Trace는 “무슨 일이 있었는가”를 진단하기 위한 기록이고, Evaluation Dataset은 “같은 변경을 다시 검증할 수 있는가”를 위한 재사용 자산입니다.
@@ -160,8 +121,6 @@ Trace를 조회할 수 있다고 평가 시스템이 운영 원문을 복제할 
 - 운영자와 평가 개발자의 접근 권한은 같지 않을 수 있습니다.
 
 Trace ID를 Dataset의 영구 Primary Key로 사용하거나 원본 Trace 전체를 JSON으로 복사하지 않습니다. 필요한 Field만 추출한 새 `example_id`를 만들고, 원본과의 제한된 Lineage Reference는 별도 보호 영역에 둡니다.
-
-<a id="ai-section-5"></a>
 
 ## 5. Evaluation Example 계약을 Version으로 고정한다
 
@@ -198,8 +157,6 @@ Trace ID를 Dataset의 영구 Primary Key로 사용하거나 원본 Trace 전체
 
 재현에 필요한 Version은 Agent·Model·Prompt·Tool Schema·Retrieval Index·Memory Policy·권한 Policy·Grader·실행 Harness까지 포함합니다. Dataset은 같아도 검색 Index, Clock, Tool Fixture 또는 Judge Model이 바뀌면 결과를 직접 비교하기 어렵습니다.
 
-<a id="ai-section-6"></a>
-
 ## 6. 운영 실패를 안전한 Dataset Candidate로 승격한다
 
 운영 Trace에서 바로 Regression Dataset으로 이동시키지 않고 검토 단계를 둡니다.
@@ -218,8 +175,6 @@ Trace ID를 Dataset의 영구 Primary Key로 사용하거나 원본 Trace 전체
 Candidate를 만들 때는 동일 실패 유형의 중복, 합성 문장으로의 대체 가능성, 최소 Fixture로의 재현 가능성, 현재 정책과 기대 결과의 일치, 원본 삭제 요청의 파생 Example 처리까지 확인합니다.
 
 운영 입력을 무조건 모으면 빈도가 높은 정상 사례만 커지고 중요한 Rare Failure는 묻힙니다. 낮은 빈도라도 위험도가 높은 권한 우회, 잘못된 Side Effect, Tenant 교차 검색과 Memory Poisoning은 별도 우선순위로 둡니다.
-
-<a id="ai-section-7"></a>
 
 ## 7. Dataset을 목적별 Suite와 Split으로 나눈다
 
@@ -242,8 +197,6 @@ Candidate를 만들 때는 동일 실패 유형의 중복, 합성 문장으로�
 - `recent-production`: 최근 운영 분포 변화 확인
 
 Tool을 호출해야 하는 사례만 모으면 Agent가 모든 질문에 Tool을 과다 호출하도록 최적화될 수 있습니다. “호출해야 함”과 “호출하면 안 됨”, “Memory를 읽어야 함”과 “현재 요청만 사용해야 함”을 함께 넣어 양방향 경계를 평가합니다.
-
-<a id="ai-section-8"></a>
 
 ## 8. Outcome과 Trajectory를 함께 평가한다
 
@@ -277,8 +230,6 @@ Trajectory를 Exact Match로만 비교하면 올바른 대체 경로를 실패�
 
 안전 경계는 엄격하게, 합법적인 계획 다양성은 유연하게 평가하는 것이 핵심입니다.
 
-<a id="ai-section-9"></a>
-
 ## 9. RAG는 Retrieval과 Answer를 분리해 평가한다
 
 RAG 답변이 틀렸을 때 Retrieval과 Generation을 함께 점수화하면 원인을 알기 어렵습니다.
@@ -311,8 +262,6 @@ Retrieval 실패 + Answer 성공
 ```
 
 정답 문장과 의미가 비슷하다는 점수만으로 Grounded RAG를 통과시키지 않습니다. 근거 출처와 Claim의 대응 관계를 별도 평가해야 합니다.
-
-<a id="ai-section-10"></a>
 
 ## 10. Tool 호출은 선택·인자·권한·Side Effect를 검사한다
 
@@ -350,8 +299,6 @@ class TicketFixture:
 
 평가 기준은 자연스러운 최종 문장이 아니라 유효한 `approval_id` 없이 생성된 Ticket이 0개인지, 승인 대상 Summary와 일치할 때 정확히 1개인지, 같은 승인을 재사용할 수 없는지 같은 상태 Assertion입니다. 실제 시스템에서는 승인 주체·대상 Resource·작업 지문·만료 시각도 함께 결합해야 합니다.
 
-<a id="ai-section-11"></a>
-
 ## 11. Memory는 정확성·Scope·수명주기를 평가한다
 
 Memory 평가에는 “과거 정보를 잘 기억했는가?”뿐 아니라 “기억하지 말아야 할 것을 사용하지 않았는가?”가 포함됩니다.
@@ -373,8 +320,6 @@ Memory 평가에는 “과거 정보를 잘 기억했는가?”뿐 아니라 “
 - 공격성 지시를 장기 기억으로 승격하지 않았는가?
 
 Memory Suite에는 최소 두 사용자의 격리 Fixture, 만료된 Record, 상충하는 Version, 삭제 요청과 Poisoning Candidate를 함께 넣습니다. 정상 검색 사례만으로는 Scope 누출을 발견하기 어렵습니다.
-
-<a id="ai-section-12"></a>
 
 ## 12. Code·Model·Human Grader의 역할을 나눈다
 
@@ -407,8 +352,6 @@ Grader는 한 종류로 통일하지 않습니다. 판정 대상에 맞는 가�
 
 가능하면 Code Assertion으로 판정할 수 있는 항목을 LLM Judge에 맡기지 않습니다. 실제 Ticket 존재 여부는 Judge의 문장 해석보다 Fixture 상태 조회가 더 직접적입니다.
 
-<a id="ai-section-13"></a>
-
 ## 13. LLM-as-a-Judge를 정답 판정기로 과신하지 않는다
 
 LLM Judge는 확장성이 좋지만 그 자체도 확률적 Model입니다.
@@ -431,8 +374,6 @@ LLM Judge는 확장성이 좋지만 그 자체도 확률적 Model입니다.
 7. Blocking Safety 판정은 단일 Judge 한 번에 의존하지 않습니다.
 
 Judge의 점수는 “정답”이 아니라 Version이 있는 측정 결과입니다.
-
-<a id="ai-section-14"></a>
 
 ## 14. 비결정성은 반복 Trial과 분포로 측정한다
 
@@ -463,8 +404,6 @@ Canary             → 실제 Traffic의 결과·행동 Signal
 작은 차이가 실제 Agent 변경 때문인지 Model 변동, 검색 환경, 외부 Tool 지연 또는 평가 인프라 Noise 때문인지도 분리해야 합니다.
 
 `pass^k`를 단순히 단일 Trial 성공 확률의 `k`제곱으로 계산하려면 Trial이 충분히 독립적이라는 가정이 필요합니다. 공유 Cache, 남은 파일, Rate Limit 또는 같은 외부 장애로 Trial이 서로 영향을 준다면 실제 반복 결과와 실패 상관관계를 함께 보고해야 합니다.
-
-<a id="ai-section-15"></a>
 
 ## 15. Experiment는 변경 축과 실행 증거를 고정한다
 
@@ -497,8 +436,6 @@ runtime:
 Model, Prompt, Tool Schema와 검색 Index를 한 번에 바꾸고 점수가 올랐다면 어떤 변경이 원인인지 알 수 없습니다. 가능한 경우 한 번에 한 축을 비교하고, 불가피한 Bundle 변경은 Manifest로 명시합니다.
 
 실행 증거에는 Example별 Trial 결과, 실패 이유와 Grader별 점수, Trace Reference, Environment Snapshot Digest, 지연·Token·Tool 호출, 실행 Harness와 외부 의존성 상태가 포함됩니다. Secret, 실제 사용자 ID, Prompt 원문 전체를 Manifest에 넣지는 않습니다.
-
-<a id="ai-section-16"></a>
 
 ## 16. Regression Gate는 평균 점수만 보지 않는다
 
@@ -537,8 +474,6 @@ Model, Prompt, Tool Schema와 검색 Index를 한 번에 바꾸고 점수가 올
 
 품질을 지키면서 성공당 비용, P95 지연, 평균 Tool 호출 수, Context Token과 사용자 수정률을 개선합니다. 고위험 Blocking 실패를 높은 평균 품질로 상쇄하지 않습니다.
 
-<a id="ai-section-17"></a>
-
 ## 17. 품질·안전·비용·지연 Gate를 분리한다
 
 여러 지표를 단일 가중 평균으로 합치면 중요한 경계가 희석됩니다.
@@ -576,8 +511,6 @@ Gate 결과는 다음처럼 운영할 수 있습니다.
 
 각 판정에는 Dataset·Experiment·Agent·Grader Version과 승인자를 연결합니다.
 
-<a id="ai-section-18"></a>
-
 ## 18. CI·Nightly·Canary 평가를 계층화한다
 
 모든 평가를 모든 Commit에서 실행하면 비용과 시간이 커지고, 너무 작은 Suite만 실행하면 중요한 퇴행을 놓칩니다.
@@ -613,8 +546,6 @@ Gate 결과는 다음처럼 운영할 수 있습니다.
 
 Offline 점수가 좋아도 실제 입력 분포, 외부 Tool 상태와 사용자 행동은 다를 수 있습니다. Canary는 Offline 평가를 대체하지 않고 마지막 불확실성을 제한된 영향 범위에서 확인합니다.
 
-<a id="ai-section-19"></a>
-
 ## 19. Evaluator도 Version·Calibration·Drift를 관리한다
 
 Agent만 변하는 것이 아닙니다. Rubric 문구, Code Assertion, Judge Model·Prompt, Aggregation 방식, 결측 처리와 Blocking 임계값도 Version으로 관리합니다.
@@ -639,8 +570,6 @@ Code / Model Grader
 - 팀이 공개된 Holdout에 과적합하고 있지 않은가?
 
 Grader가 바뀌면 새 Agent 개선과 평가자 변경 효과를 분리하기 위해 Baseline과 Candidate를 같은 Grader Version으로 다시 평가합니다.
-
-<a id="ai-section-20"></a>
 
 ## 20. 합성 사례와 실제 사례로 평가 흐름을 읽어 본다
 
@@ -705,8 +634,6 @@ Grader가 바뀌면 새 Agent 개선과 평가자 변경 효과를 분리하기 
 
 한계는 분명합니다. 이 검사기는 화면을 렌더링해 첫 화면을 보는 것이 아니라 **DOM 순서와 문자 수를 대리 지표로** 쓰고, CI에 물려 있지 않은 수동 회귀 검사이며, 기준선 일부(중앙 244, 61:1)는 진단 문구에 값으로 박혀 자동 갱신되지 않습니다. 코드 저장소와 수정 전 공개본이 공개돼 있지 않아 **독립 재현에도 제한이 있습니다.** 그리고 도구가 사람을 대체한 것이 아닙니다 — 사람이 한 번 찾은 것을 두 번 다시 놓치지 않게 만든 것입니다.
 
-<a id="ai-section-21"></a>
-
 ## 21. 단계적으로 도입한다
 
 처음부터 거대한 평가 Platform을 만들 필요는 없습니다.
@@ -740,8 +667,6 @@ Grader가 바뀌면 새 Agent 개선과 평가자 변경 효과를 분리하기 
 - Evaluator Calibration과 Drift 관리
 
 도입 순서는 “도구 구매 → Dashboard”가 아니라 “실패 계약 → 재현 가능한 Example → 반복 가능한 평가 → 배포 결정”이어야 합니다.
-
-<a id="ai-section-22"></a>
 
 ## 22. 흔한 안티패턴
 
@@ -780,8 +705,6 @@ Rare Safety Failure와 특정 Slice 퇴행을 높은 일반 품질이 상쇄합�
 ### 평가 실패를 점수로만 보관한다
 
 실패 Trace가 수정·Regression Example·Release Gate로 이어지지 않아 같은 장애가 반복됩니다.
-
-<a id="ai-section-23"></a>
 
 ## 23. 운영 체크리스트
 
@@ -824,8 +747,6 @@ Rare Safety Failure와 특정 Slice 퇴행을 높은 일반 품질이 상쇄합�
 - [ ] 운영 실패가 Dataset Candidate로 돌아오는가?
 - [ ] 평가 데이터와 운영 원문의 접근·보존 정책이 분리되는가?
 
-<a id="ai-section-24"></a>
-
 ## 24. 마무리
 
 AI Agent의 품질은 한 번의 자연스러운 답변이나 평균 점수 하나로 증명되지 않습니다.
@@ -851,8 +772,6 @@ Production Trace
 7. Offline Evaluation, CI/CD Gate와 Canary·Online Evaluation을 하나의 피드백 루프로 연결합니다.
 
 좋은 평가 시스템은 Agent를 한 번 잘 보이게 만드는 Benchmark가 아닙니다. **운영에서 배운 실패를 조직의 재사용 가능한 품질 계약으로 바꾸고, 같은 종류의 회귀가 사용자에게 도달하기 전에 차단하는 Release Architecture**입니다.
-
-<a id="ai-section-25"></a>
 
 ## 25. 공식 참고자료
 

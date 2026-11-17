@@ -4,37 +4,6 @@
 
 ![정상 인증은 MFA와 위험 판정, 세션 회전을 통과하고 분산 공격은 격리되는 인증 보안 구조](assets/blog-59-authentication-failures-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">공격 이름에 따라 방어 축도 달라진다</a></li>
-<li><a href="#ai-section-2">인증 경계를 Endpoint가 아닌 수명주기로 Inventory한다</a></li>
-<li><a href="#ai-section-3">계정 존재 여부를 응답으로 알려주지 않는다</a></li>
-<li><a href="#ai-section-4">문자열 정규화는 인증 규칙으로 명시한다</a></li>
-<li><a href="#ai-section-5">비밀번호 정책은 길이·Blocklist·관리 도구 중심으로 설계한다</a></li>
-<li><a href="#ai-section-6">Rate Limit은 실패 횟수보다 공격 비용을 설계한다</a></li>
-<li><a href="#ai-section-7">성공과 실패 기록이 새로운 공격 경로가 되지 않게 한다</a></li>
-<li><a href="#ai-section-8">MFA는 등록·변경·복구까지 같은 강도로 보호한다</a></li>
-<li><a href="#ai-section-9">Recovery Code는 비밀번호처럼 저장하고 한 번만 사용한다</a></li>
-<li><a href="#ai-section-10">비밀번호 재설정은 독립된 인증 Protocol이다</a></li>
-<li><a href="#ai-section-11">Session Secret은 가장 강한 인증 결과와 같은 가치가 있다</a></li>
-<li><a href="#ai-section-12">Spring Security의 기본 보호를 유지하고 명시적으로 검증한다</a></li>
-<li><a href="#ai-section-13">Idle Timeout과 Absolute Timeout을 분리한다</a></li>
-<li><a href="#ai-section-14">권한 상승과 민감 작업에는 Step-up 인증을 적용한다</a></li>
-<li><a href="#ai-section-15">Logout은 화면 이동이 아니라 Server-side 폐기다</a></li>
-<li><a href="#ai-section-16">분산 환경에서는 SessionRegistry의 범위를 확인한다</a></li>
-<li><a href="#ai-section-17">Stateless Token도 Session 수명주기를 없애지 않는다</a></li>
-<li><a href="#ai-section-18">실패 상태를 명시적으로 설계한다</a></li>
-<li><a href="#ai-section-19">자동화 Test는 정상 로그인보다 우회 경로를 먼저 확인한다</a></li>
-<li><a href="#ai-section-20">탐지는 계정 탈취 흐름을 재구성할 수 있어야 한다</a></li>
-<li><a href="#ai-section-21">사고 대응은 폐기 범위와 사용자 회복을 함께 설계한다</a></li>
-<li><a href="#ai-section-22">흔한 오해를 Review에서 제거한다</a></li>
-<li><a href="#ai-section-23">Code Review Checklist</a></li>
-<li><a href="#ai-section-24">마무리</a></li>
-<li><a href="#ai-section-25">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 인증(Authentication)은 로그인 화면 하나가 아닙니다. 계정 등록부터 비밀번호 변경, 다중 요소 인증(Multi-Factor Authentication, MFA) 등록과 복구, 세션(Session) 생성·갱신·폐기까지 이어지는 **신원 수명주기**입니다.
 
 로그인 요청에 Rate Limit을 추가했어도 다음 중 하나가 열려 있으면 계정은 탈취될 수 있습니다.

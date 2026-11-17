@@ -2,42 +2,6 @@
 
 AI Agent 배포는 Container Image 교체보다 넓습니다. Code가 그대로여도 Prompt나 Model, RAG 색인, Tool 정의가 바뀌면 동작이 달라지기 때문입니다. 이 글은 Code·Prompt·Model·RAG·MCP Tool·Policy를 하나의 Release Bundle로 묶고, Offline Evaluation과 Shadow, 카나리 배포와 자동 Rollback, 감사 Evidence로 안전하게 내보내는 방법을 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-1">AI Agent Release는 Container Image 교체보다 넓다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-2">변경 가능한 요소를 하나의 Release Bundle로 묶는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-3">Artifact Digest와 Provenance로 재현성을 지킨다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-4">Desired·Effective·Observed Release를 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-5">Change Class로 필요한 검증 강도를 정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-6">Risk Tier와 Blast Radius를 먼저 제한한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-7">Release Readiness Contract를 기계 판독 가능하게 만든다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-8">Offline Evaluation을 첫 번째 Release Gate로 둔다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-9">Golden·Regression·Adversarial Dataset의 역할을 나눈다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-10">평균 점수보다 Slice·최저 품질·표본 수를 본다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-11">불확실한 결과는 통과가 아니라 Inconclusive로 처리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-12">보안·Privacy·Compliance Gate를 품질 Gate와 분리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-13">성능·Capacity·FinOps Gate를 함께 적용한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-14">Shadow Traffic으로 실제 입력 분포를 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-15">Shadow 실행의 Side Effect를 원천 차단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-16">Baseline과 Candidate를 동일한 Context로 비교한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-17">Tenant·Task·Risk Cohort로 Canary 대상을 고른다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-18">Feature Flag는 노출 제어이지 Authorization이 아니다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-19">Canary 단계와 관찰 시간을 Evidence로 정의한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-20">품질·SLO·비용·보안을 하나의 Metric Basket으로 평가한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-21">Burn Rate와 Candidate Delta를 함께 판단한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-22">Hysteresis·Cooldown·최소 표본으로 Flapping을 막는다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-23">자동 Rollback 계약을 배포 전에 검증한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-24">Code만 되돌리지 말고 State·Schema·Knowledge를 조정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-25">Rollback이 불가능하면 Kill Switch와 Forward Fix를 사용한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-26">장기 실행 Task는 시작 Release에 고정한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-27">승인·업무 분리·Break-glass를 Release Ledger에 남긴다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-28">합성 사례로 회의 후속조치 Agent를 점진 배포한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-29">Versioned Release Spec과 운영 체크리스트로 관리한다</a></li>
-<li style="color: #555555; font-weight: 400;" data-mce-style="color: #555555; font-weight: 400;"><a href="#ai-section-30">공식 참고자료</a></li>
-</ol>
-</blockquote>
-
 AI Agent의 새 버전을 배포합니다. Container Image는 이전과 같습니다. Prompt 한 줄과 Model Route, MCP Tool 허용 목록만 바꿨습니다. 단위 테스트와 HTTP Health Check는 모두 통과했습니다. 그런데 운영에서는 다음 문제가 발생합니다.
 
 ```text

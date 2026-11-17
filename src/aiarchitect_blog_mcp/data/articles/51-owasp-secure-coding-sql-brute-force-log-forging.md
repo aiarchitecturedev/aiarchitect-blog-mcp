@@ -4,26 +4,6 @@ SQL Injection 방어는 입력값 필터링이 아니라 값이 Query 구조를 
 
 ![SQL Query 구조와 값의 분리, 다층 인증 시도 제한, 구조화 Security Event 보호가 하나의 애플리케이션 경계에서 작동하는 Secure Coding](assets/blog-51-owasp-secure-coding-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">OWASP Top 10:2025에서 세 문제의 위치</a></li>
-<li><a href="#ai-section-2">Secure Coding의 공통 원칙</a></li>
-<li><a href="#ai-section-3">SQL Injection: 입력값이 Query 구조를 바꾸는 문제</a></li>
-<li><a href="#ai-section-4">Brute Force: 인증 기능의 반복 사용을 통제한다</a></li>
-<li><a href="#ai-section-5">Log Forging: 운영 기록도 공격 입력이 될 수 있다</a></li>
-<li><a href="#ai-section-6">세 취약점을 하나의 요청에서 함께 방어한다</a></li>
-<li><a href="#ai-section-7">Spring Boot 적용 경계</a></li>
-<li><a href="#ai-section-8">잘못된 대응과 이유</a></li>
-<li><a href="#ai-section-9">CI/CD에서 방어를 반복 가능하게 만든다</a></li>
-<li><a href="#ai-section-10">코드 Review 체크리스트</a></li>
-<li><a href="#ai-section-11">도입 순서</a></li>
-<li><a href="#ai-section-12">완료 조건</a></li>
-<li><a href="#ai-section-13">마무리</a></li>
-<li><a href="#ai-section-14">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 보안 코딩(Secure Coding)은 위험한 문자열 몇 개를 차단하는 규칙이 아닙니다. 신뢰할 수 없는 입력이 데이터베이스 Query, 인증 판단과 운영 Log로 이동할 때 **데이터가 명령으로 해석되지 않게 하고, 반복 공격을 제어하며, 남겨진 증거를 신뢰할 수 있게 만드는 개발 방식**입니다.
 
 SQL Injection, Brute Force와 Log Forging은 오래 알려진 공격이지만 지금도 중요합니다.

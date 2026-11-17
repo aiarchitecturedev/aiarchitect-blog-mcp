@@ -4,29 +4,6 @@
 
 ![Android·iOS·Web 고객 채널의 요청이 Channel API와 Java Server SDK를 거쳐 Private API에 도달하고 Operation 상태와 복구 경로가 다시 고객 채널로 이어지는 End-to-End SDK 통합](assets/blog-52-end-to-end-multiplatform-sdk-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">End-to-End 완료 조건부터 정한다</a></li>
-<li><a href="#ai-section-2">신뢰 경계가 호출 경로를 결정한다</a></li>
-<li><a href="#ai-section-3">예제 시나리오: 비동기 Operation 제출과 결과 확인</a></li>
-<li><a href="#ai-section-4">공통 계약은 네 구현보다 먼저 존재해야 한다</a></li>
-<li><a href="#ai-section-5">한 번의 Action에 세 종류의 식별자가 필요하다</a></li>
-<li><a href="#ai-section-6">플랫폼 SDK는 화면 수명과 업무 수명을 분리한다</a></li>
-<li><a href="#ai-section-7">Channel API와 Spring Boot Starter는 서버 경계를 구현한다</a></li>
-<li><a href="#ai-section-8">전체 요청 흐름: 수락과 완료를 분리한다</a></li>
-<li><a href="#ai-section-9">Operation 상태와 Event·Snapshot 복구</a></li>
-<li><a href="#ai-section-10">멱등성, Timeout과 취소의 책임을 나눈다</a></li>
-<li><a href="#ai-section-11">오류와 관측성을 공통 운영 계약으로 만든다</a></li>
-<li><a href="#ai-section-12">호환성과 배포 순서를 함께 설계한다</a></li>
-<li><a href="#ai-section-13">End-to-End Test는 실제 경계에서 실패를 만들어야 한다</a></li>
-<li><a href="#ai-section-14">운영 Runbook은 사용자 증상에서 시작한다</a></li>
-<li><a href="#ai-section-15">구현 체크리스트</a></li>
-<li><a href="#ai-section-16">마무리</a></li>
-<li><a href="#ai-section-17">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 운영 중인 서비스에 API 서버, 웹 페이지와 모바일 앱이 이미 있어도 고객사가 원하는 화면과 업무 흐름은 서로 다를 수 있습니다. 이때 고객별 앱과 웹을 모두 대신 개발하면 변경 속도와 운영 책임이 한곳에 집중됩니다.
 
 다른 선택은 고객사가 자신의 UX를 구현하도록 Android Kotlin, iOS Swift와 React JavaScript SDK를 제공하는 것입니다. 다만 핵심 API가 프라이빗 망에 있다면 Mobile·Web SDK가 그 API를 직접 호출하게 만들 수 없습니다. 고객 채널은 고객사 Backend for Frontend(BFF) 또는 Channel API를 호출하고, 그 서버가 Java Server SDK를 통해 프라이빗 API와 통신해야 합니다.

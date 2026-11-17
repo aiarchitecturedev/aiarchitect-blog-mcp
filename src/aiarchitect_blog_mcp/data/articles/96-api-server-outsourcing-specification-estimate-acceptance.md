@@ -4,28 +4,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 
 ![API 서버 외주 개발에서 규격서와 책임표를 바탕으로 설계·보안·검수 Gate를 통과하고 소스·배포·문서·계정을 인수하는 흐름](assets/blog-96-api-server-outsourcing-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p style="color: #263746; font-weight: 700;" data-mce-style="color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 700;"><b>목차</b></p>
-<ol style="list-style-type: decimal; color: #555555; font-weight: 400;" data-mce-style="list-style-type: decimal; color: #555555; font-weight: 400;" data-ke-list-type="decimal">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">API 서버 외주 개발은 코딩 전에 범위를 고정해야 한다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">발주자·개발사·클라우드의 책임 경계를 먼저 그린다</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업무 흐름을 API 요구사항으로 바꾸는 방법</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">발주 규격서에 들어갈 기능·데이터·연동 조건</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업체 후보를 찾는 경로와 1차 선별 기준</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">성능·보안·가용성을 숫자와 시험 방법으로 적는다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">AI 연동 API라면 추가로 정할 항목</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">업체 견적을 같은 조건으로 비교하는 방법</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">계약서에 넣을 조항: 범위 변경·추가 비용·소유권</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">중간 산출물과 단계별 확인 Gate</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">검수와 인수: 재현 가능한 시험과 인수 패키지</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인수 후 유지보수·하자보수 기간을 계약에 넣는다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">위험 신호와 발주 전 최종 체크리스트</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-</ol>
-</blockquote>
-
-<a id="ai-section-1"></a>
-
 ## 1. API 서버 외주 개발은 코딩 전에 범위를 고정해야 한다
 
 첫 회의에서 “회원과 주문 API가 필요합니다”라고 말하면 견적에 필요한 정보가 거의 없습니다. 회원 가입 화면과 인증 서버가 이미 있는지, 관리자 기능과 데이터 이관도 필요한지, 클라우드 계정은 누가 만들고 운영하는지에 따라 같은 문장이 전혀 다른 프로젝트가 됩니다.
@@ -44,8 +22,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 
 이 표는 기술 목록이 아니라 **견적 기준선의 버전**입니다. 제안 요청 뒤 바뀌면 변경 이유와 비교 대상 업체에 배포한 시점을 남깁니다. 전체 AI 프로젝트의 산정 항목과 고정비·변동비 구분은 [AI 프로젝트 견적 10개 산정 항목](https://aiarchitect.tistory.com/21)을 참고하고, 여기서는 API 외주 발주에 필요한 자료 흐름만 이어갑니다.
 
-<a id="ai-section-2"></a>
-
 ## 2. 발주자·개발사·클라우드의 책임 경계를 먼저 그린다
 
 클라우드에서 실행된다고 해서 클라우드 사업자가 애플리케이션 장애까지 책임지는 것은 아닙니다. 개발사가 배포를 맡아도 발주자 명의 계정과 결제 수단, 데이터 제공, 업무 승인까지 대신 정할 수는 없습니다. 외부 결제·알림·AI API가 멈췄을 때 누구에게 연락하고 어떤 대체 동작을 할지도 별도 책임입니다.
@@ -63,8 +39,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 
 책임표에는 담당 조직명뿐 아니라 **결정권자, 수행자, 확인 증거, 인계 시점**을 적습니다. “보안은 공동 책임”처럼 모두에게 책임을 배분하면 실제 사고 때 아무도 첫 조치를 하지 않습니다. 항목마다 최종 책임자를 한 곳으로 정하고, 공동 작업은 입력과 출력으로 나눕니다.
 
-<a id="ai-section-3"></a>
-
 ## 3. 업무 흐름을 API 요구사항으로 바꾸는 방법
 
 화면 목록을 API 목록으로 옮기면 예외 흐름이 빠집니다. 먼저 사용자의 업무 한 건을 **행위자 → 시작 조건 → 입력 → 상태 변화 → 출력 → 실패 처리 → 권한 → 감사 기록** 순서로 서술합니다. “주문 취소”라면 취소 Endpoint만 적는 것이 아니라 누가 어떤 상태에서 취소할 수 있는지, 이미 배송됐거나 결제가 취소되지 않았을 때 무엇을 반환하는지까지 정해야 합니다.
@@ -79,8 +53,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 - 상태 변경 전 추가 승인이나 감사 기록이 필요한가
 
 이 결과를 OpenAPI 문서와 상태 전이·오류 목록으로 연결합니다. [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)은 HTTP API를 언어와 무관하게 설명해 사람과 도구가 인터페이스를 이해하도록 하는 표준입니다. 다만 문법이 맞는 문서만으로 업무 규칙이 완성되지는 않습니다. 경로·요청·응답 Schema와 함께 위의 상태·권한·실패 규칙이 추적돼야 합니다.
-
-<a id="ai-section-4"></a>
 
 ## 4. 발주 규격서에 들어갈 기능·데이터·연동 조건
 
@@ -99,8 +71,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 
 데이터·API·권한·보안·인수가 실제로 준비됐는지 확인하는 더 엄격한 기준은 [AI Agent 도입 준비도 진단](https://aiarchitect.tistory.com/69)에 정리했습니다. 일반 API 외주에서도 “준비 완료”라는 자기 선언보다 표본, 시험 계정, 승인 기록처럼 업체가 작업을 시작할 수 있는 증거가 유효합니다.
 
-<a id="ai-section-5"></a>
-
 ## 5. 업체 후보를 찾는 경로와 1차 선별 기준
 
 후보는 기존 협력사·동종 업계 추천·전문 개발사 검색·외주 플랫폼처럼 여러 경로에서 찾을 수 있습니다. 경로 자체보다 **같은 1차 질문으로 통과 여부를 판정하는 것**이 중요합니다. 소개를 받았다는 이유로 기술 검증을 생략하거나, 포트폴리오 화면만 보고 서버·운영 역량까지 추정하지 않습니다.
@@ -116,8 +86,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 
 고객 실명이나 내부 화면, 인증 정보가 담긴 원본을 요구해서는 안 됩니다. 구조와 판단 기준을 볼 수 있도록 익명화된 일부 자료면 충분합니다. RAG가 핵심 범위라면 일반 API 경험과 별개로 문서·권한·갱신·평가 증거를 [RAG 구축 업체 선정 질문](https://aiarchitect.tistory.com/94)으로 추가 확인합니다.
 
-<a id="ai-section-6"></a>
-
 ## 6. 성능·보안·가용성을 숫자와 시험 방법으로 적는다
 
 “빠르고 안정적이며 안전하게”는 검수할 수 없습니다. 숫자도 근거 없이 복사하면 안 됩니다. 현재 Traffic이나 예상 업무량에서 평시·Peak·Batch를 나누고, 사용자가 기다리는 경로와 비동기 경로를 구분합니다. Latency는 평균만이 아니라 어떤 Percentile을 어느 구간에서 측정할지, 가용성과 복구는 제외 시간과 데이터 손실 허용 범위를 함께 정합니다.
@@ -132,8 +100,6 @@ API 서버 외주 개발을 맡길 때 가장 큰 위험은 개발 언어나 업
 - 변경 안전성: API Version, 호환성 기준, 폐기 통지, Rollback과 Migration 방법
 
 [OWASP API Security Top 10 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/)은 객체·속성·기능 수준 인가, 자원 소비, API 재고, 외부 API 소비 같은 위험을 구분합니다. 따라서 “보안 적용” 한 줄 대신 다른 사용자의 객체 접근 차단, 관리자 기능 차단, 과도한 요청 제한, 폐기 Version 비노출, 외부 응답 검증을 각각 시험 Case로 적습니다. NIST의 [Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800/218/final)는 구매자와 공급자의 보안 소통에도 활용할 수 있는 공통 어휘를 제공합니다. 필요한 통제와 증거를 규격·산출물·Gate에 배분하는 참고 기준으로 사용할 수 있습니다.
-
-<a id="ai-section-7"></a>
 
 ## 7. AI 연동 API라면 추가로 정할 항목
 
@@ -152,8 +118,6 @@ AI 연동 범위에는 다음 항목을 추가합니다.
 
 RAG의 구체 원가는 일반 API 견적에 섞지 말고 [RAG 구축 비용 산정 기준](https://aiarchitect.tistory.com/95)으로 수량과 반복 빈도를 분리합니다. 데모 성공을 운영 준비로 오해하지 않기 위한 차이는 [AI PoC가 운영 단계에서 멈추는 이유](https://aiarchitect.tistory.com/15)와도 연결됩니다.
 
-<a id="ai-section-8"></a>
-
 ## 8. 업체 견적을 같은 조건으로 비교하는 방법
 
 총액만 나란히 놓으면 싼 이유를 알 수 없습니다. 모든 후보에게 같은 규격서 ID와 Version, 질문 답변, 제출 기한을 주고 **포함·제외·가정·발주자 수행·외부 비용**을 같은 표로 돌려받습니다. 한 업체에만 추가 정보를 줬다면 다른 후보에도 변경 기록과 함께 배포해야 비교 기준이 유지됩니다.
@@ -170,8 +134,6 @@ RAG의 구체 원가는 일반 API 견적에 섞지 말고 [RAG 구축 비용 �
 | 지급 조건 |  |  |  | 산출물·Gate·승인과 연결되는가 |
 
 견적 차이가 크면 단가부터 협상하지 말고 범위표로 돌아갑니다. 빠진 데이터 이관, 시험 환경, 성능 시험, 운영 문서, 하자보수 같은 항목을 같은 줄에 맞추면 차이의 원인이 드러납니다. “일체 포함”은 상세 항목을 대신하지 못합니다.
-
-<a id="ai-section-9"></a>
 
 ## 9. 계약서에 넣을 조항: 범위 변경·추가 비용·소유권
 
@@ -192,8 +154,6 @@ RAG의 구체 원가는 일반 API 견적에 섞지 말고 [RAG 구축 비용 �
 
 공정거래위원회의 [SW 업종 표준하도급계약서 관련 자료](https://www.ftc.go.kr/www/selectBbsNttView.do?bordCd=3&key=12&nttSn=41301)는 검사, 지식재산권, 불합리한 특약, 하자담보 같은 항목을 계약 문서에서 구체화하는 참고 자료입니다. 다만 모든 직접 외주 계약이 하도급에 해당하는 것은 아니므로 계약 구조에 맞는 적용 여부와 문구는 전문가에게 확인해야 합니다.
 
-<a id="ai-section-10"></a>
-
 ## 10. 중간 산출물과 단계별 확인 Gate
 
 마지막 날 완성본을 받는 방식은 잘못된 해석을 가장 늦게 발견합니다. 착수 때 규격 기준선을 확정하고, 설계·통합·검수·인수 Gate마다 다음 단계로 넘어갈 증거를 정합니다. 회의 참석이나 진척률 보고가 아니라 **검토 가능한 산출물과 미해결 위험**이 Gate의 입력입니다.
@@ -209,8 +169,6 @@ RAG의 구체 원가는 일반 API 견적에 섞지 말고 [RAG 구축 비용 �
 ![API 서버 외주 개발의 규격 기준선이 설계·통합·검수 Gate를 거쳐 인수 패키지와 유지보수로 전환되고 각 단계에 증거가 남는 흐름](assets/blog-96-delivery-gates.png)
 
 Gate에서 실패했다고 프로젝트 전체가 즉시 실패한 것은 아닙니다. 미충족 항목의 심각도, 수정 책임, 재시험 범위, 다음 단계로 조건부 진행할 승인자를 기록합니다. 반대로 문서가 제출됐다는 이유만으로 통과시키지 않습니다. 내용이 실제 배포 Version과 맞고 발주자 환경에서 재현돼야 합니다.
-
-<a id="ai-section-11"></a>
 
 ## 11. 검수와 인수: 재현 가능한 시험과 인수 패키지
 
@@ -229,8 +187,6 @@ Gate에서 실패했다고 프로젝트 전체가 즉시 실패한 것은 아닙
 
 소스 저장소만 받았다고 인수가 끝나지 않습니다. 깨끗한 환경에서 Build와 배포를 재현할 수 있어야 하고, Domain·Certificate·클라우드·CI/CD·외부 서비스 계정의 소유와 결제 주체가 확인돼야 합니다. Secret 값은 문서에 평문으로 적지 말고 발주자 관리 저장소로 안전하게 이관한 뒤 개발사 접근을 회수합니다.
 
-<a id="ai-section-12"></a>
-
 ## 12. 인수 후 유지보수·하자보수 기간을 계약에 넣는다
 
 인수 뒤 발견된 모든 요청이 하자는 아니고, 운영 중 필요한 모든 작업이 유지보수에 포함되는 것도 아닙니다. **승인된 규격과 인수 기준을 충족하지 못한 결함**, 기능 개선, 사용량 증가에 따른 용량 확장, 외부 API·클라우드·운영체제 변경 대응을 구분해야 합니다.
@@ -245,8 +201,6 @@ Gate에서 실패했다고 프로젝트 전체가 즉시 실패한 것은 아닙
 | 운영 이관 | 내부 팀·다른 업체로 전환 | 지식 이전·자료 갱신·접근 회수 | 지원 횟수·인계 완료 증거 |
 
 지원 기간 숫자만 적지 말고 심각도별 응답과 복구의 의미, 요청 접수 시간, 재현 정보, 고객 원인·외부 서비스 원인의 처리 방식을 적습니다. 공정위의 [소프트웨어 하도급 거래 관련 개선 자료](https://www.ftc.go.kr/www/selectBbsNttView.do?bordCd=1&key=5&nttSn=30367)도 유지보수와 하자보수의 구분, 검사 기준과 계약 서면화 문제를 지적한 바 있습니다. 해당 자료 역시 개별 계약에 자동 적용되는 문구가 아니라 조건을 빠뜨리지 않기 위한 참고 기준으로 사용합니다.
-
-<a id="ai-section-13"></a>
 
 ## 13. 위험 신호와 발주 전 최종 체크리스트
 
@@ -273,8 +227,6 @@ Gate에서 실패했다고 프로젝트 전체가 즉시 실패한 것은 아닙
 8. 발주자 환경에서 배포·복구·권한 차단을 재현할 수 있는가
 9. 인수 패키지와 접근 회수, 미해결 Issue의 처리 기준이 있는가
 10. 하자·장애·유지보수·기능 변경의 경계와 종료 조건이 다른가
-
-<a id="ai-section-14"></a>
 
 ## 14. 마무리
 

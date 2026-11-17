@@ -4,30 +4,6 @@ Java와 Python이 같은 JWT를 두고 서로 다른 판정을 내리는 순간 
 
 ![Java와 Python 런타임이 동일한 Canonical Byte와 Golden Vector 계약을 거쳐 같은 검증 결과를 만드는 폴리글랏 아키텍처](assets/blog-34-polyglot-contract-golden-vector-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1">표현 차이가 폴리글랏 보안 계약을 깨뜨린다</a></li>
-<li><a href="#ai-section-2">검증할 계약을 세 층으로 분리한다</a></li>
-<li><a href="#ai-section-3">정규 바이트와 직렬화 명세를 하나의 기준으로 고정한다</a></li>
-<li><a href="#ai-section-4">Java와 Python 구현은 같은 명세를 독립적으로 따른다</a></li>
-<li><a href="#ai-section-5">토큰·JWKS·base64url 검증 규칙을 고정한다</a></li>
-<li><a href="#ai-section-6">Golden Vector를 실행 가능한 공통 픽스처로 만든다</a></li>
-<li><a href="#ai-section-7">두 런타임의 계약 테스트가 같은 기대값을 검증한다</a></li>
-<li><a href="#ai-section-8">교차 서명과 음성 케이스로 관대한 검증기를 막는다</a></li>
-<li><a href="#ai-section-9">시간 계약은 정밀도·경계·스큐를 부등호로 고정한다</a></li>
-<li><a href="#ai-section-10">결정적 ID와 요청 지문을 같은 바이트에서 파생한다</a></li>
-<li><a href="#ai-section-11">언어별 기본값 함정을 계약 체크리스트로 관리한다</a></li>
-<li><a href="#ai-section-12">계약 테스트를 CI 병합 게이트로 운영한다</a></li>
-<li><a href="#ai-section-13">계약 버전과 키 롤오버를 함께 운영한다</a></li>
-<li><a href="#ai-section-14">AES-256-GCM 봉투도 같은 계약 원칙을 적용한다</a></li>
-<li><a href="#ai-section-15">정확성 검증과 운영 인프라의 범위를 분리한다</a></li>
-<li><a href="#ai-section-16">마무리: 언어가 아니라 표현을 계약한다</a></li>
-<li><a href="#ai-section-17">참고 표준</a></li>
-</ol>
-</blockquote>
-
-
 *그림 1. Java와 Python이 하나의 Golden Vector와 Canonical Byte 계약을 공유하는 폴리글랏 검증 구조*
 
 기업용 AI 백엔드는 **한 언어로만 만들어지지 않는 경우가 많습니다.** 인증과 테넌트 정책을 담당하는 Java 17 / Spring Boot 기반 Security Gateway가 앞에 있고, Agent·RAG·모델 조율을 담당하는 Python / FastAPI 기반 Orchestrator가 뒤에 있는 구조를 종종 사용합니다. 이 두 서비스의 책임을 어떻게 나눌지는 이미 별도 글([Java Security Gateway와 Python AI Orchestrator의 책임 분리](https://aiarchitect.tistory.com/5))에서 다뤘습니다.
@@ -40,7 +16,7 @@ Java와 Python이 같은 JWT를 두고 서로 다른 판정을 내리는 순간 
 
 아래 내용은 필자가 설계·검증 단계에서 정리한 원칙을 익명화해 재구성한 것이며, 특정 고객사·내부 시스템·비공개 제품 정보·실측 수치는 포함하지 않습니다(Keycloak·KMS·mTLS 등은 널리 알려진 공개 기술로만 언급합니다). 실제 Keycloak Token Exchange, KMS, mTLS 같은 인프라 연동은 후속 과제로 두고, 이 글은 **언어 간 계약의 정확성 검증**에 집중합니다.
 
-<h2 id="ai-section-1" style="scroll-margin-top: 96px;">1. 표현 차이가 폴리글랏 보안 계약을 깨뜨린다</h2>
+## 1. 표현 차이가 폴리글랏 보안 계약을 깨뜨린다
 
 폴리글랏 아키텍처 (Polyglot Architecture)의 위험은 흔히 `언어를 두 개 쓰면 복잡하다` 정도로 이야기됩니다. 하지만 보안 관점에서 진짜 위험은 다른 곳에 있습니다.
 
@@ -58,7 +34,7 @@ Java와 Python이 같은 JWT를 두고 서로 다른 판정을 내리는 순간 
 
 핵심은 이렇습니다. **"둘 다 유효한 JSON을 만들지만, 둘의 바이트는 다르다."** 유효한 JSON은 여러 개일 수 있어도, 서명·해시 대상은 **하나로 고정된 바이트**여야 합니다.
 
-<h2 id="ai-section-2" style="scroll-margin-top: 96px;">2. 검증할 계약을 세 층으로 분리한다</h2>
+## 2. 검증할 계약을 세 층으로 분리한다
 
 언어 간 계약을 이야기하기 전에, 무엇이 계약의 대상인지 명확히 해야 합니다. 이 글에서 다루는 계약은 세 층으로 나눕니다.
 
@@ -68,7 +44,7 @@ Java와 Python이 같은 JWT를 두고 서로 다른 판정을 내리는 순간 
 
 이 세 계약은 서로 독립적으로 깨질 수 있습니다. 예를 들어 토큰 검증은 정상인데 요청 지문만 언어별로 다르게 계산될 수 있습니다. 그래서 **계약별로 골든 벡터를 따로 관리**해야 어디가 규격을 위반했는지 좁혀낼 수 있습니다.
 
-<h2 id="ai-section-3" style="scroll-margin-top: 96px;">3. 정규 바이트와 직렬화 명세를 하나의 기준으로 고정한다</h2>
+## 3. 정규 바이트와 직렬화 명세를 하나의 기준으로 고정한다
 
 정규 바이트는 `같은 논리 데이터 → 항상 같은 바이트열`을 보장하는 직렬화 규칙입니다. 표준화된 접근으로는 **JSON 정규화 스킴 (JSON Canonicalization Scheme, JCS, RFC 8785)** 이 있고, JCS는 다음을 규정합니다.
 
@@ -92,7 +68,7 @@ JCS를 그대로 채택하면 형식 논쟁의 여지가 줄어듭니다. 하지
 
 *그림 3. 논리 데이터를 하나의 Canonical Byte로 고정하고 위반 입력을 거부하는 흐름*
 
-<h3 id="ai-section-3-1" style="scroll-margin-top: 96px;">3.1 정규 직렬화 규칙과 거부 조건</h3>
+### 3.1 정규 직렬화 규칙과 거부 조건
 
 정규 바이트 계약은 코드보다 먼저 **명세 문서**로 존재해야 합니다. 아래는 자체 정규 형식을 택했을 때의 규칙 명세 예시입니다.
 
@@ -131,9 +107,9 @@ R5. 최대 입력 크기·중첩 깊이 초과 (한계값은 배포별로 고정
 
 이 명세는 언어에 종속되지 않아야 합니다. Java와 Python은 각자 이 명세를 구현할 뿐이며, **명세가 진실의 원천 (Source of Truth)** 입니다. 명세와 구현이 다르면 명세가 이깁니다.
 
-<h2 id="ai-section-4" style="scroll-margin-top: 96px;">4. Java와 Python 구현은 같은 명세를 독립적으로 따른다</h2>
+## 4. Java와 Python 구현은 같은 명세를 독립적으로 따른다
 
-<h3 id="ai-section-4-1" style="scroll-margin-top: 96px;">4.1 Java 구현은 NFC 이후 UTF-16 코드 유닛으로 정렬한다</h3>
+### 4.1 Java 구현은 NFC 이후 UTF-16 코드 유닛으로 정렬한다
 
 Java에서는 JSON 라이브러리의 기본 직렬화에 의존하지 말고, 정규 규칙을 직접 구현하거나 JCS 라이브러리를 사용합니다. 아래는 **개념 코드 (실행용 아님)** 로, 정규 직렬화의 핵심 골격만 보여줍니다. 실제 구현은 3.1절의 거부 규칙(R1~R5)과 정렬·인코딩을 모두 갖춰야 합니다.
 
@@ -179,7 +155,7 @@ static void write(JsonNode node, StringBuilder sb) {
 
 여기서 중요한 것은 라이브러리 선택이 아니라, **명세의 각 조항이 코드의 한 지점으로 대응되는지**입니다. 정렬 기준(코드 유닛 정렬)과 정규화 순서(NFC → 정렬)가 명세·다른 언어 구현과 다르면 그 자체가 계약 위반입니다. 위 코드의 `TreeMap` 자연 정렬은 Java `String.compareTo`를 사용하므로 UTF-16 `char`(코드 유닛)의 사전식 순서와 정확히 일치합니다(RFC 8785도 Java를 UTF-16 정렬이 직접 대응되는 환경으로 듭니다). 의도를 드러내기 위해 `Comparator.naturalOrder()`를 명시할 수는 있지만, 별도 정렬 알고리즘은 필요하지 않습니다. 진짜 주의할 곳은 뒤에서 볼 **Python 쪽**으로, 파이썬 기본 정렬은 코드 포인트 기준이라 UTF-16 코드 유닛 순서와 다를 수 있습니다(4.2절).
 
-<h3 id="ai-section-4-2" style="scroll-margin-top: 96px;">4.2 Python 구현은 UTF-16 정렬과 원문 바이트 경로를 명시한다</h3>
+### 4.2 Python 구현은 UTF-16 정렬과 원문 바이트 경로를 명시한다
 
 Python의 `json.dumps`는 기본으로 공백을 넣고(`, ` / `: `), 비ASCII를 이스케이프하며, 키 정렬을 하지 않습니다. 게다가 `sort_keys=True`를 켜도 그 정렬은 **파이썬 문자열 비교(코드 포인트 기준)** 라, 명세가 요구하는 **UTF-16 코드 유닛 기준** 정렬과 **다릅니다**(보충 평면 키에서 Java와 갈립니다 — 아래 참조). 그래서 `json.dumps`의 옵션에 기대지 말고, **정렬과 문자열 이스케이프까지 직접 구현**하고 **명세의 거부 규칙(R1~R4)을 코드로 강제**해야 합니다. 아래는 **개념 코드 (실행용 아님)** 이지만, 정렬 기준·이스케이프·거부 규칙을 어디에 넣어야 하는지를 명확히 보여줍니다.
 
@@ -263,7 +239,7 @@ def canonicalize_raw(raw: bytes) -> bytes:
 
 즉 `canonicalize`(데이터 모델)에서는 R2(NFC 충돌)·R4(타입)만 확실히 검출할 수 있고, R1(원문 중복 키)·`-0`·크기/깊이(R5)는 반드시 `canonicalize_raw`(원문 바이트)에서 검사해야 합니다. 만약 `-0` 금지를 별도로 두기 부담스럽다면, 규칙을 "`-0`은 정수 0으로 정규화한다"로 바꿔 데이터 모델 경로 하나로 합칠 수도 있습니다. 어느 쪽이든 **어느 경로가 어떤 규칙을 책임지는지**를 명세에 못 박아야 두 언어의 수락 집합이 일치합니다.
 
-<h2 id="ai-section-5" style="scroll-margin-top: 96px;">5. 토큰·JWKS·base64url 검증 규칙을 고정한다</h2>
+## 5. 토큰·JWKS·base64url 검증 규칙을 고정한다
 
 내부 서비스 간 신뢰는 **RS256(RSASSA-PKCS1-v1_5 + SHA-256, RFC 7518)** 로 서명한 JWT(RFC 7519)로 전달합니다. Gateway가 발급하고 Orchestrator가 검증하는 구조에서, 계약의 검증 항목은 다음과 같습니다.
 
@@ -306,7 +282,7 @@ def canonicalize_raw(raw: bytes) -> bytes:
 
 *그림 4. 고정 발급자와 JWKS 키 선택을 포함한 JWT 검증 순서*
 
-<h3 id="ai-section-5-1" style="scroll-margin-top: 96px;">5.1 JWKS는 고정 발급자와 kid로 검증 키를 선택한다</h3>
+### 5.1 JWKS는 고정 발급자와 kid로 검증 키를 선택한다
 
 **JWKS(JSON Web Key Set, RFC 7517)** 는 공개키를 JSON으로 배포하는 표준입니다. RS256 공개키는 모듈러스 `n`과 지수 `e`를 **base64url(RFC 4648)** 로 인코딩해 표현합니다.
 
@@ -330,7 +306,7 @@ def canonicalize_raw(raw: bytes) -> bytes:
 - `n`, `e`는 **부호 없는 빅엔디안 최소 길이** 바이트열로 인코딩한다(선행 `0x00` 제거, 단 값이 0이면 예외 규칙).
 - base64url은 **패딩(`=`)을 붙이지 않는다** (JWS/JWK 관례).
 
-<h3 id="ai-section-5-2" style="scroll-margin-top: 96px;">5.2 base64url 패딩과 정수 바이트 규칙을 통일한다</h3>
+### 5.2 base64url 패딩과 정수 바이트 규칙을 통일한다
 
 base64url 자체는 RFC 4648 표준이지만, **패딩 처리**가 언어·라이브러리마다 다릅니다.
 
@@ -373,7 +349,7 @@ def b64url_decode(s: str) -> bytes:
 
 길이 보정을 빠뜨리면 `Incorrect padding` 예외가 특정 입력에서만 간헐적으로 터지고, canonical 검사를 빠뜨리면 `AB` 같은 비정규 입력을 조용히 받아들입니다. 골든 벡터에 **패딩 경계 케이스(길이 mod 4 = 2, 3, 그리고 거부되어야 할 mod 4 = 1)와 비정규 인코딩 케이스(예: `AB` → 거부)** 를 반드시 넣어야 하는 이유입니다.
 
-<h2 id="ai-section-6" style="scroll-margin-top: 96px;">6. Golden Vector를 실행 가능한 공통 픽스처로 만든다</h2>
+## 6. Golden Vector를 실행 가능한 공통 픽스처로 만든다
 
 골든 벡터는 **고정 입력 → 기대 출력**을 언어 독립 픽스처(fixture)로 저장한 것입니다. 목적은 하나입니다. **"Java와 Python이 같은 입력에 대해 같은 바이트를 만드는지 대조한다."**
 
@@ -396,7 +372,7 @@ golden vector = { 입력, 기대 정규 바이트, 기대 다이제스트, (선�
 
 *그림 5. 동일 픽스처를 두 런타임에서 독립 실행해 결과를 대조하는 Compare Gate*
 
-<h3 id="ai-section-6-1" style="scroll-margin-top: 96px;">6.1 픽스처에는 입력·기대 바이트·다이제스트·거부 결과를 함께 둔다</h3>
+### 6.1 픽스처에는 입력·기대 바이트·다이제스트·거부 결과를 함께 둔다
 
 픽스처는 언어 중립 형식(JSON)으로 저장하고, 두 언어의 테스트가 같은 파일을 읽습니다. 골든 벡터라면 자리표시자가 아니라 **실제 값**이어야 실행 가능한 픽스처가 됩니다. 아래는 자체 NFC 형식(3.1절)을 전제로 실제로 계산·검증한 값입니다.
 
@@ -443,9 +419,9 @@ golden vector = { 입력, 기대 정규 바이트, 기대 다이제스트, (선�
 
 여기서 **1차 대조 기준은 `expected_canonical_utf8_hex`(정확한 바이트열)**, 2차 보조 기준은 `expected_sha256_hex`입니다. "정규 바이트 계약"의 진짜 기준은 정확한 바이트열이고, 다이제스트는 그 바이트열을 간결하게 대조하기 위한 보조값입니다. `expected_canonical` 문자열은 사람이 눈으로 검토하기 위한 표기이며, 이스케이프 때문에 직접 비교보다는 UTF-8 hex와 다이제스트로 대조하는 편이 오탐을 줄입니다.
 
-<h2 id="ai-section-7" style="scroll-margin-top: 96px;">7. 두 런타임의 계약 테스트가 같은 기대값을 검증한다</h2>
+## 7. 두 런타임의 계약 테스트가 같은 기대값을 검증한다
 
-<h3 id="ai-section-7-1" style="scroll-margin-top: 96px;">7.1 Java와 Python은 동일 픽스처를 독립 실행한다</h3>
+### 7.1 Java와 Python은 동일 픽스처를 독립 실행한다
 
 Java 테스트는 픽스처를 읽어 자신의 정규화 결과를 대조합니다.
 
@@ -505,7 +481,7 @@ def test_canonical_matches_golden():
 
 두 테스트가 같은 파일을 공유하므로, 어느 한쪽이라도 규격을 벗어나면 CI에서 즉시 드러납니다.
 
-<h2 id="ai-section-8" style="scroll-margin-top: 96px;">8. 교차 서명과 음성 케이스로 관대한 검증기를 막는다</h2>
+## 8. 교차 서명과 음성 케이스로 관대한 검증기를 막는다
 
 서명 계약은 (RS256처럼 결정적이면 값 대조도 하지만) 기본적으로 **역할 교차**로 검증합니다. Java가 서명한 토큰을 Python이 검증하고, 그 반대도 확인합니다.
 
@@ -527,7 +503,7 @@ def test_canonical_matches_golden():
 | `exp` 만료 | 양쪽 거부 | 시간 검증 |
 | `aud` 불일치 | 양쪽 거부 | 대상 검증 |
 
-<h2 id="ai-section-9" style="scroll-margin-top: 96px;">9. 시간 계약은 정밀도·경계·스큐를 부등호로 고정한다</h2>
+## 9. 시간 계약은 정밀도·경계·스큐를 부등호로 고정한다
 
 시간은 폴리글랏에서 가장 조용히 어긋나는 값입니다.
 
@@ -552,7 +528,7 @@ nbf 경계 테스트 (nbf = T 고정, L = 0, now 를 움직임):
         now = T+1  → 통과
 ```
 
-<h2 id="ai-section-10" style="scroll-margin-top: 96px;">10. 결정적 ID와 요청 지문을 같은 바이트에서 파생한다</h2>
+## 10. 결정적 ID와 요청 지문을 같은 바이트에서 파생한다
 
 멱등성(idempotency)과 재개 가능한 워크플로우를 위해서는 **같은 입력 → 같은 ID**가 언어와 무관하게 성립해야 합니다. 이 주제 자체는 [재개 가능한 AI 에이전트 워크플로우](https://aiarchitect.tistory.com/7) 글에서 다뤘고, 여기서는 **언어 간 동일성**에만 초점을 둡니다.
 
@@ -575,7 +551,7 @@ deterministic_id = base64url_nopad( digest[:M바이트] )   // 해시를 먼저 
 
 자르기에서 흔히 오해하는 점이 있습니다. **SHA-256을 base64url로 인코딩한 결과는 ASCII뿐이므로, 인코딩 문자열을 `[:N]`으로 잘라도 멀티바이트 경계 문제는 생기지 않습니다.** 진짜 명시해야 할 것은 (1) **해시 원시 바이트를 먼저 M바이트로 자를지, 인코딩 결과 문자열을 N문자로 자를지**를 하나로 고정하는 것과, (2) 그 결과의 **충돌 강도(비트 수)** 및 저장소 고유 제약입니다. 예를 들어 해시를 8바이트(64비트)로 자르면 생일 역설상 약 `2^32`개 규모에서 충돌 가능성이 유의미해지므로, ID 규모에 맞춰 길이를 정하고 **DB 고유 제약(unique constraint)으로 충돌을 최종 방어**해야 합니다.
 
-<h3 id="ai-section-10-1" style="scroll-margin-top: 96px;">10.1 요청 지문은 탐지 키이며 원자적 저장소가 재생을 막는다</h3>
+### 10.1 요청 지문은 탐지 키이며 원자적 저장소가 재생을 막는다
 
 요청 지문은 감사·중복 탐지에 쓰는, 요청의 핵심 필드를 정규화해 해시한 값입니다. 요청 지문의 함정은 **"무엇을 지문에 포함할 것인가"** 를 두 언어가 다르게 해석하는 데 있습니다.
 
@@ -597,7 +573,7 @@ fingerprint = sha256( canonical_bytes({
 
 > **주의 — 지문만으로는 재생(replay)을 막지 못합니다.** 요청 지문은 재생을 *탐지*하기 위한 키일 뿐입니다. 실제 재생 방지는 (1) 이미 처리한 지문(또는 `jti`/nonce)을 **원자적으로 기록하고**, (2) **TTL(재생 창)** 동안 같은 값의 재사용을 거부하며, (3) 공격자가 지문 대상 필드를 임의로 바꾸지 못하도록 **서명·MAC 또는 인증된 요청 경계**로 보호할 때 성립합니다. 세 가지가 함께 있어야 "탐지 키"가 "방지 장치"가 됩니다.
 
-<h2 id="ai-section-11" style="scroll-margin-top: 96px;">11. 언어별 기본값 함정을 계약 체크리스트로 관리한다</h2>
+## 11. 언어별 기본값 함정을 계약 체크리스트로 관리한다
 
 지금까지 나온 함정을 한 표로 모읍니다. 계약 명세를 쓸 때 각 항목을 명시적으로 결정했는지 점검하는 체크리스트로 씁니다.
 
@@ -617,7 +593,7 @@ fingerprint = sha256( canonical_bytes({
 | 12 | 중복 키/NFC 충돌 | 조용한 덮어쓰기 | 원문 중복 키·NFC 정규화 충돌 거부 |
 | 13 | 비정상 유니코드/타입 | 인코딩 예외·비표준 토큰 | lone surrogate·NaN·Infinity·실수·비문자열 키 거부 |
 
-<h2 id="ai-section-12" style="scroll-margin-top: 96px;">12. 계약 테스트를 CI 병합 게이트로 운영한다</h2>
+## 12. 계약 테스트를 CI 병합 게이트로 운영한다
 
 계약 테스트는 "가끔 돌려보는 검증"이 아니라 **병합을 막는 게이트**여야 의미가 있습니다.
 
@@ -633,7 +609,7 @@ fingerprint = sha256( canonical_bytes({
 
 한쪽 언어의 출력을 그대로 기대값으로 굳히면 "그 언어가 곧 규격"이 되어 버려, 다른 쪽만 계속 맞추게 됩니다. 이는 계약이 아니라 종속입니다.
 
-<h2 id="ai-section-13" style="scroll-margin-top: 96px;">13. 계약 버전과 키 롤오버를 함께 운영한다</h2>
+## 13. 계약 버전과 키 롤오버를 함께 운영한다
 
 계약과 키는 **버전을 달고 살아 있는 자산**입니다.
 
@@ -656,7 +632,7 @@ fingerprint = sha256( canonical_bytes({
 
 **버전드 계약(versioned contract):** 정규 형식·지문 규칙이 바뀌면 `canonical-json-v1 → v2`처럼 버전을 올리고, 골든 벡터도 버전별로 병존시킵니다. 저장된 지문·ID가 과거 버전으로 계산되어 있을 수 있으므로, 마이그레이션 창 동안은 **두 버전을 함께 검증**할 수 있어야 합니다.
 
-<h2 id="ai-section-14" style="scroll-margin-top: 96px;">14. AES-256-GCM 봉투도 같은 계약 원칙을 적용한다</h2>
+## 14. AES-256-GCM 봉투도 같은 계약 원칙을 적용한다
 
 같은 원칙은 대칭 암호에도 적용됩니다. 자격 증명 브로커(credential broker)가 **AES-256-GCM 봉투(envelope)** 로 비밀을 감쌀 때, Java와 Python은 다음을 동일하게 약속해야 복호가 됩니다.
 
@@ -671,7 +647,7 @@ fingerprint = sha256( canonical_bytes({
 
 특히 **AAD**는 정규 바이트 계약을 그대로 재사용합니다. AAD의 바이트가 한쪽이라도 다르면 태그 검증이 실패하므로, AES-GCM 봉투 역시 골든 벡터(고정 키·고정 논스·고정 평문 → 기대 암호문·태그)로 교차 검증할 수 있습니다. 다만 운영에서 **동일 키 아래에서는 논스를 절대 재사용하지 않으며**(GCM에서 동일 키·동일 논스 재사용은 기밀성과 인증성을 함께 무너뜨립니다), 골든 벡터의 고정 논스는 오직 테스트 목적임을 명시합니다.
 
-<h2 id="ai-section-15" style="scroll-margin-top: 96px;">15. 정확성 검증과 운영 인프라의 범위를 분리한다</h2>
+## 15. 정확성 검증과 운영 인프라의 범위를 분리한다
 
 이 글의 범위는 **계약의 정확성 검증**입니다. 실제 운영 인프라는 별도 단계로 둡니다.
 
@@ -684,7 +660,7 @@ fingerprint = sha256( canonical_bytes({
 
 골든 벡터로 **선택된 계약 사례에 대해** 두 언어의 결과가 일치함을 먼저 굳혀 두면, 핵심 변환 계약(정규 바이트·토큰·지문)의 언어 간 불일치 위험을 크게 줄일 수 있습니다. 다만 KMS·mTLS·JWKS 캐시·권한 설정 같은 인프라는 **각각 별도의 보안 정확성과 운영 위험을 추가**하므로, "남은 것은 배포뿐"이라고 볼 수는 없습니다. 정확한 표현은 **"핵심 변환 계약의 불일치 위험을 회귀 방지 수준으로 낮춰 둔 출발선"** 입니다.
 
-<h2 id="ai-section-16" style="scroll-margin-top: 96px;">16. 마무리: 언어가 아니라 표현을 계약한다</h2>
+## 16. 마무리: 언어가 아니라 표현을 계약한다
 
 폴리글랏 보안의 핵심은 "언어를 통일하라"가 아닙니다. **표현을 계약으로 못 박고, 그 계약이 선택된 사례에서 언어 간에 일치함을 골든 벡터로 검증하라**입니다. 유한한 벡터는 전체 정확성의 수학적 증명이 아니라 **강한 회귀 방지 증거**이며, 그렇게 이해할 때 오히려 계약을 계속 넓혀 갈 동기가 생깁니다.
 
@@ -696,7 +672,7 @@ fingerprint = sha256( canonical_bytes({
 
 책임 분리가 두 서비스를 나누는 설계라면, 계약 검증은 나눠진 두 서비스가 **선택된 사례에서 같은 결과를 계산함을 회귀 수준으로 보장**하는 장치입니다. 폴리글랏은 그 보장이 쌓일수록 위험이 아니라 자산이 됩니다.
 
-<h2 id="ai-section-17" style="scroll-margin-top: 96px;">17. 참고 표준</h2>
+## 17. 참고 표준
 
 - RFC 7515 — JSON Web Signature (JWS): https://www.rfc-editor.org/info/rfc7515
 - RFC 7517 — JSON Web Key (JWK / JWKS): https://www.rfc-editor.org/info/rfc7517

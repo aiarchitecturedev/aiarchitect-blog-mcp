@@ -44,43 +44,6 @@ Agent는 회의 목록을 조회하고, 대상 회의를 찾은 뒤 요약 작�
 
 이 글에서는 Tool을 읽기·쓰기·중요·파괴 작업으로 분류하고, 사용자 승인 (Human-in-the-loop Approval)을 권한·미리보기·만료·재시도·감사와 연결하는 방법을 정리합니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="box-sizing: border-box; margin: 0 0 24px; padding: 16px 20px 15px; border: 1px solid #d7e2ea; border-radius: 12px; background: #f6f9fc; color: #555; font-weight: 400;">
-<p style="margin: 0 0 10px; color: #263746; font-weight: 700;">목차</p>
-<ol style="margin: 0; padding-left: 22px; color: #555; font-weight: 400;">
-<li><a href="#ai-section-1" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 화면 하나로는 실행을 안전하게 만들 수 없다</a></li>
-<li><a href="#ai-section-2" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">인증·인가·승인을 분리해야 하는 이유</a></li>
-<li><a href="#ai-section-3" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">먼저 위협 모델을 정의한다</a></li>
-<li><a href="#ai-section-4" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Tool을 네 가지 기본 등급으로 분류한다</a></li>
-<li><a href="#ai-section-5" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">같은 읽기 작업도 민감도에 따라 달라진다</a></li>
-<li><a href="#ai-section-6" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">위험 등급은 신뢰된 Registry에서 관리한다</a></li>
-<li><a href="#ai-section-7" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 입력은 주체·객체·작업·환경을 포함한다</a></li>
-<li><a href="#ai-section-8" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결과는 허용과 거부 두 개보다 풍부해야 한다</a></li>
-<li><a href="#ai-section-9" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">등급별 기본 승인 정책을 정한다</a></li>
-<li><a href="#ai-section-10" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 전에 실행 미리보기를 만든다</a></li>
-<li><a href="#ai-section-11" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 바인딩은 정확한 요청에 묶는다</a></li>
-<li><a href="#ai-section-12" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">입력 지문은 정규화 후 계산한다</a></li>
-<li><a href="#ai-section-13" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 후 대상이 바뀌는 문제를 막는다</a></li>
-<li><a href="#ai-section-14" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">자연어 확인은 인증된 승인 Event로 변환한다</a></li>
-<li><a href="#ai-section-15" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Session 승인은 좁은 범위에서만 허용한다</a></li>
-<li><a href="#ai-section-16" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">일괄 작업은 숨은 범위 확장을 막아야 한다</a></li>
-<li><a href="#ai-section-17" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Sub-agent와 생성 코드에도 같은 정책을 적용한다</a></li>
-<li><a href="#ai-section-18" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Host 승인과 업무 시스템 권한을 함께 검사한다</a></li>
-<li><a href="#ai-section-19" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인과 멱등성은 서로 다른 문제를 해결한다</a></li>
-<li><a href="#ai-section-20" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">Timeout 뒤에는 승인부터 다시 묻지 않는다</a></li>
-<li><a href="#ai-section-21" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">비동기 작업은 승인과 작업 상태를 분리한다</a></li>
-<li><a href="#ai-section-22" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 결정과 실행을 분리한다</a></li>
-<li><a href="#ai-section-23" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">정책 규칙은 코드와 함께 검증 가능해야 한다</a></li>
-<li><a href="#ai-section-24" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">감사 로그는 의도·결정·승인·실행을 연결한다</a></li>
-<li><a href="#ai-section-25" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">거부와 오류를 구분해 사용자에게 보여 준다</a></li>
-<li><a href="#ai-section-26" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">승인 정책 테스트는 우회와 재사용을 중심으로 만든다</a></li>
-<li><a href="#ai-section-27" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">운영 도입은 Shadow Mode부터 시작한다</a></li>
-<li><a href="#ai-section-28" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">구현 체크리스트</a></li>
-<li><a href="#ai-section-29" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">마무리</a></li>
-<li><a href="#ai-section-30" style="color: #0070d1; text-decoration: underline; text-underline-offset: 2px;">참고 자료</a></li>
-</ol>
-</blockquote>
-
-
 ## 1. 승인 화면 하나로는 실행을 안전하게 만들 수 없다
 
 다음과 같은 구현은 얼핏 안전해 보입니다.

@@ -4,26 +4,6 @@
 
 ![코드·환경·Secret·Gateway·Cloud 설정을 Runtime Configuration Core에서 검증하고 위험 설정은 격리하며 승인된 설정만 운영 서비스로 전달하는 Security Misconfiguration 보안 흐름](assets/blog-54-security-misconfiguration-control-hero.png)
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">OWASP Top 10:2025의 A02 Security Misconfiguration</a></li>
-<li><a href="#ai-section-2">설정의 최종값은 한 파일에 있지 않다</a></li>
-<li><a href="#ai-section-3">CORS는 인증이나 서버 접근 통제가 아니다</a></li>
-<li><a href="#ai-section-4">상세 오류는 공격자에게 내부 지도를 준다</a></li>
-<li><a href="#ai-section-5">Debug 기능과 개발 Profile은 운영에서 실패해야 한다</a></li>
-<li><a href="#ai-section-6">기본 계정과 기본 Secret을 없앤다</a></li>
-<li><a href="#ai-section-7">Actuator와 관리 Endpoint는 별도 경계로 본다</a></li>
-<li><a href="#ai-section-8">보안 Header는 응답 유형별로 설계한다</a></li>
-<li><a href="#ai-section-9">Gateway와 Application의 설정 중복을 관리한다</a></li>
-<li><a href="#ai-section-10">배포 Gate에서 설정을 증명한다</a></li>
-<li><a href="#ai-section-11">운영 탐지와 변경 관리</a></li>
-<li><a href="#ai-section-12">실무 체크리스트</a></li>
-<li><a href="#ai-section-13">마무리</a></li>
-<li><a href="#ai-section-14">공식 참고 자료</a></li>
-</ol>
-</blockquote>
-
 애플리케이션 코드에 SQL Injection이 없어도 운영 설정 하나로 내부 정보가 외부에 노출될 수 있습니다. 개발 편의를 위해 열어 둔 CORS, 상세 오류, Actuator Endpoint와 기본 계정은 배포 환경이 바뀌는 순간 공격 표면이 됩니다.
 
 Security Misconfiguration은 특정 코드 한 줄의 결함이라기보다 **안전한 기본값, 환경별 차이, 배포 검증이 함께 무너진 상태**입니다.

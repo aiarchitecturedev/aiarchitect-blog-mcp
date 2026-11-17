@@ -6,26 +6,6 @@
 
 이 글의 수치와 날짜는 **이 블로그를 관리하며 실제로 측정한 값**입니다. **재현 범위를 먼저 가르겠습니다.** 4·5·6절의 HTTP 응답·링크 구조·canonical 형태는 Tistory의 공개 동작이므로 **독자가 자기 블로그의 현재 상태를 같은 방법으로 검사할 수 있습니다**(12절 명령 ①~⑦이 그 값들을 그대로 냅니다). 🔴 다만 **조치 전의 무한 체인은 재현할 수 없습니다** — 제 블로그에서도 이미 끊었고, 독자의 스킨이 달력 모듈을 쓰지 않으면 애초에 생기지 않습니다. 그 부분은 재현이 아니라 **기록**으로 읽어 주십시오. 반면 3절의 색인 160건 구성과 12절의 `Last crawl` 날짜는 **제 Search Console 계정에서만 보이는 값**이라 독자가 대조할 수 없고, 7·8절의 스킨 편집 이력도 제 블로그의 기록입니다. 저장소와 원본 로그는 공개하지 않습니다. 작업 기록 날짜는 2026년 8월 23일·26일·27일, 9월 2일·3일·23일, 10월 12일이며, 12절의 재측정은 **2026년 10월 28일** 실행 결과입니다.
 
-<blockquote id="aiarchitect-toc" data-ke-style="box" style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;" data-mce-style="background-color: #f6f9fc; color: #263746; font-family: Pretendard-Regular, AppleSDGothicNeo-Regular, sans-serif; font-weight: 400;">
-<p><b>목차</b></p>
-<ol>
-<li><a href="#ai-section-1">등록을 다 했는데 색인이 이상했다</a></li>
-<li><a href="#ai-section-2">색인 목록을 전수로 여는 법 — 내가 실패했다고 적었던 지점</a></li>
-<li><a href="#ai-section-3">160건의 정체 — 글은 56%였다</a></li>
-<li><a href="#ai-section-4">빈 페이지가 404가 아니라 200이었다</a></li>
-<li><a href="#ai-section-5">유한하지 않았다 — 2100년까지 이어지는 체인</a></li>
-<li><a href="#ai-section-6">canonical은 지시가 아니라 힌트였다</a></li>
-<li><a href="#ai-section-7">범인은 사이드바 달력 위젯이었다</a></li>
-<li><a href="#ai-section-8">조치 — CSS로 숨기는 것은 해결이 아니다</a></li>
-<li><a href="#ai-section-9">끊겼다는 증거를 어떻게 잡았나</a></li>
-<li><a href="#ai-section-10">끊는 것과 빼는 것은 반대 방향으로 작용한다</a></li>
-<li><a href="#ai-section-11">빈 페이지에만 noindex 붙이기 — 대조군 없는 0건은 통과가 아니다</a></li>
-<li><a href="#ai-section-12">두 달 뒤 다시 재봤다 — 아직 안 끝났다</a></li>
-<li><a href="#ai-section-13">정리 — 호스팅형 블로그에서 점검할 순서</a></li>
-<li><a href="#ai-section-14">참고 자료</a></li>
-</ol>
-</blockquote>
-
 ## 1. 등록을 다 했는데 색인이 이상했다
 
 검색 노출 설정은 [콘텐츠를 검색엔진과 AI 에이전트 양쪽에 노출하기](https://aiarchitect.tistory.com/64)에 정리한 순서대로 끝낸 상태였습니다. 소유 확인을 하고, 사이트맵을 제출하고, 색인 요청을 넣었습니다. 그 글에서 저는 "등록이 색인의 필수조건이 아니다"라는 오해를 짚었는데, 정작 **반대 방향의 함정은 보지 못했습니다** — 제출하지 않은 URL이 색인에 들어오는 쪽입니다.
