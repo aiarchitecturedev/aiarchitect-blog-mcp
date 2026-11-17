@@ -85,8 +85,6 @@ Experiment: 특정 Agent Version을 Dataset에 실행한 결과 집합
 
 Evaluation Architecture의 핵심은 개발 환경의 정적 Benchmark만 만드는 것이 아닙니다. 운영에서 발견한 실제 실패를 다시 재현 가능한 평가 자산으로 돌려야 합니다.
 
-<!-- Tistory 게시 도식: assets/blog-74-evaluation-loop.png (634×1284 원본, 220×446 표시) -->
-
 ```mermaid
 %%{init: {"flowchart": {"rankSpacing": 30, "nodeSpacing": 20}}}%%
 flowchart TB
@@ -201,8 +199,6 @@ Tool을 호출해야 하는 사례만 모으면 Agent가 모든 질문에 Tool�
 ## 8. Outcome과 Trajectory를 함께 평가한다
 
 Agent 평가는 세 층으로 나누면 이해하기 쉽습니다.
-
-<!-- Tistory 게시 도식: assets/blog-74-outcome-trajectory.png (1260×872 원본, 430×298 표시) -->
 
 ```mermaid
 flowchart TB

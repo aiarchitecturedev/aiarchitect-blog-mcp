@@ -97,8 +97,6 @@ Agent Incident Response는 SOC만의 업무가 아닙니다. Agent Owner, 업무
 
 손상됐을 가능성이 있는 Agent에게 스스로 사고를 판정하고 자신을 중단하라고 맡길 수 없습니다. 관찰·판정·강제 집행은 Agent Runtime 밖에서 수행합니다.
 
-<!-- Tistory 표시 규격: 첫 도식 원본 PNG 552×1918, 게시 width="200" height="695" -->
-
 ```mermaid
 flowchart TD
     S[Runtime Signals<br/>Trace · Audit · Policy · Business Ledger]

@@ -216,3 +216,45 @@ def test_section_cross_references_keep_their_text():
     assert "11절의 Golden Vector" in cleaned
     assert "#ai-section-11" not in cleaned
     assert "[11절]" not in cleaned
+
+
+# --- 게시용 HTML 주석 ---
+
+def test_bundle_has_no_html_comments(corpus: Corpus):
+    """주석은 렌더에 안 보여서 눈으로는 못 잡는다 — 그래서 더 조용히 남는다.
+
+    남으면 `get_article` 본문으로 나가고 검색 빈도에도 들어간다.
+    코드 블록 안은 제외한다 — 거기 있는 주석은 글이 설명하는 예제다.
+    """
+    found: dict[str, list[str]] = {}
+    for record in corpus.records:
+        body = _FENCE.sub("", corpus._body(record))
+        hits = [" ".join(m.split()) for m in re.findall(r"<!--.*?-->", body, re.S)]
+        if hits:
+            found[record["id"]] = hits[:2]
+    assert not found, (
+        f"번들에 게시용 HTML 주석이 남아 있다: {found} — "
+        f"`uv run python scripts/build_index.py <정본경로>` 재실행"
+    )
+
+
+def test_html_comments_are_stripped():
+    src = "# T\n\n앞\n\n<!-- Tistory 게시 도식: assets/a.png (634×1284) -->\n\n뒤\n"
+    assert strip_publishing_scaffolding(src) == "# T\n\n앞\n\n뒤"
+
+
+def test_multiline_html_comment_is_stripped():
+    assert strip_publishing_scaffolding("# T\n\n앞\n\n<!-- 여러\n줄 -->\n\n뒤\n") == "# T\n\n앞\n\n뒤"
+
+
+def test_commented_out_image_does_not_become_a_caption():
+    """🔴 주석을 먼저 걷지 않으면 주석 처리된 이미지가 캡션으로 되살아난다."""
+    out = strip_publishing_scaffolding("# T\n\n앞\n\n<!-- ![설명](assets/a.png) -->\n\n뒤\n")
+    assert out == "# T\n\n앞\n\n뒤"
+    assert "🖼️" not in out
+
+
+def test_comments_in_code_blocks_are_kept():
+    """코드 블록 안의 주석은 글이 설명하는 예제다(번들에 실측 5건)."""
+    src = "# T\n\n```html\n<!-- 예시 주석 -->\n```\n"
+    assert strip_publishing_scaffolding(src) == src.strip()
