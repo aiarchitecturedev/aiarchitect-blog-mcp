@@ -2,7 +2,7 @@
 
 AI Agent가 사용자를 대신해 여러 시스템을 넘나들 때 사용자 토큰을 그대로 넘기면 권한이 조용히 증폭됩니다. Identity와 Authority를 분리하지 않으면 누가 무엇을 근거로 실행했는지도 남지 않습니다. 이 글은 User·Agent·Workload·Client Identity를 함께 모델링하고 Delegation과 Impersonation을 구분해, 권한 증폭 없는 Delegation Chain과 Task-bound Credential, 재인가·철회·감사를 설계하는 방법을 정리합니다.
 
-![사용자 권한이 여러 정책 Gate와 Agent·Workload 경계를 지나 최소 권한 실행 경로로 좁아지는 구조](assets/blog-79-ai-agent-identity-delegated-authorization-hero.png)
+> 🖼️ **그림**: 사용자 권한이 여러 정책 Gate와 Agent·Workload 경계를 지나 최소 권한 실행 경로로 좁아지는 구조
 
 Agent Router가 이번 요청을 처리할 전문 Agent를 선택했습니다. 이제 Orchestrator는 선택된 Agent에게 A2A Task를 보내고, Specialist Agent는 다시 MCP Tool로 기업 시스템을 호출하려 합니다.
 

@@ -2,7 +2,7 @@
 
 AI Agent 장애는 로그를 모아 놓아도 원인이 잘 보이지 않습니다. 한 요청이 Gateway와 Orchestrator, RAG 검색, LLM 추론, MCP Tool 실행을 지나는데 구간별 기록이 서로 이어지지 않기 때문입니다. 이 글은 OpenTelemetry GenAI·MCP 규약과 W3C Trace Context로 하나의 Trace를 만들고, Span·Metric·평가·감사 분리, 민감정보 최소화, Sampling과 회귀 평가 피드백 루프까지 정리합니다.
 
-![AI Agent 요청 경로의 Trace와 운영·품질·감사 신호가 평가 및 안전한 배포 피드백 루프로 연결되는 관측성 아키텍처](assets/blog-72-ai-agent-observability-trace-hero.png)
+> 🖼️ **그림**: AI Agent 요청 경로의 Trace와 운영·품질·감사 신호가 평가 및 안전한 배포 피드백 루프로 연결되는 관측성 아키텍처
 
 사용자가 AI Agent에게 요청합니다.
 
@@ -515,11 +515,11 @@ Metric Label에는 원문 Query, Trace ID, 사용자·문서·Tool Call ID처럼
 
 관측성의 목적은 Dashboard를 보는 데서 끝나지 않습니다. 운영에서 발견한 실패를 재현 가능한 평가 자산으로 바꿔야 같은 문제가 다시 배포되지 않습니다.
 
-![운영 Trace에서 실패·경계 사례를 선별하고 익명화·최소화를 거쳐 버전 평가 데이터셋으로 승격하는 흐름](assets/blog-72-trace-to-evaluation-dataset.png)
+> 🖼️ **그림**: 운영 Trace에서 실패·경계 사례를 선별하고 익명화·최소화를 거쳐 버전 평가 데이터셋으로 승격하는 흐름
 
 *그림 1. 운영 Trace를 안전한 평가 Dataset으로 승격하는 단계*
 
-![버전 평가 데이터셋을 Offline Regression과 Release Gate, Shadow·Canary를 거쳐 운영 Trace로 되돌리는 폐쇄 루프](assets/blog-72-evaluation-release-feedback-loop.png)
+> 🖼️ **그림**: 버전 평가 데이터셋을 Offline Regression과 Release Gate, Shadow·Canary를 거쳐 운영 Trace로 되돌리는 폐쇄 루프
 
 *그림 2. 평가 Dataset을 Release Gate와 Shadow·Canary로 연결하는 단계*
 

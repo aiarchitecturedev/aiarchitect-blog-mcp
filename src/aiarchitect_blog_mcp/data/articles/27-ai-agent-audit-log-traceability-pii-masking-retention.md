@@ -2,7 +2,7 @@
 
 AI Agent가 업무를 실행한 뒤 "누가 무엇을 왜 했는가"에 답하려면 일반 Application Log로는 부족합니다. 요청과 정책 결정, 승인, 실제 Side Effect가 서로 연결되지 않기 때문입니다. 이 글은 이 다섯 단계를 하나의 감사 증거로 묶고, 개인정보를 최소화하면서 무결성·보존 기간·탐지와 사고 대응까지 운영하는 방법을 정리합니다.
 
-![인증된 요청과 정책 결정, Tool 실행, 개인정보 최소화, 변경 불가 감사 저장소와 탐지 흐름을 밝은 엔터프라이즈 보안 장면으로 표현한 AI Agent 감사 증거 구조](assets/blog-27-ai-agent-audit-evidence-hero.png)
+> 🖼️ **그림**: 인증된 요청과 정책 결정, Tool 실행, 개인정보 최소화, 변경 불가 감사 저장소와 탐지 흐름을 밝은 엔터프라이즈 보안 장면으로 표현한 AI Agent 감사 증거 구조
 
 *그림 1. 대화 원문을 쌓는 대신 정책·승인·실제 Side Effect를 최소화된 증거 사슬로 연결하는 AI Agent 감사 구조*
 
@@ -470,7 +470,7 @@ ALLOW Decision 없이 Side Effect 발생
 동일 Idempotency Key로 여러 Resource 생성
 ```
 
-![인증된 Subject와 Tenant 문맥에서 정책 결정·승인, Tool 실행과 실제 Side Effect, 개인정보 최소화 Gate, Append-only 감사 저장소를 Correlation ID로 연결하는 증거 사슬](assets/blog-27-audit-evidence-chain.png)
+> 🖼️ **그림**: 인증된 Subject와 Tenant 문맥에서 정책 결정·승인, Tool 실행과 실제 Side Effect, 개인정보 최소화 Gate, Append-only 감사 저장소를 Correlation ID로 연결하는 증거 사슬
 
 *그림 2. 각 신뢰 경계의 실제 판단과 Commit을 연결하고 원문 개인정보는 저장소 도착 전에 최소화하는 감사 증거 사슬*
 
@@ -1016,7 +1016,7 @@ Evidence Package에는 다음을 포함합니다.
 
 원문 Prompt가 없어도 정책과 Side Effect를 재구성할 수 있는지를 평소에 시험합니다.
 
-![정규화된 감사 Event에서 Decision·Approval·Side Effect 불일치를 탐지하고 Alert, Evidence Package, 사고 대응, Legal Hold와 통제 개선을 거쳐 탐지 규칙으로 되먹이는 폐루프](assets/blog-27-detection-response-loop.png)
+> 🖼️ **그림**: 정규화된 감사 Event에서 Decision·Approval·Side Effect 불일치를 탐지하고 Alert, Evidence Package, 사고 대응, Legal Hold와 통제 개선을 거쳐 탐지 규칙으로 되먹이는 폐루프
 
 *그림 3. 감사 불일치를 사건 증거로 보존하고 대응 결과를 정책·Schema·탐지 테스트에 되먹이는 운영 폐루프*
 

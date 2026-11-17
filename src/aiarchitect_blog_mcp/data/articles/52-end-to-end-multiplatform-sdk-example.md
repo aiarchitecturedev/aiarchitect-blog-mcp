@@ -2,13 +2,13 @@
 
 고객 Mobile·Web 화면에서 프라이빗 API까지 가는 경로는 SDK 문서 한 장으로 끝나지 않습니다. 인증 주체가 계층마다 다르고, 비동기 작업의 완료 상태를 어디서 확인하는지도 정해야 합니다. 이 글은 Android Kotlin·iOS Swift·React 채널이 Spring Boot 기반 Java Server SDK를 거쳐 프라이빗 API를 호출하는 전체 흐름을 인증, 멱등성, 비동기 상태, 이벤트 복구와 관측성까지 하나의 합성 예제로 설명합니다.
 
-![Android·iOS·Web 고객 채널의 요청이 Channel API와 Java Server SDK를 거쳐 Private API에 도달하고 Operation 상태와 복구 경로가 다시 고객 채널로 이어지는 End-to-End SDK 통합](assets/blog-52-end-to-end-multiplatform-sdk-hero.png)
+> 🖼️ **그림**: Android·iOS·Web 고객 채널의 요청이 Channel API와 Java Server SDK를 거쳐 Private API에 도달하고 Operation 상태와 복구 경로가 다시 고객 채널로 이어지는 End-to-End SDK 통합
 
 운영 중인 서비스에 API 서버, 웹 페이지와 모바일 앱이 이미 있어도 고객사가 원하는 화면과 업무 흐름은 서로 다를 수 있습니다. 이때 고객별 앱과 웹을 모두 대신 개발하면 변경 속도와 운영 책임이 한곳에 집중됩니다.
 
 다른 선택은 고객사가 자신의 UX를 구현하도록 Android Kotlin, iOS Swift와 React JavaScript SDK를 제공하는 것입니다. 다만 핵심 API가 프라이빗 망에 있다면 Mobile·Web SDK가 그 API를 직접 호출하게 만들 수 없습니다. 고객 채널은 고객사 Backend for Frontend(BFF) 또는 Channel API를 호출하고, 그 서버가 Java Server SDK를 통해 프라이빗 API와 통신해야 합니다.
 
-![Android·iOS·Web Client SDK는 Channel API까지만 호출하고 Java Server SDK가 서비스 Credential로 Private Gateway와 Domain Service를 연결하는 End-to-End 신뢰 경계](assets/blog-52-sdk-trust-path.png)
+> 🖼️ **그림**: Android·iOS·Web Client SDK는 Channel API까지만 호출하고 Java Server SDK가 서비스 Credential로 Private Gateway와 Domain Service를 연결하는 End-to-End 신뢰 경계
 
 이 글은 앞서 다룬 SDK 아키텍처, 플랫폼별 수명 주기, 공통 계약과 배포 자동화를 하나의 End-to-End 흐름으로 연결합니다. 예시는 특정 제품·고객·내부 API를 재현하지 않은 합성 시나리오입니다.
 
@@ -102,7 +102,7 @@ Browser가 Channel API와 다른 Origin에서 실행된다면 `Authorization`, `
 
 Channel API와 Private API의 모양은 같을 필요가 없습니다. Channel API는 고객 채널에 필요한 최소 필드와 사용자 친화적 오류를 노출하고, Private API는 서버 간 운영에 필요한 더 풍부한 문맥을 받을 수 있습니다. 두 계약 사이 변환은 고객사 서버 Adapter가 담당합니다.
 
-![Contract Repository의 공통 의미가 Kotlin·Swift·JavaScript·Java 구현과 Golden Vector 적합성 테스트를 거쳐 Release Gate로 이어지는 SDK 계약 흐름](assets/blog-52-sdk-contract-conformance.png)
+> 🖼️ **그림**: Contract Repository의 공통 의미가 Kotlin·Swift·JavaScript·Java 구현과 Golden Vector 적합성 테스트를 거쳐 Release Gate로 이어지는 SDK 계약 흐름
 
 Contract Repository에는 최소 다음 항목을 둡니다.
 
@@ -512,7 +512,7 @@ example:
 
 ## 8. 전체 요청 흐름: 수락과 완료를 분리한다
 
-![사용자 Action과 Operation-Key를 먼저 저장하고 Channel API 수락 후 operationId와 Cursor를 관측하며 Event Gap은 Snapshot으로 복구해 최종 결과로 수렴하는 SDK Operation 수명 주기](assets/blog-52-sdk-operation-lifecycle.png)
+> 🖼️ **그림**: 사용자 Action과 Operation-Key를 먼저 저장하고 Channel API 수락 후 operationId와 Cursor를 관측하며 Event Gap은 Snapshot으로 복구해 최종 결과로 수렴하는 SDK Operation 수명 주기
 
 이 흐름에서 HTTP 수락 응답과 업무 완료는 별개의 사건입니다. `202`를 받았다고 성공 결과를 표시하면 안 되고, Event 연결이 끊겼다고 Operation이 실패했다고 판단해서도 안 됩니다.
 
@@ -550,7 +550,7 @@ Event 전달 보장이 at-least-once라면 중복 제거가 필요합니다. Web
 
 ## 10. 멱등성, Timeout과 취소의 책임을 나눈다
 
-![Operation-Key 멱등성, 계층별 Deadline, Event Cursor 복구, 오류 Code와 Trace를 입력 신호·SDK와 서버 책임·운영 결과로 구분한 End-to-End 신뢰성 계약](assets/blog-52-sdk-reliability-responsibilities.png)
+> 🖼️ **그림**: Operation-Key 멱등성, 계층별 Deadline, Event Cursor 복구, 오류 Code와 Trace를 입력 신호·SDK와 서버 책임·운영 결과로 구분한 End-to-End 신뢰성 계약
 
 ### 멱등성은 Channel API와 Domain Service가 함께 지킨다
 
@@ -653,7 +653,7 @@ Support 화면에는 원본 Trace ID 전체 대신 정책에 맞는 `requestId`�
 
 ## 12. 호환성과 배포 순서를 함께 설계한다
 
-![Private API의 Additive 계약부터 Server SDK와 Channel API, Client SDK를 순서대로 배포하고 Contract·E2E·Capability 증거를 Release Gate에서 점진 활성화 또는 차단으로 분기하는 흐름](assets/blog-52-sdk-compatibility-release-gate.png)
+> 🖼️ **그림**: Private API의 Additive 계약부터 Server SDK와 Channel API, Client SDK를 순서대로 배포하고 Contract·E2E·Capability 증거를 Release Gate에서 점진 활성화 또는 차단으로 분기하는 흐름
 
 ### 호환성 확인은 첫 업무 요청보다 앞에서 수행한다
 

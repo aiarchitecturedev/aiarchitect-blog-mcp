@@ -2,7 +2,7 @@
 
 긴 AI Agent Workflow는 실패하는 것이 문제가 아니라 실패 후 어디서 다시 시작할지 모르는 것이 문제입니다. 재시도만 붙이면 이미 보낸 메일이 두 번 나가고, 멱등성 없이 재개하면 부작용이 중복됩니다. 이 글은 Checkpoint로 상태를 저장하고 멱등성 키로 중복 실행을 막으며, Retry 정책과 Outbox로 외부 발행을 분리하고 승인 경계를 두는 운영 설계를 정리합니다.
 
-![AI Agent Workflow가 Checkpoint·제한된 Retry·Idempotency·Outbox를 통해 장애 후에도 안전하게 재개되는 구조](assets/blog-07-recoverable-agent-workflow-hero.png)
+> 🖼️ **그림**: AI Agent Workflow가 Checkpoint·제한된 Retry·Idempotency·Outbox를 통해 장애 후에도 안전하게 재개되는 구조
 
 AI Agent 데모는 질문을 받고 LLM을 호출한 뒤 Tool 결과를 보여 주면 완성된 것처럼 보입니다. 운영 환경에서는 그 사이에 훨씬 많은 일이 생깁니다.
 

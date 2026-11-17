@@ -2,7 +2,7 @@
 
 SDK를 여러 플랫폼에 배포하다 보면 버전 번호 하나가 서로 다른 약속을 동시에 뜻하게 됩니다. Maven·Gradle·Swift Package Manager·npm은 게시 방식과 삭제 정책이 달라서, 계약 버전과 패키지 버전을 같은 숫자로 묶으면 한쪽 플랫폼의 사정 때문에 전체 호환성이 흔들립니다. 이 글은 계약 버전과 SemVer, API 호환성 검사, 실제 패키지 설치 테스트를 Release Gate로 연결해 SDK 배포를 자동화하는 방법을 정리합니다.
 
-![공통 API 계약이 SDK 소스와 불변 패키지 코어로 변환되고 호환성 매트릭스를 통과한 네 플랫폼 SDK가 패키지 Registry로 배포되는 릴리스 자동화 이미지](assets/blog-46-sdk-release-automation-hero.png)
+> 🖼️ **그림**: 공통 API 계약이 SDK 소스와 불변 패키지 코어로 변환되고 호환성 매트릭스를 통과한 네 플랫폼 SDK가 패키지 Registry로 배포되는 릴리스 자동화 이미지
 
 Java Server SDK, Android Kotlin SDK, iOS Swift SDK와 React JavaScript SDK가 모두 준비되면 다음 문제는 배포입니다.
 
@@ -37,7 +37,7 @@ Package를 Registry에 올리는 작업만 자동화하면 다음 문제가 남�
 
 자동화는 이 증거를 모으고 누락된 Release를 차단하는 Gate여야 합니다.
 
-![공통 계약과 Release Manifest가 Java·Android·Swift·JavaScript Package를 독립 Version으로 묶고 Evidence Gate를 거쳐 Compatibility Matrix를 만드는 구조](assets/blog-46-release-train-system.png)
+> 🖼️ **그림**: 공통 계약과 Release Manifest가 Java·Android·Swift·JavaScript Package를 독립 Version으로 묶고 Evidence Gate를 거쳐 Compatibility Matrix를 만드는 구조
 
 ## 2. Version 하나로 모든 것을 표현하지 않는다
 
@@ -185,7 +185,7 @@ capabilities:
 
 SDK가 서버 Capability를 협상할 수 있다면 단순 Version 비교보다 안전합니다. 알 수 없는 서버 Version을 무조건 거부하기보다 필수 Capability와 계약 Range를 검증합니다.
 
-![Contract Version과 플랫폼별 Package Version, Service API Range가 Release Train을 거쳐 Compatibility Matrix와 Capability Rules로 연결되는 호환성 모델](assets/blog-46-version-compatibility-model.png)
+> 🖼️ **그림**: Contract Version과 플랫폼별 Package Version, Service API Range가 Release Train을 거쳐 Compatibility Matrix와 Capability Rules로 연결되는 호환성 모델
 
 ## 5. Deprecation과 API 기준선을 함께 운영한다
 
@@ -274,7 +274,7 @@ Compiled Class의 공개 Signature와 Binary 호환을 비교합니다. Kotlin G
 
 Type Declaration이 같아도 Event Timing이나 기본 Credential 정책이 달라지면 행동 Breaking Change가 될 수 있습니다.
 
-![직전 Release 기준선과 현재 변경을 Source·Binary, Behavior, Wire, Build, Package 관점에서 비교하고 통합 Report와 의미 검토를 거쳐 MAJOR·MINOR·PATCH를 결정하는 Gate](assets/blog-46-compatibility-semver-gate.png)
+> 🖼️ **그림**: 직전 Release 기준선과 현재 변경을 Source·Binary, Behavior, Wire, Build, Package 관점에서 비교하고 통합 Report와 의미 검토를 거쳐 MAJOR·MINOR·PATCH를 결정하는 Gate
 
 ## 7. Java·Android·Gradle Package는 Metadata까지 제품이다
 
@@ -477,7 +477,7 @@ npm pack
 
 `peerDependencies`는 Host Framework와의 호환 범위를 표현합니다. 실제로 테스트하지 않은 넓은 범위를 선언하거나 특정 Patch에 불필요하게 고정하지 않습니다.
 
-![Release Source에서 Java·Android Library, Gradle Plugin, Swift Package, JavaScript Package가 각 Registry를 거쳐 Clean Consumer Project로 설치 검증되는 배포 구조](assets/blog-46-platform-package-distribution.png)
+> 🖼️ **그림**: Release Source에서 Java·Android Library, Gradle Plugin, Swift Package, JavaScript Package가 각 Registry를 거쳐 Clean Consumer Project로 설치 검증되는 배포 구조
 
 ## 10. Build Once와 Release Manifest로 동일 Byte를 보증한다
 
@@ -533,7 +533,7 @@ evidence:
 
 Release Note와 Compatibility Matrix는 이 Manifest를 바탕으로 생성합니다.
 
-![보호된 Tag에서 한 번 Build한 불변 Artifact가 Evidence, Staging, 승인 Gate, Production과 Post-publish Test를 통과하며 실패 시 새 Version으로 Roll-forward되는 릴리스 흐름](assets/blog-46-build-once-release-gate.png)
+> 🖼️ **그림**: 보호된 Tag에서 한 번 Build한 불변 Artifact가 Evidence, Staging, 승인 Gate, Production과 Post-publish Test를 통과하며 실패 시 새 Version으로 Roll-forward되는 릴리스 흐름
 
 ## 11. Release 권한·단기 신원·증거를 분리한다
 

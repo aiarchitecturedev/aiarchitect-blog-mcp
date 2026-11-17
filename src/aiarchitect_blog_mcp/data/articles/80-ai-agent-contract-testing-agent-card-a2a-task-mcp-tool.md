@@ -2,7 +2,7 @@
 
 AI Agent 통합에서는 API 응답이 스키마에 맞는지 확인하는 것만으로 부족합니다. Agent Card와 MCP Tool이 선언한 기능, Task 상태 전이, 권한, 실제 Side Effect가 함께 어긋날 수 있기 때문입니다. 이 글은 Contract Bundle과 Consumer-driven Test, Registry·CI Gate, Runtime Drift Detection으로 선언과 실제를 검증하는 방법을 설명합니다.
 
-![선언된 Agent Contract와 실제 Runtime 동작이 중앙 검증 Gate에서 비교되어 적합·부적합 경로로 분리되는 구조](assets/blog-80-ai-agent-contract-testing-hero.png)
+> 🖼️ **그림**: 선언된 Agent Contract와 실제 Runtime 동작이 중앙 검증 Gate에서 비교되어 적합·부적합 경로로 분리되는 구조
 
 Agent Registry에 새 Specialist Agent가 등록됐습니다. Agent Card에는 `work-planning` Skill, JSON 입력·출력, Streaming, OAuth가 선언돼 있습니다. 이 Agent가 실제로 같은 계약을 지키는지는 어떻게 확인할까요?
 

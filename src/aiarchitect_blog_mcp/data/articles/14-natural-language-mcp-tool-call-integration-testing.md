@@ -2,7 +2,7 @@
 
 MCP Tool을 붙이고 나면 자연어 요청이 정말 의도한 Tool과 인자로 변환되는지 확인할 방법이 필요합니다. 응답 문장을 비교하는 테스트는 모델이 표현을 바꿀 때마다 깨지고, 호출된 Tool 이름만 확인하는 테스트는 잘못된 인자와 순서를 놓칩니다. 이 글은 자연어 요청부터 Tool 실행 계약, 다단계 호출 순서, 읽기·쓰기 승인과 권한 오류까지 검증하는 MCP 통합 테스트 구조를 정리합니다.
 
-![자연어 요청이 검증 단계를 거쳐 안전한 MCP Tool Call로 변환되는 통합 테스트 흐름](assets/blog-14-natural-language-mcp-integration-test-hero.png)
+> 🖼️ **그림**: 자연어 요청이 검증 단계를 거쳐 안전한 MCP Tool Call로 변환되는 통합 테스트 흐름
 
 AI Agent에게 “내 최근 회의 요약을 보여줘”라고 요청했을 때 자연스러운 답변이 돌아왔다고 가정해 보겠습니다.
 
@@ -108,7 +108,7 @@ Selected End-to-End Scenarios
 
 이를 실행 추적 계약 (Execution Trace Contract)이라고 볼 수 있습니다.
 
-![기대 실행 계약과 관측된 Agent MCP Trace를 비교하는 Assertion Gate](assets/blog-14-execution-trace-contract-gate.png)
+> 🖼️ **그림**: 기대 실행 계약과 관측된 Agent MCP Trace를 비교하는 Assertion Gate
 
 ## 3. 모든 인자를 같은 방식으로 비교하지 않는다
 
@@ -315,7 +315,7 @@ meeting.transcript.get
 - 다른 회의의 `fileId`를 섞지 않는가?
 - 호출 횟수가 비정상적으로 늘어나지 않는가?
 
-![meetingId와 fileId의 출처와 권한을 단계마다 검증하는 다단계 Tool Call 흐름](assets/blog-14-multi-step-binding-flow.png)
+> 🖼️ **그림**: meetingId와 fileId의 출처와 권한을 단계마다 검증하는 다단계 Tool Call 흐름
 
 MCP 2026-07-28 사양은 상태를 여러 연결에 숨겨 두기보다 필요한 경우 불투명 핸들 (Opaque Handle)을 명시적으로 다음 호출에 전달하는 방식을 설명합니다. Server는 핸들을 받을 때마다 현재 사용자의 접근 권한을 다시 검증해야 합니다.
 

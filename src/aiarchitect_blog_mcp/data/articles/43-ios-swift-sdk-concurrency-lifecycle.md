@@ -2,7 +2,7 @@
 
 고객사가 iOS 앱을 자체 UI로 만들려면 Swift SDK가 화면이 아니라 기능 계약을 제공해야 합니다. 화면을 닫았는데 요청이 계속 살아 있거나, 취소가 서버 상태를 되돌렸는지 알 수 없으면 통합이 무너집니다. 이 글은 async/await와 Task 취소, AsyncSequence, actor 격리, Keychain, SwiftUI·UIKit 수명 주기와 테스트 계약을 정리합니다.
 
-![고객 맞춤형 iOS 앱이 구조적 동시성과 취소 Gate, 보호된 자격 증명을 갖춘 Swift SDK를 통해 고객사 공개 API에만 연결되는 구조](assets/blog-43-ios-swift-sdk-concurrency-hero.png)
+> 🖼️ **그림**: 고객 맞춤형 iOS 앱이 구조적 동시성과 취소 Gate, 보호된 자격 증명을 갖춘 Swift SDK를 통해 고객사 공개 API에만 연결되는 구조
 
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 직접 설계하면서도 프라이빗 API를 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다. Android 편에 이어 이번 글은 iOS Swift SDK의 공개 API와 실행 계약을 구체화합니다.
 
@@ -21,7 +21,7 @@ flowchart LR
     customerApi --> serverSdk --> privateApi
 ```
 
-![고객 앱이 화면과 Task, Keychain을 소유하고 Swift SDK 계약을 거쳐 고객사 공개 API와 프라이빗 서버 경계로 연결되는 구조](assets/blog-43-ios-swift-sdk-security-boundary.png)
+> 🖼️ **그림**: 고객 앱이 화면과 Task, Keychain을 소유하고 Swift SDK 계약을 거쳐 고객사 공개 API와 프라이빗 서버 경계로 연결되는 구조
 
 *고객사 UI의 자유도와 SDK의 업무 계약, 서버 측 프라이빗 API 경계를 한 흐름으로 분리합니다.*
 
@@ -317,7 +317,7 @@ sequenceDiagram
     Task-->>View: 오류 UI 표시 안 함
 ```
 
-![화면 종료와 새 요청, Deadline이 Caller Task 취소 신호가 되어 SDK의 전송, 재시도, Stream을 정리하고 CancellationError로 반환되는 흐름](assets/blog-43-ios-swift-sdk-cancellation-flow.png)
+> 🖼️ **그림**: 화면 종료와 새 요청, Deadline이 Caller Task 취소 신호가 되어 SDK의 전송, 재시도, Stream을 정리하고 CancellationError로 반환되는 흐름
 
 *로컬 Task 취소는 전송·재시도·Stream 정리 계약이며, 이미 시작된 서버 업무를 취소하는 별도 도메인 명령과 구분합니다.*
 

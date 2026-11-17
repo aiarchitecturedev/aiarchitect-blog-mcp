@@ -2,13 +2,13 @@
 
 Android SDK에서 suspend 함수와 Flow를 공개 API로 내보내는 순간 취소와 수명 관리 책임이 고객사 코드로 넘어갑니다. Flow를 어디서 수집하느냐에 따라 화면 회전 한 번에 작업이 끊기거나 반대로 백그라운드에서 계속 살아 있게 되고, 이 차이는 SDK가 아니라 앱의 버그로 보고됩니다. 이 글은 Kotlin SDK의 suspend API와 Flow 이벤트, 구조적 동시성, Lifecycle 수집, 취소·오류·인증·테스트 계약을 정리합니다.
 
-![Android 앱과 Kotlin SDK의 Coroutine·Flow·Lifecycle 실행 계약이 고객사 API의 보안 경계로 연결되는 구조](assets/blog-42-android-kotlin-sdk-hero.png)
+> 🖼️ **그림**: Android 앱과 Kotlin SDK의 Coroutine·Flow·Lifecycle 실행 계약이 고객사 API의 보안 경계로 연결되는 구조
 
 앞선 글에서는 고객사가 Android·iOS 앱과 React 웹을 직접 설계하면서도 프라이빗 API를 노출하지 않는 멀티플랫폼 SDK 구조를 살펴봤습니다. 이번 글은 그중 Android Kotlin SDK의 공개 API와 실행 계약을 구체화합니다.
 
 Android SDK의 목적은 완성된 화면을 고객에게 강제하는 것이 아닙니다. 로그인 화면, 내비게이션, 디자인 시스템과 업무 흐름은 고객사 앱이 결정하고, SDK는 고객사 서버와 안전하게 통신하는 기능을 Kotlin다운 계약으로 제공합니다.
 
-![고객사 Android UI와 ViewModel이 Kotlin SDK를 통해 고객 공개 API·Java Server SDK·Private API 경계로 연결되는 구조](assets/blog-42-mobile-sdk-trust-boundary.png)
+> 🖼️ **그림**: 고객사 Android UI와 ViewModel이 Kotlin SDK를 통해 고객 공개 API·Java Server SDK·Private API 경계로 연결되는 구조
 
 모바일 앱은 프라이빗 API Endpoint나 서버 자격 증명을 갖지 않습니다. Kotlin SDK가 연결하는 대상은 고객사에 공개된 모바일용 API이며, 서버 간 프라이빗 연결은 고객사 서버와 Java Server SDK의 책임입니다.
 
@@ -67,7 +67,7 @@ SDK가 모든 값을 `Flow`로 만들면 단순 조회도 수집·완료 의미�
 
 핵심 계약이 Android Framework에 과도하게 묶이면 JVM 단위 테스트와 다른 Kotlin 환경에서 재사용하기 어렵습니다.
 
-![고객사 Android App에서 sdk-android·transport·core·api로 내려가고 sdk-testing이 코어 검증을 지원하는 모듈 의존 구조](assets/blog-42-sdk-module-dependencies.png)
+> 🖼️ **그림**: 고객사 Android App에서 sdk-android·transport·core·api로 내려가고 sdk-testing이 코어 검증을 지원하는 모듈 의존 구조
 
 화살표는 컴파일·런타임 의존 방향입니다.
 
@@ -181,7 +181,7 @@ SDK 내부에서 `GlobalScope.launch`로 작업을 숨기면 호출자가 완료
 
 화면이 사라져 Coroutine이 취소되는 것과 서버의 업무를 취소하는 것은 같은 의미가 아닐 수 있습니다.
 
-![화면 종료로 Coroutine과 전송을 취소하더라도 서버 업무 반영 여부는 Operation ID로 별도 확인해야 하는 흐름](assets/blog-42-coroutine-cancellation.png)
+> 🖼️ **그림**: 화면 종료로 Coroutine과 전송을 취소하더라도 서버 업무 반영 여부는 Operation ID로 별도 확인해야 하는 흐름
 
 SDK 구현은 `CancellationException`을 일반 오류로 변환하거나 삼키지 않습니다.
 
@@ -271,7 +271,7 @@ events(sessionId)
 
 SDK는 `LifecycleOwner`를 받지 않습니다. 고객사 ViewModel이 SDK Flow를 UI State로 바꾸고, 화면이 Lifecycle에 맞춰 수집합니다.
 
-![SDK Cold Flow를 viewModelScope와 StateFlow로 변환한 뒤 repeatOnLifecycle의 STARTED·STOPPED 상태에 맞춰 UI가 구독하는 수명 구조](assets/blog-42-lifecycle-ownership.png)
+> 🖼️ **그림**: SDK Cold Flow를 viewModelScope와 StateFlow로 변환한 뒤 repeatOnLifecycle의 STARTED·STOPPED 상태에 맞춰 UI가 구독하는 수명 구조
 
 ```kotlin
 class SessionViewModel(
@@ -365,7 +365,7 @@ interface CredentialProvider {
 }
 ```
 
-![Kotlin SDK가 Host CredentialProvider와 Secure Storage에서 단기 자격 증명을 받아 고객 API에 적용하고 401에서 제한적으로 무효화하는 흐름](assets/blog-42-credential-boundary.png)
+> 🖼️ **그림**: Kotlin SDK가 Host CredentialProvider와 Secure Storage에서 단기 자격 증명을 받아 고객 API에 적용하고 401에서 제한적으로 무효화하는 흐름
 
 저장 여부와 방법은 고객사 인증 계층이 결정합니다. Android Keystore는 앱 전용 암호화 키를 더 추출하기 어렵게 보관하고 키 사용 조건을 제한하는 데 사용할 수 있지만, SDK가 고객의 로그인 정책과 Token 저장소를 임의로 소유해서는 안 됩니다.
 

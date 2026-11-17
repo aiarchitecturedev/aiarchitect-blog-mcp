@@ -2,7 +2,7 @@
 
 AI Agent 보안은 모델에 무엇을 못 하게 시키느냐가 아니라 Agent가 실제로 무엇을 실행할 수 있느냐의 문제입니다. Prompt Injection을 완벽히 걸러내는 필터는 없으므로, 걸러지지 않았을 때 피해가 어디서 멈추는지를 설계해야 합니다. 이 글은 사용자 Identity와 Agent 실행의 결합, 명령과 데이터의 분리, 최소 권한 Tool 인가, 위험 작업 승인, 데이터 유출 경로 차단까지 AI Agent 운영을 지탱하는 8개 보안 경계를 정리합니다.
 
-![중앙 AI Agent 실행 코어를 Identity, 비신뢰 데이터, RAG 권한, 계획과 실행, Tool, 승인, Credential, 감사·복구의 다층 경계가 둘러싼 구조](assets/blog-08-ai-agent-security-boundaries-hero.png)
+> 🖼️ **그림**: 중앙 AI Agent 실행 코어를 Identity, 비신뢰 데이터, RAG 권한, 계획과 실행, Tool, 승인, Credential, 감사·복구의 다층 경계가 둘러싼 구조
 
 일반적인 Chatbot은 잘못된 답을 만들 수 있습니다. Tool을 사용하는 AI Agent는 잘못된 답에 그치지 않고 파일을 읽고, 메시지를 보내고, 업무 상태를 바꾸거나 외부 시스템을 호출할 수 있습니다.
 
@@ -203,7 +203,7 @@ Agent가 만든 Plan은 설명 가능한 제안이지 실행 권한이 아닙니
 
 모델이 `"approved": true`를 출력하거나 승인 문구를 생성해도 승인으로 인정하지 않습니다. 승인 증거는 Application이 별도로 발급하고 검증해야 합니다.
 
-![사용자 Identity와 불변 Intent, 비신뢰 외부 Data의 Content Envelope, 권한 기반 RAG와 실행 권한이 없는 Planner를 분리한 구조](assets/blog-08-agent-security-boundaries-data-plan.png)
+> 🖼️ **그림**: 사용자 Identity와 불변 Intent, 비신뢰 외부 Data의 Content Envelope, 권한 기반 RAG와 실행 권한이 없는 Planner를 분리한 구조
 
 *그림 1. Identity·Instruction·Data Authorization·Plan–Execution 경계가 비신뢰 입력을 실행 제안까지만 전달하는 구조*
 
@@ -348,7 +348,7 @@ OWASP SSRF 지침은 알려진 대상에 대해서는 Allowlist를 사용하고,
 
 NIST AI RMF Generative AI Profile은 생성형 AI가 Prompt Injection과 Data Poisoning(데이터 오염) 같은 공격에 취약해 공격 표면을 넓힐 수 있다고 설명합니다. 보안은 모델 선택이 아니라 AI 수명주기 전체의 위험 관리 문제입니다.
 
-![Agent가 제안한 Plan을 Policy와 정확한 승인으로 검증하고 최소 권한 Tool과 실행 시점 Credential, 감사·탐지·중단·복구로 연결하는 구조](assets/blog-08-agent-security-boundaries-action.png)
+> 🖼️ **그림**: Agent가 제안한 Plan을 Policy와 정확한 승인으로 검증하고 최소 권한 Tool과 실행 시점 Credential, 감사·탐지·중단·복구로 연결하는 구조
 
 *그림 2. Capability·Human Authorization·Secret & Egress·Audit & Recovery 경계가 허용된 작업만 실행하고 거부를 기록하는 구조*
 

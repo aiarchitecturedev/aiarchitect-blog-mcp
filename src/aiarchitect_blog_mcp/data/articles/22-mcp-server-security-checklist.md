@@ -2,7 +2,7 @@
 
 원격 MCP Server를 열면 그 순간부터 사내 시스템으로 들어오는 새 입구가 하나 생깁니다. MCP 보안 사고는 대개 프로토콜이 아니라 Token Audience, Scope 범위, Origin 검증 같은 배포 설정에서 납니다. 이 글은 OAuth Token과 Audience 확인, 최소 Scope, Origin과 DNS Rebinding 차단, SSRF 방어, Tool별 Rate Limit, 상태 핸들 인가를 배포 전에 실제로 시험할 항목으로 정리합니다.
 
-![AI Client 요청이 Origin, OAuth Token, 최소 Scope, Tenant·객체 인가, Tool 입력, SSRF 안전 Egress, 실행 예산 통제를 통과해 승인된 기업 시스템으로만 연결되는 밝은 MCP Server 보안 경계](assets/blog-22-mcp-server-security-checklist-hero.png)
+> 🖼️ **그림**: AI Client 요청이 Origin, OAuth Token, 최소 Scope, Tenant·객체 인가, Tool 입력, SSRF 안전 Egress, 실행 예산 통제를 통과해 승인된 기업 시스템으로만 연결되는 밝은 MCP Server 보안 경계
 
 *그림 1. MCP 요청이 계층별 검증을 통과한 뒤 승인된 Tool 실행 경로로만 전달되는 운영 보안 구조*
 
@@ -47,7 +47,7 @@ TLS·Origin
 
 이 글은 MCP OAuth의 전체 인증 흐름을 다시 설명하기보다, **MCP Server 운영자가 배포 전에 확인할 설정·코드·실패 시험**을 정리합니다.
 
-![MCP 요청이 Edge, Token, Policy, Tool Gate를 차례로 통과하고 실패 요청은 실행 없이 감사 증거로 남는 흐름](assets/blog-22-mcp-request-security-gates.png)
+> 🖼️ **그림**: MCP 요청이 Edge, Token, Policy, Tool Gate를 차례로 통과하고 실패 요청은 실행 없이 감사 증거로 남는 흐름
 
 *그림 2. 각 보안 경계를 독립적으로 검증하고 실패는 Downstream 미호출·무부작용 증거로 수렴시키는 MCP 요청 Gate*
 
@@ -701,7 +701,7 @@ IP만 기준으로 제한하면 여러 사용자가 같은 NAT를 공유할 때 
 - Backpressure (역압)
 - 전체 시스템 Emergency Limit
 
-![Tool Call이 URL 정책과 Redirect별 DNS·IP 검증, Egress Proxy, Rate·Concurrency·Queue·Cost 예산을 거치고 운영 증거와 Negative Test가 정책을 갱신하는 폐루프](assets/blog-22-egress-budget-evidence-loop.png)
+> 🖼️ **그림**: Tool Call이 URL 정책과 Redirect별 DNS·IP 검증, Egress Proxy, Rate·Concurrency·Queue·Cost 예산을 거치고 운영 증거와 Negative Test가 정책을 갱신하는 폐루프
 
 *그림 3. SSRF 목적지 검증과 고비용 Tool 실행 예산을 결합하고 감사 증거를 다음 배포 정책으로 되돌리는 운영 폐루프*
 

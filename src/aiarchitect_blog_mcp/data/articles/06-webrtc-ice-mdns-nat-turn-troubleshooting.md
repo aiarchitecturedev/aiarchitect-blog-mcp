@@ -2,7 +2,7 @@
 
 로컬에서는 잘 되던 WebRTC 연결이 실제 네트워크에서 실패하면 원인을 짚기 어렵습니다. 화면에는 "연결 실패" 한 줄만 남고, 권한·시그널링·ICE·NAT·TURN 가운데 어디서 끊겼는지 알려주지 않습니다. 이 글은 실패 구간을 다섯으로 나눈 뒤 장치 권한, ICE Candidate와 mDNS, NAT 유형, TURN Relay, DTLS와 미디어 통계를 순서대로 확인하는 진단 절차를 정리합니다.
 
-![브라우저와 Media Server 사이에서 직접 ICE 경로와 TURN Relay 경로를 진단하는 장면](assets/blog-06-webrtc-ice-nat-turn-hero.png)
+> 🖼️ **그림**: 브라우저와 Media Server 사이에서 직접 ICE 경로와 TURN Relay 경로를 진단하는 장면
 
 개발 환경에서는 잘 되던 WebRTC가 사내망, 고객사망 또는 모바일 네트워크에서 갑자기 연결되지 않는 경우가 있습니다. 이때 콘솔에서 `.local` 주소를 발견하고 mDNS를 의심하거나, 곧바로 TURN 서버부터 추가하기 쉽습니다.
 
@@ -10,7 +10,7 @@
 
 브라우저에서 Media Server로 음성을 전송하는 구조를 단순화하면 다음과 같습니다.
 
-![브라우저 장치 권한부터 ICE 후보 쌍, DTLS·SRTP와 Media Server 후속 처리까지 이어지는 WebRTC 연결 계층](assets/blog-06-webrtc-connection-layers.png)
+> 🖼️ **그림**: 브라우저 장치 권한부터 ICE 후보 쌍, DTLS·SRTP와 Media Server 후속 처리까지 이어지는 WebRTC 연결 계층
 
 *장치·시그널링·ICE·보안 전송·미디어 처리는 서로 다른 진단 구간이다.*
 
@@ -312,7 +312,7 @@ PeerConnection이 `connected`여도 사용자가 소리나 영상을 받지 못�
 
 E2E 진단 순서를 한 장으로 정리하면 다음과 같습니다.
 
-![장치와 Track, 시그널링, ICE, DTLS, RTP 순서로 상태를 확인하고 멈춘 지점별 다음 점검을 연결한 WebRTC 진단 지도](assets/blog-06-webrtc-diagnostic-decision-map.png)
+> 🖼️ **그림**: 장치와 Track, 시그널링, ICE, DTLS, RTP 순서로 상태를 확인하고 멈춘 지점별 다음 점검을 연결한 WebRTC 진단 지도
 
 *왼쪽에서 오른쪽으로 상태를 확인하고, 멈춘 열의 아래 항목을 점검한다.*
 

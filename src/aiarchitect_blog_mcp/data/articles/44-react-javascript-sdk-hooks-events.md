@@ -2,7 +2,7 @@
 
 고객사가 React 웹을 원하는 UI로 직접 만들려면 SDK가 화면이 아니라 계약을 제공해야 합니다. 모든 기능을 거대한 Hook 하나에 넣으면 상태와 네트워크 수명이 뒤섞여 취소와 재구독이 깨집니다. 이 글은 Core Client와 Custom Hook의 책임 분리, 한 번의 결과와 지속 구독을 나누는 계약, AbortSignal 취소, useSyncExternalStore 연결, SSR과 CORS·쿠키 인증, 패키지 배포 계약을 정리합니다.
 
-![고객 맞춤형 React 웹이 분리된 React Adapter와 JavaScript Core Client를 통해 취소 가능한 요청과 이벤트 구독을 관리하고 고객사 공개 API에만 연결되는 구조](assets/blog-44-react-javascript-sdk-hero.png)
+> 🖼️ **그림**: 고객 맞춤형 React 웹이 분리된 React Adapter와 JavaScript Core Client를 통해 취소 가능한 요청과 이벤트 구독을 관리하고 고객사 공개 API에만 연결되는 구조
 
 앞선 글에서는 고객사가 Android·iOS 앱을 직접 설계하면서도 공통 업무 기능과 프라이빗 API 경계를 유지하는 Kotlin·Swift SDK를 살펴봤습니다. 이번 글은 같은 목적을 React 웹으로 확장합니다.
 
@@ -23,7 +23,7 @@ flowchart LR
     customerApi --> serverSdk --> privateApi
 ```
 
-![고객 React 앱이 React Adapter와 JavaScript Core SDK 계약을 거쳐 고객사 공개 API와 프라이빗 서버 경계로 연결되는 구조](assets/blog-44-react-sdk-layer-boundary.png)
+> 🖼️ **그림**: 고객 React 앱이 React Adapter와 JavaScript Core SDK 계약을 거쳐 고객사 공개 API와 프라이빗 서버 경계로 연결되는 구조
 
 *고객사 UI의 자유도와 React Adapter·Core SDK의 기능 계약, 서버 측 프라이빗 API 경계를 한 흐름으로 분리합니다.*
 
@@ -258,7 +258,7 @@ sequenceDiagram
     end
 ```
 
-![React 화면과 Custom Hook, Core Client, 고객사 API 사이의 AbortSignal 요청과 취소 흐름](assets/blog-44-react-sdk-abort-subscription-flow-hd-v3.png)
+> 🖼️ **그림**: React 화면과 Custom Hook, Core Client, 고객사 API 사이의 AbortSignal 요청과 취소 흐름
 
 *요청 취소와 이벤트 구독 해제를 React 수명에 연결하고, SDK가 Retry·Stream과 Listener를 예측 가능하게 정리하도록 합니다.*
 

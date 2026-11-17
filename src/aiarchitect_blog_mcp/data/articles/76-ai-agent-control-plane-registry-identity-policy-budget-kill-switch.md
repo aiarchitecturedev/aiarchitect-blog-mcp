@@ -2,7 +2,7 @@
 
 Agent가 늘어나면 연결보다 통제가 먼저 무너집니다. 누가 어떤 Agent를 배포했고 무슨 권한으로 얼마를 쓰는지 중앙에서 답할 수 없게 되기 때문입니다. 이 글은 Agent 등록·승인·배포·격리·폐기와 사용자·Agent·Workload Identity, 실행 권한, 비용·시간·호출 Budget, Canary와 Kill Switch를 묶는 AI Agent Control Plane 아키텍처를 정리합니다.
 
-![AI Agent Control Plane이 분산 Agent와 정책·Identity·Budget·긴급 중지를 중앙 통제하는 구조](assets/blog-76-ai-agent-control-plane-hero.png)
+> 🖼️ **그림**: AI Agent Control Plane이 분산 Agent와 정책·Identity·Budget·긴급 중지를 중앙 통제하는 구조
 
 기업이 첫 번째 AI Agent를 만들 때는 Model, Prompt, RAG와 Tool 연결에 집중합니다. Agent가 한두 개라면 담당자가 설정 파일과 Dashboard를 직접 확인해도 운영할 수 있습니다.
 

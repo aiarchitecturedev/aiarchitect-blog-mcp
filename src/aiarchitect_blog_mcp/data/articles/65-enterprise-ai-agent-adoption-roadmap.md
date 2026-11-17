@@ -2,7 +2,7 @@
 
 기업 AI Agent 도입을 모델 선정에서 시작하면 대부분 PoC에서 멈춥니다. 어떤 업무를 Agent에게 맡길지, 그 업무의 데이터·API·권한이 준비됐는지가 먼저 정해져야 합니다. 이 글은 업무 후보 발굴, Agent 적합성 판단, 데이터·통합·권한 준비도 진단, 성공 기준과 PoC, 제한된 Pilot, 운영 전환과 확산까지 여섯 단계와 다섯 개 Stage Gate로 도입을 설계하는 방법을 정리합니다.
 
-![업무 후보 발굴부터 준비도, PoC, Pilot을 거쳐 통제된 운영 확장으로 이어지는 기업 AI Agent 도입 로드맵](assets/blog-65-enterprise-ai-agent-adoption-roadmap-hero.png)
+> 🖼️ **그림**: 업무 후보 발굴부터 준비도, PoC, Pilot을 거쳐 통제된 운영 확장으로 이어지는 기업 AI Agent 도입 로드맵
 
 기업에서 AI Agent 도입을 검토하면 “어떤 LLM·RAG·MCP·멀티 Agent를 써야 하는가?”부터 묻기 쉽습니다. 모두 필요한 질문이지만 첫 번째 질문은 아닙니다.
 
@@ -74,11 +74,11 @@ RAG·Workflow·Agent는 서로 배타적인 선택지가 아닙니다. 실제 �
 5. **Pilot — Stage Gate 5**: 실제 조건에서 안전하게 반복 가능한지 판단하고 운영형 구조·사용자 결과를 산출합니다.
 6. **운영 — 지속 평가**: 품질·비용·위험을 보며 확산할지 판단하고 SLO·Runbook·확산 계획을 관리합니다.
 
-![업무 후보와 기준선에서 Agent 적합성·우선순위, 준비도 진단까지 세 개 Stage Gate를 통과하는 도입 전반부](assets/blog-65-roadmap-front-half.png)
+> 🖼️ **그림**: 업무 후보와 기준선에서 Agent 적합성·우선순위, 준비도 진단까지 세 개 Stage Gate를 통과하는 도입 전반부
 
 *도입 전반부 — 업무 후보에서 준비도 Gate까지 불확실성을 줄입니다.*
 
-![PoC의 핵심 가설 검증에서 제한된 Pilot과 반복·안전성 Gate를 거쳐 운영과 지속 평가로 이어지는 도입 후반부](assets/blog-65-roadmap-back-half.png)
+> 🖼️ **그림**: PoC의 핵심 가설 검증에서 제한된 Pilot과 반복·안전성 Gate를 거쳐 운영과 지속 평가로 이어지는 도입 후반부
 
 *도입 후반부 — PoC 증거를 실제 조건의 Pilot과 지속 평가로 연결합니다.*
 
@@ -257,7 +257,7 @@ Pilot에서는 자율성을 단계적으로 높입니다.
 
 각 계층의 책임을 분리하면 모델이나 검색 엔진이 바뀌어도 보안·업무 계약을 유지하기 쉽습니다. Java Security Gateway와 Python AI 실행부는 [기업용 AI 백엔드 설계](https://aiarchitect.tistory.com/5), 상태와 복구는 [운영 가능한 AI Agent 만들기](https://aiarchitect.tistory.com/7), 객체 인가는 [엔터프라이즈 AI Agent 권한 설계](https://aiarchitect.tistory.com/19)에서 더 자세히 설명했습니다.
 
-![사용자 채널에서 Security Gateway와 AI Orchestrator를 거쳐 Model·RAG·MCP 업무 자원으로 연결되고 평가·관측·감사·비용 통제가 횡단 적용되는 운영형 아키텍처](assets/blog-65-production-architecture.png)
+> 🖼️ **그림**: 사용자 채널에서 Security Gateway와 AI Orchestrator를 거쳐 Model·RAG·MCP 업무 자원으로 연결되고 평가·관측·감사·비용 통제가 횡단 적용되는 운영형 아키텍처
 
 *운영형 Architecture — 실행 경로와 횡단 통제를 분리해 변경과 장애의 영향을 제한합니다.*
 

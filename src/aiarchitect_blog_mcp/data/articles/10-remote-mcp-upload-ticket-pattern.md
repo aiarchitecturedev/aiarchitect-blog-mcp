@@ -2,7 +2,7 @@
 
 원격 MCP Server는 사용자의 로컬 파일 경로를 읽을 수 없습니다. 서버와 클라이언트가 다른 컴퓨터에 있으니 경로 문자열만 넘기면 실패하는데, 오류 메시지는 권한 문제처럼 보이곤 합니다. 이 글은 Control Plane과 Data Plane을 분리한 Upload Ticket 패턴으로 파일을 전달하고, 검증과 실패 복구까지 연결하는 원격 MCP 파일 업로드 설계를 정리합니다.
 
-![로컬 장치의 미디어 파일이 짧은 수명의 Upload Ticket과 분리된 Byte 전송 경로를 거쳐 원격 검증 Storage와 업무 처리로 전달되는 장면](assets/blog-10-remote-mcp-upload-ticket-hero.png)
+> 🖼️ **그림**: 로컬 장치의 미디어 파일이 짧은 수명의 Upload Ticket과 분리된 Byte 전송 경로를 거쳐 원격 검증 Storage와 업무 처리로 전달되는 장면
 
 AI Agent에게 “이 파일을 회의록으로 만들어 줘”라고 요청하면 사용자는 파일 경로를 알려 주는 것으로 충분하다고 생각할 수 있습니다.
 
@@ -21,7 +21,7 @@ AI Agent에게 “이 파일을 회의록으로 만들어 줘”라고 요청하
 
 이 문제를 해결하는 안전한 방법 중 하나가 Upload Ticket(업로드 티켓) 패턴입니다.
 
-![로컬 filePath 전달이 실패하는 경계와 Upload Ticket 준비, 별도 HTTPS Byte 전송, 격리 검증, uploadId 기반 업무 시작을 구분한 흐름](assets/blog-10-upload-ticket-control-data-flow-v2.png)
+> 🖼️ **그림**: 로컬 filePath 전달이 실패하는 경계와 Upload Ticket 준비, 별도 HTTPS Byte 전송, 격리 검증, uploadId 기반 업무 시작을 구분한 흐름
 
 *파일 경로 전달과 파일 Byte 전송은 다르며, 원격 업로드는 준비·전송·검증·업무 시작의 명시적 계약으로 나눈다.*
 
@@ -268,7 +268,7 @@ VERIFIED
 
 Byte 전송 성공과 업무 처리 성공은 다른 상태입니다.
 
-![Upload Lifecycle의 준비·전송·검증·소비 상태와 Document Lifecycle의 접수·Parsing·STT·요약·완료 상태를 분리한 지도](assets/blog-10-upload-business-lifecycle-v2.png)
+> 🖼️ **그림**: Upload Lifecycle의 준비·전송·검증·소비 상태와 Document Lifecycle의 접수·Parsing·STT·요약·완료 상태를 분리한 지도
 
 *파일 검증 성공을 뜻하는 `VERIFIED`와 업무 결과 완료를 뜻하는 `READY`는 서로 다른 상태다.*
 

@@ -2,7 +2,7 @@
 
 MCP Tool과 A2A Agent의 경계를 나눈 것만으로는 운영 가능한 실행이 되지 않습니다. 이번 Run에서 무엇을 어떤 순서로 호출할지, 결과를 어떤 계약으로 검증할지, 일부만 성공했을 때 무엇을 사용자에게 약속할지를 별도로 설계해야 합니다. 이 글은 `Integration Boundary Record`를 입력으로 받아 Execution Plan과 Result Envelope를 만들고, 부분 성공·취소·재시도·보상까지 연결하는 **Root Run 실행 계약**에 집중합니다.
 
-![Orchestrator Agent의 MCP Tool 호출 경로와 A2A 전문 Agent 위임 경로가 검증·결과 조립 지점에서 합쳐지는 구조](assets/blog-77-ai-agent-orchestration-mcp-a2a-hero.png)
+> 🖼️ **그림**: Orchestrator Agent의 MCP Tool 호출 경로와 A2A 전문 Agent 위임 경로가 검증·결과 조립 지점에서 합쳐지는 구조
 
 하나의 AI Agent가 모든 일을 직접 처리하는 구조는 단순해 보입니다. 하지만 기업 업무는 곧 다음과 같이 갈라집니다.
 

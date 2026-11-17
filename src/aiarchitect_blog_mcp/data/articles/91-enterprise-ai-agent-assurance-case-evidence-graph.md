@@ -2,7 +2,7 @@
 
 기업 AI Agent 도입 심사에서 항목을 전부 통과했는데도 운영 승인을 내리기 어려울 때가 있습니다. 체크 표시는 누가 무엇을 근거로 판단했는지, 그 근거가 지금도 유효한지를 남기지 않기 때문입니다. 이 글은 AI 거버넌스 판정을 주장·논거·반증·증거로 구성하는 Assurance Case와 Evidence Graph의 Subject Digest·출처·서명·신선도·Coverage·독립성, 릴리스 Gate와 잔여 위험 승인 설계를 정리합니다.
 
-![기업 AI Agent의 검증 주장과 평가·정책·출처·승인 증거가 그래프로 연결되고 반증이 발견되면 운영 승인을 중단하는 Assurance Case 아키텍처](assets/blog-91-ai-agent-assurance-case-evidence-graph-hero.png)
+> 🖼️ **그림**: 기업 AI Agent의 검증 주장과 평가·정책·출처·승인 증거가 그래프로 연결되고 반증이 발견되면 운영 승인을 중단하는 Assurance Case 아키텍처
 
 도입 검토 문서에는 흔히 수십 개의 체크 항목이 있습니다. 데이터 준비, API 연결, 권한, 품질, 보안, 운영 조직을 모두 `완료`로 표시합니다. 그런데 승인 회의에서 다음 질문이 나오면 답이 끊깁니다.
 
@@ -152,7 +152,7 @@ Evidence : 어떤 관찰·시험·문서·영수증이 실제로 존재하는가
 Decision : 누가 어떤 범위·조건·만료로 주장을 받아들였는가
 ```
 
-![최상위 운영 승인 주장을 업무 목적·권한과 Side Effect·실패 복구 논거로 분해하고 평가·인가·Red Team 증거와 반증을 함께 판정하는 Assurance Case 구조](assets/blog-91-assurance-case-argument-structure.png)
+> 🖼️ **그림**: 최상위 운영 승인 주장을 업무 목적·권한과 Side Effect·실패 복구 논거로 분해하고 평가·인가·Red Team 증거와 반증을 함께 판정하는 Assurance Case 구조
 
 *Assurance Case 구조 — Evidence가 많아도 논거가 없으면 결론으로 이어지지 않으며, 반증과 미해결 가정은 판정의 정식 입력입니다.*
 
@@ -332,7 +332,7 @@ W3C PROV-O의 시작점은 `prov:Entity`, `prov:Activity`, `prov:Agent`입니다
 | 생성 책임 | `prov:wasAttributedTo` | Evidence가 Assurance Service에 귀속 |
 | 위임 관계 | `prov:actedOnBehalfOf` | Reviewer가 Risk Committee를 대신해 검토 |
 
-![Agent Release와 Policy·Prompt·Tool·Dataset Snapshot이 Evaluation·인가 Test·Red Team Replay 활동에 사용되고 검증기 Identity와 결과 Evidence가 Claim Set과 Assurance Decision으로 연결되는 출처 그래프](assets/blog-91-evidence-graph-provenance.png)
+> 🖼️ **그림**: Agent Release와 Policy·Prompt·Tool·Dataset Snapshot이 Evaluation·인가 Test·Red Team Replay 활동에 사용되고 검증기 Identity와 결과 Evidence가 Claim Set과 Assurance Decision으로 연결되는 출처 그래프
 
 *Evidence Graph의 출처 축 — 판정 대상, 검증 활동, Evidence Entity, 책임 Identity와 Claim을 분리해 변경 영향과 신뢰 경로를 추적합니다.*
 
@@ -593,7 +593,7 @@ Release Gate의 순서는 다음과 같습니다.
 
 Continuous Assurance는 전체 문서를 매일 다시 작성하는 일이 아닙니다. 변경 Edge를 따라 영향받은 Claim과 Evidence를 계산하고 필요한 부분만 재검증합니다.
 
-![Claim 작성부터 Evidence 수집·무결성·출처·신선도 검증과 독립 검토를 거쳐 범위·조건·만료가 있는 승인을 내리고 변경·사고·만료 시 영향받은 Claim을 무효화해 재검증하는 Assurance 수명주기](assets/blog-91-assurance-decision-lifecycle.png)
+> 🖼️ **그림**: Claim 작성부터 Evidence 수집·무결성·출처·신선도 검증과 독립 검토를 거쳐 범위·조건·만료가 있는 승인을 내리고 변경·사고·만료 시 영향받은 Claim을 무효화해 재검증하는 Assurance 수명주기
 
 *Assurance 수명주기 — 승인은 끝 상태가 아니라 운영 관찰과 변경 Trigger가 다시 Evidence 수집으로 연결되는 만료 가능한 상태입니다.*
 

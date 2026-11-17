@@ -4,7 +4,7 @@ MCP와 A2A는 경쟁 프로토콜이 아닙니다. MCP는 Agent가 Tool·Resourc
 
 실행 순서, Result Envelope, 부분 성공, Timeout·Cancel·Retry와 Side Effect Commit은 별도 글인 [AI Agent 실행 계약 설계](https://aiarchitect.tistory.com/77)에서 다룹니다. 이 글의 결과물은 그 실행 글에 입력으로 넘길 `Integration Boundary Record`입니다.
 
-![MCP Tool 실행 경계와 A2A Agent 위임 경계를 분리한 엔터프라이즈 통합 아키텍처](assets/blog-75-mcp-a2a-enterprise-agent-integration-hero.png)
+> 🖼️ **그림**: MCP Tool 실행 경계와 A2A Agent 위임 경계를 분리한 엔터프라이즈 통합 아키텍처
 
 사용자가 다음과 같이 요청했다고 가정해 보겠습니다.
 

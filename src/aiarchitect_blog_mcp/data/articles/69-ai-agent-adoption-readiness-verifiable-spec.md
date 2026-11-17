@@ -2,7 +2,7 @@
 
 AI Agent 도입 준비도를 서류 체크리스트로 확인하면 대개 전부 준비됨으로 채워집니다. 준비도는 사람이 선언하는 값이 아니라 검증기가 증거로 판정해야 하는 값입니다. 이 글은 데이터·연동·권한·보안·인수 다섯 축을 데이터 계약, 멱등성·타임아웃 계약, 인가 체인, 시크릿 핸들과 Egress 통제, 증거에 바인딩된 Readiness Predicate로 스펙화하고 READY·NOT_READY·EVIDENCE_MISSING·GATE_INVALID로 판정하는 준비도 게이트를 정리합니다.
 
-![데이터·연동·권한·보안·인수의 다섯 준비도 신호가 증거 검증 코어와 안전한 PoC 게이트로 수렴하는 AI Agent 도입 준비도 아키텍처](assets/blog-69-ai-agent-readiness-gate-hero.png)
+> 🖼️ **그림**: 데이터·연동·권한·보안·인수의 다섯 준비도 신호가 증거 검증 코어와 안전한 PoC 게이트로 수렴하는 AI Agent 도입 준비도 아키텍처
 
 기업 AI Agent 도입 로드맵에서 PoC 앞에 놓이는 단계가 **준비도 진단 (Readiness Assessment)** 입니다. [기업 AI Agent 도입 로드맵 6단계](https://aiarchitect.tistory.com/65)에서 3단계로 다룬 그 진단을, 이 글은 서류가 아니라 **검증 가능한 스펙**으로 구체화합니다.
 
@@ -43,7 +43,7 @@ AI Agent 도입 준비도를 서류 체크리스트로 확인하면 대개 전�
 
 다섯 축은 서로를 대체하지 않습니다. 데이터가 완벽해도 권한 경계가 없으면 준비된 것이 아니고, 권한이 정리돼도 인수 기준을 검증할 수 없으면 PoC 결과를 판정할 수 없습니다.
 
-![데이터·연동·권한·보안·인수의 다섯 준비도 축을 증거 봉투와 Readiness Predicate로 종합해 PoC 착수 게이트로 연결하는 흐름](assets/blog-69-readiness-five-axes-gate.png)
+> 🖼️ **그림**: 데이터·연동·권한·보안·인수의 다섯 준비도 축을 증거 봉투와 Readiness Predicate로 종합해 PoC 착수 게이트로 연결하는 흐름
 
 *준비도 5축 — 어느 한 축도 다른 축의 통과로 상쇄하지 않고 하나의 Gate에서 함께 판정합니다.*
 
@@ -121,7 +121,7 @@ Agent는 외부 시스템의 Tool을 호출합니다. 연동 준비도는 "API�
 - **승인 바인딩 (Approval Binding)**: 승인은 결정 ID, 정규화된 Tool·인자 지문, 자원·정책 버전, 만료·사용 횟수, 서명에 묶여야 합니다. `max_uses`는 동시 실행 시 **원자적으로 소비**돼야 하며, 모델 출력의 `"approved": true`로 대체하면 안 됩니다([보안 8경계](https://aiarchitect.tistory.com/8)).
 - **실행·감사 영수증**: `execution_id`는 불변·유일한 주키이며 실행당 영수증은 하나입니다. `execution_receipt`가 승인 grant·요청·인자·자원 버전·실행 결과를 참조하고, 인가 규칙이 `request_digest`·`normalized_args_digest`·`resource_version`의 동등성을 강제해야, 감사 영수증과 함께 "승인된 요청과 실제 실행이 같다"를 검증할 수 있습니다.
 
-![요청 지문에서 정책 판정과 범위 승인, 실행 영수증, 감사 영수증까지 동일한 요청을 증명하는 인가 근거 체인](assets/blog-69-authorization-evidence-chain-v3.png)
+> 🖼️ **그림**: 요청 지문에서 정책 판정과 범위 승인, 실행 영수증, 감사 영수증까지 동일한 요청을 증명하는 인가 근거 체인
 
 *인가 증거 체인 — 승인한 요청과 실제 실행·감사 기록이 같은 작업임을 공통 식별자로 증명합니다.*
 
@@ -261,7 +261,7 @@ data_contract(선언)
 
 핵심은 **`READY`가 아닌 상태를 정상 결과로 취급하는 것**입니다. 준비도 게이트의 목적은 통과시키는 것이 아니라, 준비 안 된 후보를 PoC에서 걸러 재작업 비용을 앞단으로 옮기는 것입니다. 통과율이 늘 100%인 게이트는 차단 조건이 실제로 작동하는지 의심해 볼 필요가 있습니다.
 
-![다섯 축 증거와 Gate 자체 검증, 규칙 평가를 거쳐 GATE_INVALID·EVIDENCE_MISSING·NOT_READY·READY로 해소하는 4상태 판정 흐름](assets/blog-69-readiness-four-state-decision.png)
+> 🖼️ **그림**: 다섯 축 증거와 Gate 자체 검증, 규칙 평가를 거쳐 GATE_INVALID·EVIDENCE_MISSING·NOT_READY·READY로 해소하는 4상태 판정 흐름
 
 *4상태 판정 — 통과 외의 상태도 원인과 다음 행동이 다른 정상적인 게이트 결과로 관리합니다.*
 

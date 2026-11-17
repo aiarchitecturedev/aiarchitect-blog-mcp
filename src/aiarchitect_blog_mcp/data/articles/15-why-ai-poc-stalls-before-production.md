@@ -2,7 +2,7 @@
 
 AI 개념 검증 (Proof of Concept, PoC)이 시연에서는 성공했는데 운영 전환 회의에서 멈추는 일이 반복됩니다. 모델 성능이 부족해서가 아니라 누가 어떤 데이터까지 볼 수 있고, 위험한 작업을 누가 승인하며, 장애 뒤 어디서 다시 시작할지를 정한 운영 계약이 없기 때문입니다. 이 글은 성공 기준과 데이터 분포, 인증·권한, 작업 승인, 상태 복구, 품질 평가, 관측성, 비용, Rollback과 운영 책임까지 운영 전환을 막는 열두 가지 공백과 확인 방법을 정리합니다.
 
-![작동하는 AI PoC가 인증·권한·복구·평가·관측성·비용·배포·운영 책임 Gate를 거쳐 안정적인 운영 서비스로 전환되는 장면](assets/blog-15-ai-poc-production-readiness-hero.png)
+> 🖼️ **그림**: 작동하는 AI PoC가 인증·권한·복구·평가·관측성·비용·배포·운영 책임 Gate를 거쳐 안정적인 운영 서비스로 전환되는 장면
 
 회의 파일을 올리면 녹취록과 요약이 생성됩니다. 질문을 입력하면 사내 문서를 검색하고, AI Agent가 업무 Tool까지 호출합니다.
 
@@ -422,7 +422,7 @@ Evaluation Dataset
 
 Model만 이전 Version으로 되돌렸는데 Prompt와 Tool Schema는 그대로라면 진정한 Rollback이 아닐 수 있습니다.
 
-![Code와 Prompt, Model, Tool, Index와 정책을 하나의 변경 Bundle로 평가하고 Canary 관측 결과에 따라 확대하거나 Rollback과 장애 학습으로 되돌리는 운영 개선 폐루프](assets/blog-15-production-feedback-loop.png)
+> 🖼️ **그림**: Code와 Prompt, Model, Tool, Index와 정책을 하나의 변경 Bundle로 평가하고 Canary 관측 결과에 따라 확대하거나 Rollback과 장애 학습으로 되돌리는 운영 개선 폐루프
 
 ## 13. 열두 번째 공백: 운영 책임자가 정해지지 않았다
 
@@ -522,7 +522,7 @@ Google SRE 자료도 Production Readiness Review와 명확한 Application 소유
 }
 ```
 
-![PoC 검증 증거를 업무 가치·AI 품질·SLO·권한·복구·관측성·비용·배포·운영 책임 계약으로 확장해 출시 또는 보완으로 분기하는 운영 준비 Gate](assets/blog-15-production-readiness-gate.png)
+> 🖼️ **그림**: PoC 검증 증거를 업무 가치·AI 품질·SLO·권한·복구·관측성·비용·배포·운영 책임 계약으로 확장해 출시 또는 보완으로 분기하는 운영 준비 Gate
 
 ## 16. PoC를 어떻게 설계해야 다시 만들지 않는가
 

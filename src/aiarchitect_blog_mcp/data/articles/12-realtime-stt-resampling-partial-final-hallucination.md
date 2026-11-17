@@ -2,7 +2,7 @@
 
 실시간 STT를 구현할 때 먼저 깨지는 것은 모델이 아니라 오디오 계약입니다. 브라우저가 48kHz로 캡처하는데 모델이 16kHz를 기대할 때, 세 Sample 중 하나를 고르는 방식의 리샘플링은 왜곡을 만듭니다. 이 글은 실제 Sample Rate 확인과 안전한 48kHz → 16kHz 변환, Channel·PCM 정규화, Capture Chunk와 Inference Window 분리, Partial·Final 자막 상태와 무음·반복 환각 억제 기준을 정리합니다.
 
-![마이크 입력이 오디오 정규화와 실시간 추론을 거쳐 신뢰할 수 있는 확정 자막으로 수렴하는 대표 이미지](assets/blog-12-realtime-stt-hero.png)
+> 🖼️ **그림**: 마이크 입력이 오디오 정규화와 실시간 추론을 거쳐 신뢰할 수 있는 확정 자막으로 수렴하는 대표 이미지
 
 *그림 1. 서로 다른 입력 시간축과 바뀌는 가설을 하나의 신뢰 가능한 Final 자막 흐름으로 정리합니다.*
 
@@ -279,7 +279,7 @@ capture
 
 GPU가 빨라도 Queue 대기와 발화 종료 대기가 길면 Final 자막은 늦습니다. 반대로 Partial을 너무 자주 보내면 UI가 흔들리고 Network와 Rendering 비용이 커집니다.
 
-![실제 입력 Rate에서 상태 보존 리샘플링과 16kHz 모델 경계까지 이어지는 오디오 시간축 정규화 흐름](assets/blog-12-audio-timebase-normalization.png)
+> 🖼️ **그림**: 실제 입력 Rate에서 상태 보존 리샘플링과 16kHz 모델 경계까지 이어지는 오디오 시간축 정규화 흐름
 
 *그림 2. Sample Rate·Chunk 경계·필터 상태를 함께 보존하고 Frame Drift를 다시 검증해야 장시간 Stream의 시간축이 어긋나지 않습니다.*
 
@@ -503,7 +503,7 @@ Whisper와 `faster-whisper`에는 다음 신호와 Option(선택 항목)이 있�
 
 Denylist만 사용하면 새로운 환각 문구를 막지 못하고 실제 발화까지 삭제할 수 있습니다. VAD, Decoder 신호, 반복 탐지와 Audio 근거를 함께 사용해야 합니다.
 
-![오디오 근거에서 Partial Revision과 품질 Gate를 거쳐 Final만 후속 시스템에 전달하는 흐름](assets/blog-12-partial-final-quality-gates.png)
+> 🖼️ **그림**: 오디오 근거에서 Partial Revision과 품질 Gate를 거쳐 Final만 후속 시스템에 전달하는 흐름
 
 *그림 3. PARTIAL은 같은 Segment의 Revision으로 교체하고, 안정성·침묵·Decoder Gate를 통과한 FINAL만 저장·요약·검색·자동화가 소비합니다.*
 

@@ -23,6 +23,7 @@ sys.path.insert(0, str(_ROOT / "src"))
 from aiarchitect_blog_mcp.corpus import (  # noqa: E402
     build_record,
     extract_body,
+    find_dead_image_refs,
     is_published,
     parse_metadata,
     strip_publishing_scaffolding,
@@ -189,6 +190,16 @@ def main(src: Path, include_unpublished: bool = False) -> int:
         ).rstrip() + "\n"
         if not body.startswith("# ") or parse_metadata(body):
             print(f"❌ 정제 본문 프리플라이트 실패: {path.name}", file=sys.stderr)
+            return 1
+        # 이미지는 캡션으로 바뀌어야 한다. 남아 있다면 단독 줄이 아닌 형태(문장 중간 등)가
+        # 새로 들어온 것이다 — 열리지 않는 링크를 조용히 배포하지 않도록 여기서 멈춘다.
+        dead_images = find_dead_image_refs(body)
+        if dead_images:
+            print(
+                f"❌ 죽은 이미지 참조 프리플라이트 실패: {path.name}: "
+                f"{len(dead_images)}건 {dead_images[:3]}",
+                file=sys.stderr,
+            )
             return 1
         lowered = body.lower()
         leaked = [token for token in FORBIDDEN_PRIVATE_TOKENS if token in lowered]

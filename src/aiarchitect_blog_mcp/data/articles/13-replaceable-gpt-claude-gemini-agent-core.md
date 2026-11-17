@@ -2,7 +2,7 @@
 
 멀티 LLM 구성에서 모델을 바꿀 때마다 Agent 코드를 함께 고치고 있다면 경계가 잘못 그려진 것입니다. GPT·Claude·Gemini는 Message 형식과 Tool Calling 규약, Streaming 이벤트, 중단 사유와 사용량 표기가 모두 다르고 이 차이가 업무 로직까지 번집니다. 이 글은 그 차이를 Provider Adapter로 흡수하면서도 모델 고유 기능을 잃지 않는 멀티 LLM Agent Core 설계를 정리합니다.
 
-![멀티 LLM Agent Core와 세 개의 교체 가능한 Provider 경로를 표현한 대표 이미지](assets/blog-13-multi-llm-provider-adapter-hero.png)
+> 🖼️ **그림**: 멀티 LLM Agent Core와 세 개의 교체 가능한 Provider 경로를 표현한 대표 이미지
 
 *그림 1. Agent Runtime의 안정적인 중심과 Vendor 중립적인 세 Provider 경로*
 
@@ -94,7 +94,7 @@ API 키가 설정되지 않은 프로바이더는 생성 단계에서 `None`을 
 | Skill·Hook·Sub-agent | 중단 사유·사용량·오류 정규화 |
 | 감사 Log와 Trace | Provider Request ID와 원본 Metadata 보존 |
 
-![Agent Core와 Provider Adapter 책임 경계](assets/blog-13-provider-adapter-boundary.png)
+> 🖼️ **그림**: Agent Core와 Provider Adapter 책임 경계
 
 *그림 2. Core는 Session·Tool·Permission 정책을 유지하고, Adapter는 공통 계약과 Provider API 사이를 번역합니다.*
 
@@ -466,7 +466,7 @@ class ToolArgumentAssembler:
 - 완료 전 JSON처럼 보이더라도 Tool을 실행하지 않습니다.
 - Parse와 Schema 검증 실패를 모델에 Tool Error로 돌려줄지 실행을 중단할지 정책화합니다.
 
-![Streaming Tool Call의 안전한 수명주기](assets/blog-13-streaming-tool-lifecycle.png)
+> 🖼️ **그림**: Streaming Tool Call의 안전한 수명주기
 
 *그림 3. Arguments Delta는 Call ID별로 누적하고, 완료·검증 뒤 한 번만 실행하며 결과는 같은 Call ID로 Agent Loop에 돌려줍니다.*
 

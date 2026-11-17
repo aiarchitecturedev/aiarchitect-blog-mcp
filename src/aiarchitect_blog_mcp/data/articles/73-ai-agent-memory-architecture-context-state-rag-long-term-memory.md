@@ -2,7 +2,7 @@
 
 AI Agent의 기억을 Context Window 하나로 다루면 대화가 길어질 때마다 정확도와 비용이 함께 무너집니다. 대화 Session, Workflow State, RAG 지식, 장기 Memory는 수명과 신뢰도가 서로 다릅니다. 이 글은 이 계층들을 분리하고 읽기·쓰기 정책, Tenant 격리, 출처·TTL·삭제, Memory Poisoning 방어와 품질 평가까지 메모리 아키텍처를 정리합니다.
 
-![현재 Context와 Workflow Checkpoint·RAG Knowledge·장기 기억을 분리하고 정책에 따라 조립하는 AI Agent 메모리 아키텍처](assets/blog-73-ai-agent-memory-architecture-hero.png)
+> 🖼️ **그림**: 현재 Context와 Workflow Checkpoint·RAG Knowledge·장기 기억을 분리하고 정책에 따라 조립하는 AI Agent 메모리 아키텍처
 
 사용자가 사내 업무 Agent에게 말합니다.
 
@@ -100,7 +100,7 @@ LLM의 Context Window는 한 번의 Model 호출에서 읽을 수 있는 입력 
 
 Google ADK 공식 문서도 `Session`과 `State`를 현재 대화의 History·임시 상태로, `MemoryService`를 여러 Session을 넘는 검색 가능한 장기 지식으로 구분합니다. LangGraph 역시 Thread 범위의 Checkpoint 상태와 Cross-thread Store를 분리합니다.
 
-![Java Security Gateway와 Python Agent가 Context Assembler를 거쳐 Request·Session·Workflow·RAG·Long-term Memory 다섯 상태 계층을 정책적으로 조립하는 구조](assets/blog-73-memory-state-layers.png)
+> 🖼️ **그림**: Java Security Gateway와 Python Agent가 Context Assembler를 거쳐 Request·Session·Workflow·RAG·Long-term Memory 다섯 상태 계층을 정책적으로 조립하는 구조
 
 *그림 1. Model 호출 전에 서로 다른 상태 계층을 Context Assembler에서 결합하는 구조*
 
@@ -304,7 +304,7 @@ Vector 유사도는 권한이 아닙니다. 높은 유사도 결과라도 다른
 
 대화에서 발견한 정보를 바로 장기 기억에 쓰면 Model의 오해와 공격 입력이 영속화됩니다. 먼저 `MemoryCandidate`로 격리합니다.
 
-![Session Event를 Memory Candidate로 격리한 뒤 Schema·Policy·Evidence와 충돌·승인 처리를 거쳐 Versioned Memory로 확정하는 쓰기 흐름](assets/blog-73-memory-candidate-pipeline.png)
+> 🖼️ **그림**: Session Event를 Memory Candidate로 격리한 뒤 Schema·Policy·Evidence와 충돌·승인 처리를 거쳐 Versioned Memory로 확정하는 쓰기 흐름
 
 *그림 2. 대화 Event를 확정 기억으로 승격하는 쓰기 Pipeline*
 

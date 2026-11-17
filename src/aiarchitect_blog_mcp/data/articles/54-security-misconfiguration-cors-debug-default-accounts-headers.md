@@ -2,7 +2,7 @@
 
 설정 하나로 뚫리는 취약점은 코드 리뷰에서 잘 잡히지 않습니다. CORS 설정을 와일드카드로 열거나 Debug 응답과 Actuator를 그대로 노출하면 그 자체가 공격 경로가 되기 때문입니다. 이 글은 OWASP Top 10:2025 A02를 기준으로 Spring Boot 3의 CORS Allowlist, 오류 응답 분리, Actuator 노출 범위, 기본 계정 제거, 보안 Header와 배포 설정 검증 방법을 정리합니다.
 
-![코드·환경·Secret·Gateway·Cloud 설정을 Runtime Configuration Core에서 검증하고 위험 설정은 격리하며 승인된 설정만 운영 서비스로 전달하는 Security Misconfiguration 보안 흐름](assets/blog-54-security-misconfiguration-control-hero.png)
+> 🖼️ **그림**: 코드·환경·Secret·Gateway·Cloud 설정을 Runtime Configuration Core에서 검증하고 위험 설정은 격리하며 승인된 설정만 운영 서비스로 전달하는 Security Misconfiguration 보안 흐름
 
 애플리케이션 코드에 SQL Injection이 없어도 운영 설정 하나로 내부 정보가 외부에 노출될 수 있습니다. 개발 편의를 위해 열어 둔 CORS, 상세 오류, Actuator Endpoint와 기본 계정은 배포 환경이 바뀌는 순간 공격 표면이 됩니다.
 
@@ -15,7 +15,7 @@ Security Misconfiguration은 특정 코드 한 줄의 결함이라기보다 **�
 - Gateway에는 보안 Header가 있지만 오류 응답과 정적 파일에는 빠져 있습니다.
 - 개발 Profile이나 Mock 인증이 운영에서 활성화됩니다.
 
-![코드·YAML·환경 변수·Secret·Gateway·Cloud를 합친 최종 설정을 Build Policy, Startup Guard와 External Verification으로 검증해 배포하거나 중단하는 Configuration Assurance 흐름](assets/blog-54-configuration-assurance-gates.png)
+> 🖼️ **그림**: 코드·YAML·환경 변수·Secret·Gateway·Cloud를 합친 최종 설정을 Build Policy, Startup Guard와 External Verification으로 검증해 배포하거나 중단하는 Configuration Assurance 흐름
 
 이 글은 Java 21과 Spring Boot 3.x 기반의 합성 예제로 CORS, Debug 정보, 기본 계정, 관리 Endpoint와 HTTP 보안 Header를 다룹니다. 실제 고객명, Domain, 계정, Endpoint와 운영 Secret은 사용하지 않습니다.
 
@@ -58,7 +58,7 @@ CORS(Cross-Origin Resource Sharing)는 Browser가 다른 Origin의 응답을 Jav
 
 Preflight가 없는 Simple Request도 있고, Browser 밖의 Client는 CORS를 적용하지 않습니다. 모든 API는 CORS와 별개로 인증·인가·CSRF·Rate Limit을 설계해야 합니다.
 
-![Browser 요청은 CORS Origin Allowlist를 거치지만 Browser 밖의 Client는 CORS를 적용하지 않으며 모든 요청은 별도의 서버 인증·인가를 통과해야 하는 경계](assets/blog-54-cors-authorization-boundary.png)
+> 🖼️ **그림**: Browser 요청은 CORS Origin Allowlist를 거치지만 Browser 밖의 Client는 CORS를 적용하지 않으며 모든 요청은 별도의 서버 인증·인가를 통과해야 하는 경계
 
 ### Origin을 정확히 비교한다
 
@@ -142,7 +142,7 @@ CORS Test Matrix에는 최소 다음 조합이 필요합니다.
 
 안전한 오류 처리는 정보가 없는 오류가 아닙니다. Client에는 안정적인 오류 계약과 추적 ID를 주고, 상세 원인은 접근 통제된 Server Log와 Trace에 남깁니다.
 
-![Exception을 중앙 Handler에서 분류해 Client에는 최소 Problem 계약과 Trace ID를 제공하고 상세 원인은 보호된 Telemetry와 대응 흐름으로 분리하는 오류 증거 구조](assets/blog-54-public-error-evidence-split.png)
+> 🖼️ **그림**: Exception을 중앙 Handler에서 분류해 Client에는 최소 Problem 계약과 Trace ID를 제공하고 상세 원인은 보호된 Telemetry와 대응 흐름으로 분리하는 오류 증거 구조
 
 ### 운영 기본 Property
 
@@ -200,7 +200,7 @@ public class ApiExceptionHandler {
 
 운영 설정에서 `debug=true` 한 줄을 찾는 것만으로 충분하지 않습니다. H2 Console, Swagger UI, GraphQL Introspection, Mock 인증, Test Controller, Sample Data Loader, 상세 SQL Log처럼 개발 편의 기능이 여러 경로로 들어옵니다.
 
-![운영 환경 식별자, Debug·Mock·Console 기능, 기본 계정·Secret과 관리 Endpoint를 함께 검사해 안전한 조합만 기동하고 위반 시 Fail Closed하는 Production Safety Gate](assets/blog-54-production-safety-startup-gate.png)
+> 🖼️ **그림**: 운영 환경 식별자, Debug·Mock·Console 기능, 기본 계정·Secret과 관리 Endpoint를 함께 검사해 안전한 조합만 기동하고 위반 시 Fail Closed하는 Production Safety Gate
 
 다음처럼 운영 불변식을 기동 시점에 검사할 수 있습니다.
 
@@ -341,7 +341,7 @@ SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
 - **`Cache-Control: no-store`** — 주된 목적: 민감 응답 저장 방지. 주의점: 공개 정적 자원에는 별도 Cache 정책.
 - **Cookie `Secure`, `HttpOnly`, `SameSite`** — 주된 목적: Session Cookie 보호. 주의점: Cross-site 업무 흐름 Test.
 
-![HTML·API·파일·오류 응답별 Header 정책을 Application과 Edge의 명시된 소유권에 따라 적용하고 최종 인터넷 응답의 누락·중복·충돌을 External Probe로 검증하는 흐름](assets/blog-54-header-ownership-external-probe.png)
+> 🖼️ **그림**: HTML·API·파일·오류 응답별 Header 정책을 Application과 Edge의 명시된 소유권에 따라 적용하고 최종 인터넷 응답의 누락·중복·충돌을 External Probe로 검증하는 흐름
 
 ### Spring Security Header 설정 예제
 

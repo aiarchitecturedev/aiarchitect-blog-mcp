@@ -2,11 +2,11 @@
 
 오류 처리는 예외를 삼키지 않는 것으로 끝나지 않습니다. 실패했을 때 무엇을 허용하는지가 정해져 있지 않으면 예외 경로가 인가 우회로 바뀝니다. 이 글은 OWASP Top 10:2025 A10을 기준으로 Java 21·Spring Boot 3에서 Fail Closed 기본값, Transaction Rollback, Partial Failure와 Timeout, Resource 정리, RFC 9457 오류 응답 설계를 정리합니다.
 
-![비정상 신호를 신뢰 경계에서 차단하고 트랜잭션 상태를 안전한 체크포인트로 되돌리는 Secure Coding 구조](assets/blog-62-exceptional-conditions-secure-coding-hero.png)
+> 🖼️ **그림**: 비정상 신호를 신뢰 경계에서 차단하고 트랜잭션 상태를 안전한 체크포인트로 되돌리는 Secure Coding 구조
 
 정상 경로가 안전하다는 사실만으로 시스템이 안전해지지는 않습니다. Database Timeout, 권한 Service 장애, 예상하지 못한 Status Code, Disk 부족과 Null 값처럼 정상 전제를 깨는 상황에서 시스템이 **어떤 상태를 남기고 무엇을 허용하는지**가 실제 보안 경계를 결정합니다.
 
-![Exceptional Condition을 예상·탐지·분류하고 격리·복구·안전한 응답과 관측으로 연결하는 여섯 단계](assets/blog-62-secure-exception-lifecycle.png)
+> 🖼️ **그림**: Exceptional Condition을 예상·탐지·분류하고 격리·복구·안전한 응답과 관측으로 연결하는 여섯 단계
 
 *예외를 숨기지 않고 불변식을 보존한 뒤, 복구 가능하고 관측 가능한 상태로 끝내는 전체 실행 계약입니다.*
 
@@ -72,7 +72,7 @@ Fail Closed는 **보안 결정을 확신하지 못하면 보호 작업을 허용
 
 보안·무결성 판단에 영향을 주는 실패는 보호 작업을 거부하고, 비핵심 기능만 사전에 승인된 범위 안에서 명시적으로 저하할 수 있습니다.
 
-![비정상 조건이 보안·무결성 결정에 영향을 주면 보호 작업을 거부하고 비핵심 실패만 승인된 제한 저하로 보내는 판정 구조](assets/blog-62-fail-closed-degradation-gate.png)
+> 🖼️ **그림**: 비정상 조건이 보안·무결성 결정에 영향을 주면 보호 작업을 거부하고 비핵심 실패만 승인된 제한 저하로 보내는 판정 구조
 
 *Fail Closed는 무조건 전체 서비스를 중단하는 규칙이 아니라, 보호 작업과 승인된 비핵심 저하를 분리하는 보안 판정입니다.*
 
@@ -297,7 +297,7 @@ public TransferResult safeTransfer(TransferCommand command) {
 
 Database Transaction은 이미 성공한 외부 결제, Email, Object Storage와 다른 Service 호출을 자동으로 되돌리지 못합니다.
 
-![로컬 트랜잭션과 아웃박스 커밋 뒤 원격 작업을 실행하고 타임아웃은 UNKNOWN으로 보존해 완료 확인 또는 승인된 보상으로 복구하는 경계](assets/blog-62-transaction-compensation-boundary.png)
+> 🖼️ **그림**: 로컬 트랜잭션과 아웃박스 커밋 뒤 원격 작업을 실행하고 타임아웃은 UNKNOWN으로 보존해 완료 확인 또는 승인된 보상으로 복구하는 경계
 
 *로컬 Rollback이 닿지 않는 원격 부수 효과는 멱등 키·상태 조회·UNKNOWN·Reconciliation 계약으로 복구합니다.*
 
@@ -502,7 +502,7 @@ BLOG-61에서 설명한 Security Logging과 연결하면 세 대상의 정보가
 - **내부 Diagnostic Log** — 제한된 Cause, Service·Instance와 Interaction ID를 남기되 Password·Token·전체 Body는 제외합니다.
 - **Security Event·Alert** — Event Type, Outcome, Severity, 영향 범위와 Playbook을 제공하되 원본 Credential과 불필요한 개인정보는 제외합니다.
 
-![하나의 실패를 최소 Client 응답, 제한된 진단 로그, Security Event와 Alert Playbook으로 목적별 분리하는 구조](assets/blog-62-safe-error-evidence-split.png)
+> 🖼️ **그림**: 하나의 실패를 최소 Client 응답, 제한된 진단 로그, Security Event와 Alert Playbook으로 목적별 분리하는 구조
 
 *외부 응답에는 행동 가능한 최소 정보만, 내부 증거에는 접근이 통제된 원인과 운영 조치만 남깁니다.*
 
@@ -539,7 +539,7 @@ Repository Query부터 Tenant Scope를 강제하고, `존재하지만 권한 없
 - Log Pipeline 장애가 보호 작업의 Fail-open을 만들지 않는가?
 - 오류 폭증이 Alert Flood와 2차 서비스 거부로 이어지지 않는가?
 
-![Timeout·Connection Reset·Disk Full 같은 실패를 신뢰 경계에 주입하고 상태·응답·Resource·Event 증거를 확인하는 Release Gate](assets/blog-62-fault-injection-release-gate.png)
+> 🖼️ **그림**: Timeout·Connection Reset·Disk Full 같은 실패를 신뢰 경계에 주입하고 상태·응답·Resource·Event 증거를 확인하는 Release Gate
 
 *Exception Type 하나가 아니라 상태 불변식·안전한 응답·자원 회수·관측 이벤트 네 증거를 함께 검증합니다.*
 
