@@ -126,6 +126,12 @@ def check_installed() -> int:
     if not corpus.search("MCP", limit=1):
         return _fail("설치본: 검색 결과 없음")
 
+    # 동의어 확장이 설치본에도 살아 있는지 — 모듈이 패키징에서 빠지면 검색만 조용히 좁아진다.
+    from aiarchitect_blog_mcp.synonyms import expand
+
+    if len(expand("observability")) < 2:
+        return _fail("설치본: 동의어 사전이 비어 있음 — synonyms 모듈이 빠졌거나 사전이 비었다")
+
     from aiarchitect_blog_mcp.server import mcp  # noqa: F401  (임포트 가능 여부 확인)
 
     print(f"✅ 설치본: {served}편 서빙 · 검색 · 본문/백링크(id={sample['id']}) 정상")

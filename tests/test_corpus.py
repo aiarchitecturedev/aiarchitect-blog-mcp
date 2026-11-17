@@ -27,6 +27,7 @@ from aiarchitect_blog_mcp.corpus import (
     is_published,
     parse_metadata,
 )
+from aiarchitect_blog_mcp.synonyms import expand
 
 # 서빙되는 글 번호(= 티스토리 글 번호). 36·37·97·98은 원본에 글이 없고,
 # 89·90은 정식 게시 URL이 없어 fail-closed로 제외된다.
@@ -374,18 +375,23 @@ def test_idf_weights_rare_terms_higher():
     assert values == sorted(values, reverse=True)
 
 
-def test_top_results_cover_every_query_term():
-    """다중어 질의의 상위 결과는 질의어를 **전부** 담고 있어야 한다.
+def test_top_results_cover_every_query_concept():
+    """다중어 질의의 상위 결과는 질의 **개념**을 전부 담고 있어야 한다.
 
     이전 구현에서는 "RAG 청킹" 검색에 청킹이 한 번도 없는 글이 rag 빈도만으로 3위였다.
+
+    ⚠️ 기준이 '질의어 문자열'에서 '개념'으로 바뀌었다(동의어 확장). "청킹"으로 물은 글이
+    chunking만 썼다면 그것은 누락이 아니라 의도한 일치다. 문자열로 계속 검사했다면
+    동의어로 닿은 정당한 결과를 실패로 보고했을 것이다 — 막는 회귀는 그대로다
+    (어느 표기도 없는 글이 다른 질의어의 빈도만으로 올라오는 것).
     """
     corpus = Corpus()
     for query in ("RAG 청킹", "AI Agent 평가", "MCP 보안"):
-        terms = query.lower().split()
+        concepts = [expand(t) for t in query.lower().split()]
         for result in corpus.search(query, limit=3):
             record = corpus._by_id[result["id"]]
-            missing = [t for t in terms if corpus._weighted_tf(record, t) == 0]
-            assert not missing, f"{query} → {result['id']}: 질의어 누락 {missing}"
+            missing = [c for c in concepts if corpus._concept_tf(record, c) == 0]
+            assert not missing, f"{query} → {result['id']}: 질의 개념 누락 {missing}"
 
 
 def test_longer_document_scores_lower_at_equal_frequency():

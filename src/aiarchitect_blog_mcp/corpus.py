@@ -13,6 +13,8 @@ from collections import Counter
 from functools import lru_cache
 from pathlib import Path
 
+from .synonyms import expand
+
 BLOG_HOME = "https://aiarchitect.tistory.com/"
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -288,6 +290,17 @@ class Corpus:
         self._tf_cache[key] = tf
         return tf
 
+    def _concept_tf(self, rec: dict, concept: tuple[str, ...]) -> int:
+        """개념(동의어 묶음) 단위 빈도 — 표기 변형들의 빈도 합.
+
+        "observability"와 "관측성"을 따로 세면 둘 다 쓴 글이 한쪽만 쓴 글보다 두 번
+        가산된다. 같은 개념이므로 합쳐서 한 번 센다. 묶음 안에서 한 변형이 다른 변형의
+        접두가 아니어야 이 합이 중복 없이 성립한다(synonyms.py의 가드).
+        """
+        if len(concept) == 1:
+            return self._weighted_tf(rec, concept[0])
+        return sum(self._weighted_tf(rec, v) for v in concept)
+
     def _average_length(self) -> float:
         """길이 정규화 기준이 되는 평균 본문 길이(최초 1회 계산 후 캐시)."""
         if self._avg_len is None:
@@ -333,6 +346,10 @@ class Corpus:
         terms = [t for t in re.split(r"\s+", str(query).lower().strip()) if t]
         if not terms or limit == 0:
             return []
+        # 질의어를 같은 개념의 표기 묶음으로 넓힌다("관측성" → 관측성·observability).
+        # 같은 개념을 가리키는 질의어 둘("observability 관측성")은 **하나로 합친다** —
+        # 따로 두면 같은 개념이 두 번 가산돼 한쪽 표기만 쓴 글이 부당하게 밀린다.
+        concepts = tuple(dict.fromkeys(expand(t) for t in terms))
         candidates = [
             r for r in self.records
             if not category or r["category"] == category or category in r["category"]
@@ -341,31 +358,34 @@ class Corpus:
             return []
 
         # 필드 가중 빈도. 제목·태그·설명은 짧고 신호가 강해 가중치를 크게 준다.
-        weighted = [{t: self._weighted_tf(r, t) for t in terms} for r in candidates]
+        weighted = [{c: self._concept_tf(r, c) for c in concepts} for r in candidates]
 
         # IDF: 흔한 단어가 희귀한 단어를 덮지 않게 한다.
         # 이것이 없으면 "RAG 청킹"에서 청킹이 한 번도 안 나오는 글이 rag 빈도만으로 상위에 온다.
+        # df도 개념 단위다 — 표기가 갈린 탓에 희귀해 보이던 개념이 제 무게를 갖는다.
         total = len(candidates)
-        idf = {t: _idf(total, sum(1 for tf in weighted if tf[t] > 0)) for t in terms}
+        idf = {c: _idf(total, sum(1 for tf in weighted if tf[c] > 0)) for c in concepts}
 
         avg_len = self._average_length()
         scored: list[tuple[float, dict]] = []
         for r, tf_map in zip(candidates, weighted):
             length = len(self._lower_body(r)) or 1
             score = 0.0
-            for t in terms:
-                tf = tf_map[t]
+            for c in concepts:
+                tf = tf_map[c]
                 if tf:
-                    score += idf[t] * _bm25_tf(tf, length, avg_len)
+                    score += idf[c] * _bm25_tf(tf, length, avg_len)
             if score > 0:
                 scored.append((score, r))
 
         scored.sort(key=lambda x: (-x[0], _id_sort_key(x[1]["id"])))
+        # 스니펫은 실제로 글에 나온 표기를 중심에 둔다(영문으로 물어도 한글 문장이 잡히게).
+        shown = [v for c in concepts for v in c]
         out = []
         for score, r in scored[:limit]:
             item = self._summary(r)
             item["score"] = round(score, 3)
-            item["snippet"] = self._snippet(r, terms)
+            item["snippet"] = self._snippet(r, shown)
             out.append(item)
         return out
 

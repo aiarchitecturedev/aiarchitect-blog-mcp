@@ -11,6 +11,10 @@ AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/L
 > 가능성을 높입니다(추천 유입). ※ 정식 게시 URL이 없는 글은 **fail-closed로 목록·검색·본문에서
 > 제외**되어, 홈 URL 폴백이 오도성 출처 링크로 노출되지 않습니다(현재 번들 94편 전부 정식 게시글).
 
+> 🔤 **영문으로 물어도 한글로만 쓴 글에 닿습니다.** 글 본문은 같은 개념을 영문("observability")과
+> 한글("관측성")로 번갈아 씁니다. 검색은 두 표기를 **하나의 개념으로 묶어** 세므로, 어느 쪽으로
+> 물어도 결과와 순위가 같습니다(수록 기준·측정: `scripts/synonym_report.py`).
+
 > 🔒 **읽기 전용 서버**: 5개 도구 모두 로컬 번들 코퍼스만 읽습니다(쓰기·외부 호출·부작용 없음).
 > 각 도구에 `readOnlyHint`가 선언돼 있고, `limit`/`offset` 등 입력은 범위 밖 값·잘못된 타입을
 > 방어적으로 클램프합니다.
@@ -26,7 +30,7 @@ AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/L
 |------|------|
 | `list_categories()` | 분류(7종)와 각 편수 |
 | `list_articles(category?, limit?, offset?)` | 글 목록(분류 필터·페이지네이션) |
-| `search_articles(query, category?, limit?)` | 제목·설명·태그·본문 키워드 검색(BM25 랭킹·스니펫) |
+| `search_articles(query, category?, limit?)` | 제목·설명·태그·본문 키워드 검색(BM25 랭킹·영↔한 동의어·스니펫) |
 | `get_article(article_id)` | 전체 본문(마크다운) + 원문 URL(출처 링크) |
 | `blog_home()` | 블로그 홈 URL·제공 편수 |
 
@@ -54,7 +58,7 @@ claude mcp add aiarchitect-blog -- uvx aiarchitect-blog-mcp
 ### 저장소 최신본으로 설치
 
 코퍼스 갱신과 검색 개선은 PyPI 릴리스보다 `main`에 먼저 들어갑니다. 아래 문서가 설명하는
-구성(번들 편수·BM25 랭킹)을 그대로 쓰려면 저장소에서 직접 설치하세요.
+구성(번들 편수·BM25 랭킹·영↔한 동의어)을 그대로 쓰려면 저장소에서 직접 설치하세요.
 
 ```bash
 claude mcp add aiarchitect-blog -- \
@@ -81,6 +85,7 @@ claude mcp add aiarchitect-blog -- \
 uv sync                              # 의존성 설치
 uv run python scripts/build_index.py /path/to/blogs  # 블로그 md → data/articles_index.json + 본문 번들
 uv run pytest -q                     # 파서·검색 골든 테스트
+uv run python scripts/synonym_report.py  # 동의어 사전 ↔ 코퍼스 측정(수록 기준 재확인)
 uv build && uv run python scripts/verify_dist.py dist/   # 배포 산출물 검증
 uv run aiarchitect-blog-mcp          # stdio 서버 실행
 ```
