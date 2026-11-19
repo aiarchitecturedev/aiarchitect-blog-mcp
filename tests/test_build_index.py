@@ -13,7 +13,7 @@ SPEC.loader.exec_module(build_index)
 
 # build_index와 독립적으로 기대값을 다시 적는다(골든 테스트).
 SOURCE_NUMBERS = [*range(1, 36), *range(38, 97), 99, 100]
-UNPUBLISHED_NUMBERS = [89, 90]
+UNPUBLISHED_NUMBERS: list[int] = []
 
 
 def test_expected_source_ids_cover_every_numbered_article():
@@ -23,13 +23,13 @@ def test_expected_source_ids_cover_every_numbered_article():
 
 
 def test_expected_ids_exclude_unpublished_drafts():
-    """서빙 대상(94편) = 소스 96편 - 정식 게시 URL 없는 초안 2편(fail-closed)."""
+    """서빙 대상(96편) = 소스 96편 - 정식 게시 URL 없는 글 0편(fail-closed)."""
     expected = tuple(
         f"{n:02d}" for n in SOURCE_NUMBERS if n not in UNPUBLISHED_NUMBERS
     )
     assert build_index.EXPECTED_IDS == expected
-    assert len(build_index.EXPECTED_IDS) == 94
-    assert build_index.EXPECTED_UNPUBLISHED_IDS == ("89", "90")
+    assert len(build_index.EXPECTED_IDS) == 96
+    assert build_index.EXPECTED_UNPUBLISHED_IDS == ()
 
 
 def test_expected_category_counts_sum_to_the_served_article_count():

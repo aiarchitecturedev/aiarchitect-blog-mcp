@@ -2,14 +2,14 @@
 
 [![CI](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml)
 
-[aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **94편 규모**)를
+[aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **96편 규모**)를
 **MCP(Model Context Protocol) 도구**로 노출합니다. Claude·Cursor 등 MCP 클라이언트에 붙이면
 AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/LLM 주제의 한국어 장문 기술 글을
 바로 검색·열람할 수 있습니다.
 
 > 💡 목록·검색·본문 응답에 **원문(정식 게시글) URL**이 실려, 에이전트의 답변에 출처 링크가 남을
 > 가능성을 높입니다(추천 유입). ※ 정식 게시 URL이 없는 글은 **fail-closed로 목록·검색·본문에서
-> 제외**되어, 홈 URL 폴백이 오도성 출처 링크로 노출되지 않습니다(현재 번들 94편 전부 정식 게시글).
+> 제외**되어, 홈 URL 폴백이 오도성 출처 링크로 노출되지 않습니다(현재 번들 96편 전부 정식 게시글).
 
 > 🔤 **영문으로 물어도 한글로만 쓴 글에 닿습니다.** 글 본문은 같은 개념을 영문("observability")과
 > 한글("관측성")로 번갈아 씁니다. 검색은 두 표기를 **하나의 개념으로 묶어** 세므로, 어느 쪽으로

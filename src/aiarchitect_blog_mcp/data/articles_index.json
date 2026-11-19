@@ -1,6 +1,6 @@
 {
   "source": "https://aiarchitect.tistory.com/",
-  "count": 94,
+  "count": 96,
   "articles": [
     {
       "id": "01",
@@ -1687,6 +1687,46 @@
       "url": "https://aiarchitect.tistory.com/88",
       "published": true,
       "file": "88-ai-agent-internal-developer-platform-golden-path.md"
+    },
+    {
+      "id": "89",
+      "doc_id": "BLOG-89",
+      "title": "AI Agent Sandbox와 Ephemeral Environment 설계: Production 데이터와 Side Effect 없이 Agent를 안전하게 검증하는 법",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "AI Agent를 Production 데이터·Credential·실제 Side Effect와 격리하고, Synthetic Data·Tool Simulation·PR별 Ephemeral Environment·TTL Cleanup·Evaluation Evidence로 안전하게 검증하는 방법을 설명합니다.",
+      "tags": [
+        "AI Agent",
+        "Sandbox",
+        "Ephemeral Environment",
+        "Synthetic Data",
+        "Tool Simulation",
+        "Kubernetes",
+        "Platform Engineering",
+        "DevSecOps"
+      ],
+      "url": "https://aiarchitect.tistory.com/89",
+      "published": true,
+      "file": "89-ai-agent-sandbox-ephemeral-environment.md"
+    },
+    {
+      "id": "90",
+      "doc_id": "BLOG-90",
+      "title": "AI Agent Red Teaming과 Continuous Assurance 설계: Prompt Injection·Tool Abuse·Data Exfiltration을 지속 검증하는 법",
+      "category": "엔터프라이즈 아키텍처",
+      "description": "AI Agent의 Prompt Injection·Tool Abuse·권한 상승·RAG와 Memory 오염·MCP와 A2A 공격 전파를 안전하게 시험하고, 결과를 Release Gate와 Runtime Assurance로 지속 운영하는 방법을 설명합니다.",
+      "tags": [
+        "AI Agent",
+        "Red Teaming",
+        "Continuous Assurance",
+        "Prompt Injection",
+        "Agent Security",
+        "OWASP Agentic AI",
+        "MITRE ATLAS",
+        "DevSecOps"
+      ],
+      "url": "https://aiarchitect.tistory.com/90",
+      "published": true,
+      "file": "90-ai-agent-red-teaming-continuous-assurance.md"
     },
     {
       "id": "91",

@@ -35,8 +35,9 @@ OUT_DIR = _ROOT / "src" / "aiarchitect_blog_mcp" / "data"
 # 공개 소스에 존재해야 하는 글 번호(BLOG-NN) 구간. 결번(36·37·97·98)은 원본에 글이 없다.
 # 파일명·문서 ID·티스토리 글 번호가 1:1로 같다는 전제(id = 티스토리 번호).
 SOURCE_ID_RANGES = ((1, 35), (38, 96), (99, 100))
-# 정식 게시 URL이 아직 없는 초안. fail-closed로 번들(목록·검색·본문)에서 제외된다.
-EXPECTED_UNPUBLISHED_IDS = ("89", "90")
+# 정식 게시 URL이 없는 글은 fail-closed로 번들에서 제외된다. 현재는 96편 전부 정식 게시글이다.
+# (89·90은 2026-08-18 공개돼 있었으나 소스 메타의 URL이 `공개 URL` 키 밖에 있어 제외돼 있었다)
+EXPECTED_UNPUBLISHED_IDS: tuple[str, ...] = ()
 
 
 def _format_id(number: int) -> str:
@@ -49,7 +50,7 @@ EXPECTED_SOURCE_IDS = tuple(
 )
 EXPECTED_IDS = tuple(i for i in EXPECTED_SOURCE_IDS if i not in EXPECTED_UNPUBLISHED_IDS)
 EXPECTED_CATEGORY_COUNTS = {
-    "엔터프라이즈 아키텍처": 28,
+    "엔터프라이즈 아키텍처": 30,
     "보안": 19,
     "AI Agent · MCP": 14,
     "개발 도구 · 자동화": 11,
