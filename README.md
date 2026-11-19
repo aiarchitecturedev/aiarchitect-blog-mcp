@@ -73,6 +73,7 @@ claude mcp add aiarchitect-blog -- uvx aiarchitect-blog-mcp
 ```bash
 uv sync                              # 의존성 설치
 uv run python scripts/build_index.py /path/to/blogs  # 블로그 md → data/articles_index.json + 본문 번들
+uv run python scripts/check_corpus_drift.py /path/to/blogs  # 소스 ↔ 번들 drift 점검(읽기 전용)
 uv run pytest -q                     # 파서·검색 골든 테스트
 uv run python scripts/synonym_report.py  # 동의어 사전 ↔ 코퍼스 측정(수록 기준 재확인)
 uv build && uv run python scripts/verify_dist.py dist/   # 배포 산출물 검증
@@ -82,6 +83,11 @@ uv run aiarchitect-blog-mcp          # stdio 서버 실행
 `build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`, 글 번호 1~3자리)를
 인자로 받습니다: `uv run python scripts/build_index.py /path/to/blogs`.
 글의 `article_id`는 원문 글 번호와 같습니다(`get_article("100")` → `.../100`).
+
+`check_corpus_drift.py`는 **아무것도 쓰지 않고** "지금 재빌드하면 무엇이 달라지는가"만
+보고합니다(신규·삭제 글, 본문·메타 변경, 게시 URL 불일치). 글이 늘거나 고쳐 발행돼도
+번들은 스스로 알 수 없으므로, 편수뿐 아니라 **메타 키 이름을 가리지 않고** 정식 게시 URL을
+찾아 파서가 읽은 값과 대조합니다. 종료 코드 0=일치 · 1=drift · 2=점검 불가.
 
 `verify_dist.py`는 wheel·sdist **안쪽**을 열어 본문·인덱스 편수와 정합성을 확인합니다. 서빙 코드가
 멀쩡해도 데이터 번들이 빠진 wheel은 설치한 쪽에서만 깨지기 때문입니다. `--installed`를 주면
