@@ -19,7 +19,7 @@ AI Agent에게 “이 파일을 회의록으로 만들어 줘”라고 요청하
 
 하지만 같은 Tool을 원격 HTTP MCP Server에 연결하면 `file not found`가 발생할 수 있습니다. 파일이 사라진 것이 아니라 **Client와 Server가 서로 다른 파일시스템을 사용하기 때문**입니다.
 
-이 문제를 해결하는 안전한 방법 중 하나가 Upload Ticket(업로드 티켓) 패턴입니다.
+이 문제를 해결하는 안전한 방법 중 하나가 Upload Ticket(업로드 티켓) 패턴입니다. 필자는 같은 MCP 서버를 stdio와 http 두 전송으로 운영하면서 이 패턴을 골랐습니다.
 
 > 🖼️ **그림**: 로컬 filePath 전달이 실패하는 경계와 Upload Ticket 준비, 별도 HTTPS Byte 전송, 격리 검증, uploadId 기반 업무 시작을 구분한 흐름
 
