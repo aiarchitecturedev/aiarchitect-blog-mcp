@@ -19,7 +19,7 @@ Router가 같은 Agent Version을 다른 Run에 다시 선택할 수 있다.
 
 이 글은 [AI Agent 관측성](https://aiarchitect.tistory.com/72), [AI Agent 평가 아키텍처](https://aiarchitect.tistory.com/74), [AI Agent Control Plane](https://aiarchitect.tistory.com/76), [실행 Orchestration](https://aiarchitect.tistory.com/77), [Enterprise Agent Router](https://aiarchitect.tistory.com/78), [Agent Identity와 위임 인가](https://aiarchitect.tistory.com/79), [Agent Contract Testing](https://aiarchitect.tistory.com/80)을 전제로 합니다. Kill Switch 구현이나 Trace 수집법을 반복하지 않고, **탐지 신호가 들어온 뒤 Incident를 열고 Containment·Impact Analysis·Recovery까지 완결하는 운영 구조**에 집중합니다.
 
-> 이 글의 조직, Agent, Tenant, Run, URL, 시간, 탐지 수치와 사고 결과는 모두 교육용 합성 예시입니다. 특정 회사·고객·제품·실제 사고를 나타내지 않습니다. 법적 신고, 개인정보 침해 통지, 증거 보존과 노동·감시 요건은 국가·산업·계약에 따라 달라지므로 실제 대응에서는 법무·개인정보·보안 책임자의 판단을 함께 적용해야 합니다.
+> 이 글의 조직, Agent, Tenant, Run, URL, 시간, 탐지 수치와 사고 결과는 모두 교육용 합성 예시입니다. 특정 회사·고객·제품·실제 사고를 나타내지 않습니다. 다만 **구현에서 실제로 고른 것** 블록은 합성이 아니라, 외부 호출을 포함한 장기 실행 작업을 다루며 겪은 기록입니다. 법적 신고, 개인정보 침해 통지, 증거 보존과 노동·감시 요건은 국가·산업·계약에 따라 달라지므로 실제 대응에서는 법무·개인정보·보안 책임자의 판단을 함께 적용해야 합니다.
 
 ## 1. Agent 사고는 잘못된 답변보다 넓다
 
