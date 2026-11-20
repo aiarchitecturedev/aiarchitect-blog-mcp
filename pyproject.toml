@@ -1,6 +1,6 @@
 [project]
 name = "aiarchitect-blog-mcp"
-version = "0.2.1"
+version = "0.2.2"
 description = "MCP server that exposes the AI아키텍트 (aiarchitect.tistory.com) technical blog — 96 articles — as searchable tools for AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
