@@ -30,15 +30,15 @@ from aiarchitect_blog_mcp.corpus import (
 from aiarchitect_blog_mcp.synonyms import expand
 
 # 서빙되는 글 번호(= 티스토리 글 번호). 36·37·97·98은 원본에 글이 없고,
-# 89·90은 정식 게시 URL이 없어 fail-closed로 제외된다.
+# 소스 96편이 모두 정식 게시 URL을 가져 그대로 서빙된다(fail-closed 제외 0편).
 # build_index와 독립적으로 기대값을 다시 적는다(골든 테스트).
 EXPECTED_IDS = [
     f"{n:02d}"
-    for n in [*range(1, 36), *range(38, 89), *range(91, 97), 99, 100]
+    for n in [*range(1, 36), *range(38, 97), 99, 100]
 ]
-EXPECTED_COUNT = 94
+EXPECTED_COUNT = 96
 EXPECTED_CATEGORY_COUNTS = {
-    "엔터프라이즈 아키텍처": 28,
+    "엔터프라이즈 아키텍처": 30,
     "보안": 19,
     "AI Agent · MCP": 14,
     "개발 도구 · 자동화": 11,
@@ -246,14 +246,14 @@ def test_ids_and_official_urls_are_unique_and_complete():
     assert corpus.excluded_ids == []
 
 
-def test_default_pagination_combines_50_and_44_into_94():
+def test_default_pagination_combines_50_and_46_into_96():
     corpus = Corpus()
     first_page = corpus.list_articles()
     second_page = corpus.list_articles(offset=50)
     combined_ids = [record["id"] for record in first_page + second_page]
 
     assert len(first_page) == 50
-    assert len(second_page) == 44
+    assert len(second_page) == 46
     assert combined_ids == EXPECTED_IDS
     assert len(set(combined_ids)) == EXPECTED_COUNT
 
