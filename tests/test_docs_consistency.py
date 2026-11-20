@@ -65,3 +65,40 @@ async def _list_tools():
     from aiarchitect_blog_mcp.server import mcp
 
     return await mcp.list_tools()
+
+
+DEMO_GIF = ROOT / "assets" / "demo.gif"
+DEMO_META = ROOT / "assets" / "demo.meta.json"
+
+
+def test_demo_gif_matches_bundle():
+    """README 데모 GIF ↔ 번들 대조.
+
+    GIF는 **실제 서버 응답을 구운 그림**이라, 코퍼스가 바뀌면 화면의 편수·점수·글자 수가
+    조용히 거짓이 된다. 그림은 어떤 테스트도 읽을 수 없으므로, 구울 때 함께 남긴
+    `demo.meta.json`을 번들과 대조한다. 실패하면 값을 손으로 고치지 말고 다시 굽는다:
+
+        uv run --with pillow python scripts/make_demo_gif.py
+    """
+    assert DEMO_GIF.exists(), "assets/demo.gif 이 없다 — scripts/make_demo_gif.py 로 생성할 것"
+    assert DEMO_META.exists(), (
+        "assets/demo.meta.json 이 없다 — GIF만 있고 구워진 값의 기록이 없으면 대조할 수 없다"
+    )
+    meta = json.loads(DEMO_META.read_text(encoding="utf-8"))
+
+    assert meta["article_count"] == _bundled_count(), (
+        f"GIF 타이틀바 {meta['article_count']}편 != 번들 {_bundled_count()}편 — GIF를 다시 구워라"
+    )
+
+    corpus = Corpus()
+    expected_hits = meta["search"]["hits"]
+    hits = corpus.search(meta["search"]["query"], limit=len(expected_hits))
+    actual = [{"id": h["id"], "score": round(h["score"], 3)} for h in hits]
+    assert actual == expected_hits, (
+        f"GIF의 검색 결과가 지금 코퍼스와 다르다({actual} != {expected_hits}) — GIF를 다시 구워라"
+    )
+
+    chars = len(corpus.render_article(meta["article"]["id"]))
+    assert chars == meta["article"]["chars"], (
+        f"GIF의 본문 글자 수 {meta['article']['chars']:,} != 지금 {chars:,} — GIF를 다시 구워라"
+    )

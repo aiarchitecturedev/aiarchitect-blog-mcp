@@ -1,11 +1,23 @@
 # AI아키텍트 블로그 MCP 서버
 
 [![CI](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/aiarchitect-blog-mcp?logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/aiarchitect-blog-mcp/)
 
 [aiarchitect.tistory.com](https://aiarchitect.tistory.com/) 의 공개 기술 블로그(현재 번들 **96편 규모**)를
 **MCP(Model Context Protocol) 도구**로 노출합니다. Claude·Cursor 등 MCP 클라이언트에 붙이면
 AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/LLM 주제의 한국어 장문 기술 글을
 바로 검색·열람할 수 있습니다.
+
+![AI 에이전트가 이 MCP 서버로 블로그를 검색하고 본문을 읽은 뒤 출처 URL을 남기는 데모](https://raw.githubusercontent.com/aiarchitecturedev/aiarchitect-blog-mcp/main/assets/demo.gif)
+
+> 🎬 위 화면은 그려 낸 것이 아니라 **실제 stdio 서버를 띄워 JSON-RPC로 호출한 응답**입니다.
+> 점수·본문 글자 수·원문 URL이 전부 실측값이며, `scripts/make_demo_gif.py` 가 서버를 직접
+> 호출해 매번 다시 굽습니다(대본을 손으로 적어 두지 않습니다).
+
+**⚡ 원클릭 설치**
+
+[![Cursor에 추가](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=aiarchitect-blog&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJhaWFyY2hpdGVjdC1ibG9nLW1jcCJdfQ%3D%3D)
+[![VS Code 원클릭 설치](https://img.shields.io/badge/VS%20Code-%EC%9B%90%ED%81%B4%EB%A6%AD%20%EC%84%A4%EC%B9%98-0098FF?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522aiarchitect-blog%2522%252C%2522command%2522%253A%2522uvx%2522%252C%2522args%2522%253A%255B%2522aiarchitect-blog-mcp%2522%255D%257D)
 
 > 💡 목록·검색·본문 응답에 **원문(정식 게시글) URL**이 실려, 에이전트의 답변에 출처 링크가 남을
 > 가능성을 높입니다(추천 유입). ※ 정식 게시 URL이 없는 글은 **fail-closed로 목록·검색·본문에서
@@ -49,6 +61,18 @@ AI 에이전트가 MCP·AI Agent·엔터프라이즈 아키텍처·보안·RAG/L
 
 ## 🚀 설치
 
+### ⚡ 원클릭 (Cursor · VS Code)
+
+[![Cursor에 추가](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=aiarchitect-blog&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJhaWFyY2hpdGVjdC1ibG9nLW1jcCJdfQ%3D%3D)
+[![VS Code 원클릭 설치](https://img.shields.io/badge/VS%20Code-%EC%9B%90%ED%81%B4%EB%A6%AD%20%EC%84%A4%EC%B9%98-0098FF?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522aiarchitect-blog%2522%252C%2522command%2522%253A%2522uvx%2522%252C%2522args%2522%253A%255B%2522aiarchitect-blog-mcp%2522%255D%257D)
+
+누르면 편집기가 열리고 **설치 승인 창**이 뜹니다(바로 설치되지 않습니다). 두 버튼 모두
+아래 `uvx aiarchitect-blog-mcp` 와 똑같은 설정을 심습니다.
+
+> ℹ️ 버튼이 `https://cursor.com/...` · `https://vscode.dev/...` 를 거치는 이유는, GitHub이
+> README에서 `cursor://` · `vscode:` 같은 사용자 지정 스킴 링크를 **잘라 버리기** 때문입니다.
+> 각 편집기가 제공하는 https 중계 주소라야 README에서 실제로 눌립니다.
+
 ### Claude Code
 ```bash
 claude mcp add aiarchitect-blog -- uvx aiarchitect-blog-mcp
@@ -78,6 +102,7 @@ uv run pytest -q                     # 파서·검색 골든 테스트
 uv run python scripts/synonym_report.py  # 동의어 사전 ↔ 코퍼스 측정(수록 기준 재확인)
 uv build && uv run python scripts/verify_dist.py dist/   # 배포 산출물 검증
 uv run aiarchitect-blog-mcp          # stdio 서버 실행
+uv run --with pillow python scripts/make_demo_gif.py  # README 데모 GIF 재생성(ffmpeg 필요)
 ```
 
 `build_index.py`는 소스 블로그 마크다운 디렉터리(파일명 형식 `NN-*.md`, 글 번호 1~3자리)를
