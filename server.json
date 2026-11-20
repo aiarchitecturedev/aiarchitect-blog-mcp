@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.aiarchitecturedev/aiarchitect-blog-mcp",
+  "title": "AI아키텍트 Tech Blog",
+  "description": "Search Korean long-form tech articles: MCP, AI agents, enterprise architecture, security, RAG/LLM.",
+  "websiteUrl": "https://aiarchitect.tistory.com/",
+  "repository": {
+    "url": "https://github.com/aiarchitecturedev/aiarchitect-blog-mcp",
+    "source": "github"
+  },
+  "version": "0.2.4",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "aiarchitect-blog-mcp",
+      "version": "0.2.4",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

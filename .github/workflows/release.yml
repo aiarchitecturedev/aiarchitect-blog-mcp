@@ -96,3 +96,73 @@ jobs:
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  # ── 공식 MCP Registry 등재 ───────────────────────────────────────────────
+  # PyPI 게시 **뒤에** 돈다. 레지스트리가 소유권을 확인할 때 PyPI에 올라간 패키지 설명
+  # (=README)에서 `mcp-name:` 표식을 찾기 때문에, 순서가 뒤집히면 반드시 실패한다.
+  # 인증은 PyPI와 같은 결의 OIDC — 저장소에 비밀 토큰을 두지 않는다.
+  publish-mcp:
+    name: publish to MCP Registry
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # OIDC 토큰 발급용
+      contents: read
+    env:
+      # 🔴 가변 태그(latest)를 쓰지 않는다 — 서명 검증의 certificate-identity가
+      #    이 버전 문자열에 묶여 있어, 올릴 때는 의도적으로 올려야 한다.
+      MCP_PUBLISHER_VERSION: v1.8.9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      # PyPI는 업로드 직후 잠깐 옛 내용을 주는 일이 있다. 레지스트리는 패키지 설명에서
+      # 표식을 찾으므로, 보이기 전에 publish하면 "Package validation failed"로 떨어진다.
+      # 그래서 **확인될 때까지 기다렸다가 한 번만** 게시한다(재시도는 중복 게시 위험).
+      - name: Wait for PyPI to serve the mcp-name marker
+        run: |
+          set -euo pipefail
+          version=$(python3 -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          name=$(python3 -c "import json;print(json.load(open('server.json'))['name'])")
+          url="https://pypi.org/pypi/aiarchitect-blog-mcp/${version}/json"
+          echo "확인: $url 에 'mcp-name: $name'"
+          for i in $(seq 1 20); do
+            if curl -fsSL "$url" | python3 -c "import sys,json; d=json.load(sys.stdin)['info'].get('description') or ''; sys.exit(0 if 'mcp-name: $name' in d else 1)"; then
+              echo "✅ ${i}회차에 확인됨"
+              exit 0
+            fi
+            echo "… ${i}/20 아직 안 보인다. 15초 뒤 재시도"
+            sleep 15
+          done
+          echo "::error::PyPI 설명에서 'mcp-name: $name' 을 5분 동안 찾지 못했습니다"
+          exit 1
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      # 서명을 확인하지 않고 받은 바이너리에 OIDC 토큰을 쥐여 주지 않는다.
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          arch="$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+          archive="mcp-publisher_${os}_${arch}.tar.gz"
+          base_url="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location --silent --show-error --output "$archive" "$base_url/$archive"
+          curl --fail --location --silent --show-error --output "$archive.sigstore.json" "$base_url/$archive.sigstore.json"
+          cosign verify-blob \
+            --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$archive"
+          tar xzf "$archive" mcp-publisher
+          rm -f "$archive" "$archive.sigstore.json"
+
+      # server.json 의 버전은 저장소가 정본이다(tests/test_docs_consistency.py 가
+      # pyproject 와 같은지 대조한다). 여기서 덮어쓰면 그 대조가 무의미해지므로 건드리지 않는다.
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server to MCP Registry
+        run: ./mcp-publisher publish

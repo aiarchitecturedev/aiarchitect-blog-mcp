@@ -1,5 +1,7 @@
 # AI아키텍트 블로그 MCP 서버
 
+<!-- mcp-name: io.github.aiarchitecturedev/aiarchitect-blog-mcp -->
+
 [![CI](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/aiarchitecturedev/aiarchitect-blog-mcp/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/aiarchitect-blog-mcp?logo=pypi&logoColor=white&label=PyPI)](https://pypi.org/project/aiarchitect-blog-mcp/)
 
